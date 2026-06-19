@@ -1,0 +1,133 @@
+:host {
+  display: block;
+}
+h1 {
+  margin: 0;
+  color: #0f172a;
+}
+.lead {
+  margin: 0.3rem 0 1.5rem;
+  color: #64748b;
+}
+.muted {
+  color: #94a3b8;
+}
+
+.card {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 1rem 1.1rem;
+}
+.empty {
+  text-align: center;
+  color: #64748b;
+}
+
+.filtros {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 1rem;
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    span {
+      font-size: 0.78rem;
+      font-weight: 600;
+      color: #334155;
+    }
+    select {
+      border: 1px solid #cbd5e1;
+      border-radius: 8px;
+      padding: 0.4rem 0.6rem;
+      font: inherit;
+    }
+  }
+}
+
+.tabla-wrap {
+  overflow-x: auto;
+  padding: 0;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.84rem;
+
+  th,
+  td {
+    text-align: left;
+    padding: 0.6rem 0.9rem;
+    border-bottom: 1px solid #f1f5f9;
+    white-space: nowrap;
+  }
+  th {
+    color: #64748b;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  td {
+    color: #334155;
+  }
+}
+
+.metodo {
+  font-weight: 700;
+  font-size: 0.74rem;
+  padding: 0.1rem 0.4rem;
+  border-radius: 6px;
+  background: #e2e8f0;
+  color: #475569;
+  &[data-m='POST'] {
+    background: #dcfce7;
+    color: #166534;
+  }
+  &[data-m='PATCH'],
+  &[data-m='PUT'] {
+    background: #dbeafe;
+    color: #2563eb;
+  }
+  &[data-m='DELETE'] {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+}
+
+.status {
+  font-weight: 700;
+  &.ok {
+    color: #16a34a;
+  }
+  &.err {
+    color: #dc2626;
+  }
+}
+
+.paginacion {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  color: #64748b;
+  font-size: 0.85rem;
+
+  button {
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    border-radius: 8px;
+    padding: 0.4rem 0.8rem;
+    cursor: pointer;
+    &:hover:not(:disabled) {
+      background: #f8fafc;
+    }
+    &:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+  }
+}

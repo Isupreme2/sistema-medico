@@ -132,6 +132,10 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/appointments/:id/video` | Participante | Datos de la sala de teleconsulta (+ventana horaria) |
 | GET | `/api/v1/appointments/:id/preconsulta` | Médico/Dueño/Admin | Ver formulario de pre-consulta |
 | POST | `/api/v1/appointments/:id/preconsulta` | Paciente dueño | Enviar/actualizar pre-consulta |
+| GET/POST | `/api/v1/invoices` | Auth / Médico-Admin | Listar (por rol) / emitir factura |
+| PATCH | `/api/v1/invoices/:id/pay` · `/void` | Admin | Marcar pagada / anular |
+| GET | `/api/v1/analytics/overview` | Admin | Métricas (citas, ausentismo, ingresos, top médicos) |
+| GET | `/api/v1/audit` | Admin | Bitácora de auditoría (paginada, filtrable) |
 
 ## Roadmap
 
@@ -143,7 +147,7 @@ Documentación interactiva: **http://localhost:4000/docs**
 - [x] **Fase 5** — Recetas + PDF + QR + alerta de alergias/interacciones
 - [x] **Fase 6** — Recordatorios email (node-cron) + notificaciones in-app en tiempo real
 - [x] **Fase 7** — Teleconsulta por video (Jitsi embebido) + formulario de pre-consulta
-- [ ] **Fase 8** — Dashboard analítico + facturación + auditoría
+- [x] **Fase 8** — Panel analítico + facturación básica + visor de auditoría
 - [ ] **Fase 9** — PWA + i18n + modo oscuro + tests + Docker
 
 ## Decisiones de diseño destacadas
@@ -165,6 +169,10 @@ Documentación interactiva: **http://localhost:4000/docs**
   debe confirmar para emitir igual).
 - **Integridad de receta.** Cada receta lleva un hash SHA-256; el endpoint público de
   verificación lo recalcula para confirmar que no fue alterada.
+- **Auditoría automática.** Un middleware registra toda acción que modifica datos
+  (POST/PATCH/PUT/DELETE) con usuario, ruta y estado HTTP, sin tocar cada handler.
+- **Métricas en la base, no en memoria.** El panel analítico se calcula con *aggregation
+  pipelines* de MongoDB (citas por estado, ausentismo, ingresos, top médicos).
 
 ## Seguridad
 

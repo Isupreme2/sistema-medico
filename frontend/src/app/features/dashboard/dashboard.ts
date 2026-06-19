@@ -41,15 +41,18 @@ export class Dashboard {
     switch (this.auth.role()) {
       case UserRole.ADMIN:
         return [
+          { icon: '📊', title: 'Panel analítico', desc: 'Métricas, ausentismo e ingresos', status: 'listo', link: '/admin/analitica' },
           { icon: '👨‍⚕️', title: 'Gestión de médicos', desc: 'Crear y administrar médicos', status: 'listo', link: '/admin/medicos' },
           { icon: '🏷️', title: 'Tipos de cita', desc: 'Catálogo de tipos y duraciones', status: 'listo', link: '/admin/tipos-cita' },
-          { icon: '📊', title: 'Dashboard analítico', desc: 'Métricas, ausentismo e ingresos', status: 'pronto' },
+          { icon: '🧾', title: 'Facturación', desc: 'Comprobantes y cobros', status: 'listo', link: '/admin/facturacion' },
+          { icon: '🛡️', title: 'Auditoría', desc: 'Bitácora de acciones del sistema', status: 'listo', link: '/admin/auditoria' },
         ];
       case UserRole.MEDICO:
         return [
           { icon: '🗓️', title: 'Mi agenda', desc: 'Citas con pacientes y su estado', status: 'listo', link: '/medico/agenda' },
           { icon: '⏰', title: 'Mi horario', desc: 'Configura tu horario y bloqueos', status: 'listo', link: '/medico/horario' },
           { icon: '💊', title: 'Recetas digitales', desc: 'Emite recetas desde tu agenda', status: 'listo', link: '/medico/agenda' },
+          { icon: '🧾', title: 'Facturación', desc: 'Factura tus consultas', status: 'listo', link: '/medico/facturas' },
         ];
       case UserRole.PACIENTE:
         return [
@@ -57,6 +60,7 @@ export class Dashboard {
           { icon: '📋', title: 'Mis citas', desc: 'Tus reservas y su historial', status: 'listo', link: '/paciente/mis-citas' },
           { icon: '🩺', title: 'Mi historial', desc: 'Consultas y signos vitales', status: 'listo', link: '/paciente/historial' },
           { icon: '💊', title: 'Mis recetas', desc: 'Descarga tus recetas en PDF', status: 'listo', link: '/paciente/mis-recetas' },
+          { icon: '🧾', title: 'Mis facturas', desc: 'Comprobantes y estado de pago', status: 'listo', link: '/paciente/mis-facturas' },
           { icon: '⚠️', title: 'Mis alergias', desc: 'Regístralas para tu seguridad', status: 'listo', link: '/paciente/alergias' },
         ];
       default:

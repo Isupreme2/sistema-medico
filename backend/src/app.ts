@@ -9,6 +9,7 @@ import swaggerUi from 'swagger-ui-express';
 import { env, isProd } from './config/env';
 import { swaggerSpec } from './config/swagger';
 import apiRoutes from './routes';
+import { auditTrail } from './middleware/audit';
 import { notFoundHandler, errorHandler } from './middleware/error';
 
 export function createApp(): Application {
@@ -33,6 +34,9 @@ export function createApp(): Application {
 
   // --- Logging de requests ---
   app.use(morgan(isProd ? 'combined' : 'dev'));
+
+  // --- Auditoría (registra acciones que modifican datos) ---
+  app.use(env.API_PREFIX, auditTrail);
 
   // --- Documentación (Swagger UI) ---
   app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

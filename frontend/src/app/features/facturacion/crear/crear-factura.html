@@ -1,0 +1,53 @@
+<h1>Emitir factura</h1>
+@if (nombrePaciente) {
+  <p class="lead">Paciente: <strong>{{ nombrePaciente }}</strong></p>
+}
+
+@if (emitida(); as f) {
+  <div class="card ok-box">
+    <p>✅ Factura <strong>{{ f.numero }}</strong> emitida por <strong>S/ {{ f.total.toFixed(2) }}</strong>.</p>
+    <div class="acciones">
+      <a class="btn primary" routerLink="/medico/facturas">Ver facturas</a>
+      <a class="btn ghost" routerLink="/medico/agenda">Volver a la agenda</a>
+    </div>
+  </div>
+} @else {
+  <form class="card form" [formGroup]="form" (ngSubmit)="emitir()">
+    <div formArrayName="items" class="items">
+      @for (item of items.controls; track $index) {
+        <div class="item" [formGroupName]="$index">
+          <input class="desc" formControlName="descripcion" placeholder="Descripción del servicio" />
+          <input class="cant" type="number" min="1" formControlName="cantidad" placeholder="Cant." />
+          <input class="precio" type="number" min="0" step="0.01" formControlName="precioUnitario" placeholder="Precio" />
+          <button type="button" class="rm" (click)="quitarItem($index)" [disabled]="items.length === 1">✕</button>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn ghost add" (click)="agregarItem()">+ Agregar ítem</button>
+
+    <div class="row">
+      <label class="field small">
+        <span>IGV %</span>
+        <input type="number" min="0" max="100" formControlName="impuestoPct" />
+      </label>
+      <label class="field">
+        <span>Notas</span>
+        <input formControlName="notas" placeholder="Opcional" />
+      </label>
+    </div>
+
+    <div class="totales">
+      <span>Subtotal: S/ {{ subtotal.toFixed(2) }}</span>
+      <span>IGV: S/ {{ impuesto.toFixed(2) }}</span>
+      <strong>Total: S/ {{ total.toFixed(2) }}</strong>
+    </div>
+
+    @if (error()) {
+      <div class="alert err">{{ error() }}</div>
+    }
+
+    <button class="btn primary" type="submit" [disabled]="saving()">
+      {{ saving() ? 'Emitiendo…' : 'Emitir factura' }}
+    </button>
+  </form>
+}

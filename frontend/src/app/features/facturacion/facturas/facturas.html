@@ -1,0 +1,55 @@
+<h1>{{ esPaciente ? 'Mis facturas' : 'Facturación' }}</h1>
+<p class="lead">
+  {{ esPaciente ? 'Tus comprobantes y su estado de pago.' : 'Comprobantes emitidos.' }}
+</p>
+
+@if (loading()) {
+  <p class="muted">Cargando…</p>
+} @else if (facturas().length === 0) {
+  <div class="card empty">No hay facturas todavía.</div>
+} @else {
+  <div class="lista">
+    @for (f of facturas(); track f._id) {
+      <div class="card factura" [class.anulada]="f.estado === 'anulada'">
+        <div class="head">
+          <div>
+            <strong>{{ f.numero }}</strong>
+            <small>{{ f.emitidaEn | date: 'dd/MM/yyyy' }}</small>
+          </div>
+          <span class="badge" [attr.data-estado]="f.estado">{{ estadoLabel(f.estado) }}</span>
+        </div>
+
+        <div class="meta">
+          @if (!esPaciente) {
+            <span>👤 {{ f.pacienteId.nombre }} {{ f.pacienteId.apellido }}</span>
+          }
+          @if (f.medicoId) {
+            <span>🩺 Dr(a). {{ f.medicoId.nombre }} {{ f.medicoId.apellido }}</span>
+          }
+        </div>
+
+        <ul class="items">
+          @for (it of f.items; track $index) {
+            <li>
+              <span>{{ it.cantidad }} × {{ it.descripcion }}</span>
+              <span>S/ {{ (it.cantidad * it.precioUnitario).toFixed(2) }}</span>
+            </li>
+          }
+        </ul>
+
+        <div class="totales">
+          <span>Subtotal: S/ {{ f.subtotal.toFixed(2) }}</span>
+          <span>IGV ({{ f.impuestoPct }}%): S/ {{ f.impuesto.toFixed(2) }}</span>
+          <strong>Total: S/ {{ f.total.toFixed(2) }}</strong>
+        </div>
+
+        @if (esAdmin && f.estado === 'pendiente') {
+          <div class="acciones">
+            <button class="btn-sm ok" (click)="pagar(f)">Marcar pagada</button>
+            <button class="btn-sm danger" (click)="anular(f)">Anular</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

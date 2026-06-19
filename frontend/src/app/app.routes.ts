@@ -36,6 +36,24 @@ export const routes: Routes = [
           import('./features/admin/tipos-cita/tipos-cita').then((m) => m.AdminTiposCita),
       },
       {
+        path: 'admin/analitica',
+        canActivate: [roleGuard(UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/admin/analitica/analitica').then((m) => m.Analitica),
+      },
+      {
+        path: 'admin/facturacion',
+        canActivate: [roleGuard(UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/facturacion/facturas/facturas').then((m) => m.Facturas),
+      },
+      {
+        path: 'admin/auditoria',
+        canActivate: [roleGuard(UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/admin/auditoria/auditoria').then((m) => m.Auditoria),
+      },
+      {
         path: 'medico/horario',
         canActivate: [roleGuard(UserRole.MEDICO)],
         loadComponent: () =>
@@ -66,6 +84,18 @@ export const routes: Routes = [
           import('./features/medico/recetar/recetar').then((m) => m.Recetar),
       },
       {
+        path: 'medico/facturas',
+        canActivate: [roleGuard(UserRole.MEDICO)],
+        loadComponent: () =>
+          import('./features/facturacion/facturas/facturas').then((m) => m.Facturas),
+      },
+      {
+        path: 'facturar/:appointmentId',
+        canActivate: [roleGuard(UserRole.MEDICO, UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/facturacion/crear/crear-factura').then((m) => m.CrearFactura),
+      },
+      {
         path: 'paciente/historial',
         canActivate: [roleGuard(UserRole.PACIENTE)],
         loadComponent: () =>
@@ -76,6 +106,12 @@ export const routes: Routes = [
         canActivate: [roleGuard(UserRole.PACIENTE)],
         loadComponent: () =>
           import('./features/paciente/mis-recetas/mis-recetas').then((m) => m.MisRecetas),
+      },
+      {
+        path: 'paciente/mis-facturas',
+        canActivate: [roleGuard(UserRole.PACIENTE)],
+        loadComponent: () =>
+          import('./features/facturacion/facturas/facturas').then((m) => m.Facturas),
       },
       {
         path: 'paciente/alergias',

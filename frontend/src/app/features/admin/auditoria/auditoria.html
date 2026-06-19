@@ -1,0 +1,63 @@
+<h1>Auditoría</h1>
+<p class="lead">Bitácora de acciones que modifican datos en el sistema.</p>
+
+<div class="filtros card">
+  <label class="field">
+    <span>Método</span>
+    <select [value]="metodo()" (change)="filtrarMetodo($any($event.target).value)">
+      <option value="">Todos</option>
+      <option value="POST">POST</option>
+      <option value="PATCH">PATCH</option>
+      <option value="PUT">PUT</option>
+      <option value="DELETE">DELETE</option>
+    </select>
+  </label>
+  <label class="field">
+    <span>Rol</span>
+    <select [value]="rol()" (change)="filtrarRol($any($event.target).value)">
+      <option value="">Todos</option>
+      <option value="admin">Admin</option>
+      <option value="medico">Médico</option>
+      <option value="paciente">Paciente</option>
+    </select>
+  </label>
+</div>
+
+@if (loading()) {
+  <p class="muted">Cargando…</p>
+} @else if (page(); as p) {
+  @if (p.eventos.length === 0) {
+    <div class="card empty">Sin eventos para los filtros seleccionados.</div>
+  } @else {
+    <div class="card tabla-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Fecha</th>
+            <th>Usuario</th>
+            <th>Rol</th>
+            <th>Acción</th>
+            <th>Estado</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (e of p.eventos; track e._id) {
+            <tr>
+              <td>{{ e.createdAt | date: 'dd/MM/yy HH:mm:ss' }}</td>
+              <td>{{ e.userEmail || '—' }}</td>
+              <td>{{ e.role || '—' }}</td>
+              <td><span class="metodo" [attr.data-m]="e.method">{{ e.method }}</span> {{ e.path }}</td>
+              <td><span class="status" [class.ok]="e.statusCode < 400" [class.err]="e.statusCode >= 400">{{ e.statusCode }}</span></td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="paginacion">
+      <button (click)="anterior()" [disabled]="p.page <= 1">‹ Anterior</button>
+      <span>Página {{ p.page }} de {{ p.paginas || 1 }} · {{ p.total }} eventos</span>
+      <button (click)="siguiente()" [disabled]="p.page >= p.paginas">Siguiente ›</button>
+    </div>
+  }
+}

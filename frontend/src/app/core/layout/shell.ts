@@ -46,14 +46,18 @@ export class Shell implements OnInit {
       case UserRole.ADMIN:
         return [
           ...base,
+          { label: 'Analítica', path: '/admin/analitica' },
           { label: 'Médicos', path: '/admin/medicos' },
           { label: 'Tipos de cita', path: '/admin/tipos-cita' },
+          { label: 'Facturación', path: '/admin/facturacion' },
+          { label: 'Auditoría', path: '/admin/auditoria' },
         ];
       case UserRole.MEDICO:
         return [
           ...base,
           { label: 'Mi agenda', path: '/medico/agenda' },
           { label: 'Mi horario', path: '/medico/horario' },
+          { label: 'Facturación', path: '/medico/facturas' },
         ];
       case UserRole.PACIENTE:
         return [
@@ -62,6 +66,7 @@ export class Shell implements OnInit {
           { label: 'Mis citas', path: '/paciente/mis-citas' },
           { label: 'Mi historial', path: '/paciente/historial' },
           { label: 'Mis recetas', path: '/paciente/mis-recetas' },
+          { label: 'Mis facturas', path: '/paciente/mis-facturas' },
           { label: 'Mis alergias', path: '/paciente/alergias' },
         ];
       default:

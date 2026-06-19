@@ -6,6 +6,9 @@ import appointmentRoutes from '../modules/appointment/appointment.routes';
 import recordRoutes from '../modules/record/record.routes';
 import prescriptionRoutes from '../modules/prescription/prescription.routes';
 import notificationRoutes from '../modules/notification/notification.routes';
+import invoiceRoutes from '../modules/invoice/invoice.routes';
+import analyticsRoutes from '../modules/analytics/analytics.routes';
+import auditRoutes from '../modules/audit/audit.routes';
 
 const router = Router();
 
@@ -33,5 +36,8 @@ router.use('/appointments', appointmentRoutes);
 router.use('/records', recordRoutes);
 router.use('/prescriptions', prescriptionRoutes);
 router.use('/notifications', notificationRoutes);
+router.use('/invoices', invoiceRoutes);
+router.use('/analytics', analyticsRoutes);
+router.use('/audit', auditRoutes);
 
 export default router;
