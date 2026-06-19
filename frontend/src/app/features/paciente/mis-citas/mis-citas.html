@@ -1,0 +1,29 @@
+<h1>Mis citas</h1>
+<p class="lead">Tus citas reservadas y su historial.</p>
+
+@if (loading()) {
+  <p class="muted">Cargando…</p>
+} @else if (citas().length === 0) {
+  <div class="card empty">Aún no tienes citas. ¡Reserva una!</div>
+} @else {
+  <div class="lista">
+    @for (c of citas(); track c._id) {
+      <div class="card cita" [class.cancelada]="c.estado === 'cancelada'">
+        <div class="cita-fecha">
+          <span class="dia">{{ c.fechaHora | date: 'EEE dd/MM' }}</span>
+          <span class="hora">{{ c.fechaHora | date: 'HH:mm' }}</span>
+        </div>
+        <div class="cita-info">
+          <strong>Dr(a). {{ c.medicoId.nombre }} {{ c.medicoId.apellido }}</strong>
+          @if (c.motivo) {
+            <small>{{ c.motivo }}</small>
+          }
+        </div>
+        <span class="badge" [attr.data-estado]="c.estado">{{ estadoLabel(c.estado) }}</span>
+        @if (c.estado === 'reservada') {
+          <button class="link-btn danger" (click)="cancelar(c)">Cancelar</button>
+        }
+      </div>
+    }
+  </div>
+}

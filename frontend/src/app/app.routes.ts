@@ -41,6 +41,24 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/medico/horario/horario').then((m) => m.MedicoHorario),
       },
+      {
+        path: 'medico/agenda',
+        canActivate: [roleGuard(UserRole.MEDICO)],
+        loadComponent: () =>
+          import('./features/medico/agenda/agenda').then((m) => m.MedicoAgenda),
+      },
+      {
+        path: 'paciente/reservar',
+        canActivate: [roleGuard(UserRole.PACIENTE)],
+        loadComponent: () =>
+          import('./features/paciente/reservar/reservar').then((m) => m.Reservar),
+      },
+      {
+        path: 'paciente/mis-citas',
+        canActivate: [roleGuard(UserRole.PACIENTE)],
+        loadComponent: () =>
+          import('./features/paciente/mis-citas/mis-citas').then((m) => m.MisCitas),
+      },
     ],
   },
   { path: '**', redirectTo: '' },

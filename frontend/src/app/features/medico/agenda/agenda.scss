@@ -1,0 +1,26 @@
+.acciones {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-sm {
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+
+  &:hover {
+    opacity: 0.85;
+  }
+  &.ok {
+    background: #dcfce7;
+    color: #166534;
+  }
+  &.warn {
+    background: #fef9c3;
+    color: #ca8a04;
+  }
+}

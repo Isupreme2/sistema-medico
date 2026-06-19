@@ -1,0 +1,55 @@
+<h1>Reservar cita</h1>
+<p class="lead">Elige un médico y un día; los horarios ocupados aparecen bloqueados.</p>
+
+<div class="controls card">
+  <label class="field">
+    <span>Médico</span>
+    <select [value]="medicoId()" (change)="onMedicoChange($any($event.target).value)">
+      @for (m of medicos(); track m._id) {
+        <option [value]="m.userId._id">
+          {{ m.userId.nombre }} {{ m.userId.apellido }} — {{ m.especialidad }}
+        </option>
+      }
+    </select>
+  </label>
+  <label class="field">
+    <span>Fecha</span>
+    <input type="date" [value]="fecha()" (change)="onFechaChange($any($event.target).value)" />
+  </label>
+  <span class="realtime">🟢 En vivo</span>
+</div>
+
+@if (msg()) {
+  <div class="alert ok">{{ msg() }}</div>
+}
+@if (error()) {
+  <div class="alert err">{{ error() }}</div>
+}
+
+@if (loading()) {
+  <p class="muted">Cargando disponibilidad…</p>
+} @else if (medicos().length === 0) {
+  <div class="card empty">No hay médicos disponibles todavía.</div>
+} @else if (slots().length === 0) {
+  <div class="card empty">El médico no atiende ese día. Prueba con otra fecha.</div>
+} @else if (!hayDisponibles()) {
+  <div class="card empty">No quedan horarios libres ese día. 😔</div>
+} @else {
+  <div class="slots">
+    @for (slot of slots(); track slot.fechaHora) {
+      <button
+        class="slot"
+        [class.ocupado]="!slot.disponible"
+        [disabled]="!slot.disponible"
+        (click)="reservar(slot)"
+        [title]="slot.disponible ? 'Reservar ' + slot.hora : 'Ocupado'"
+      >
+        {{ slot.hora }}
+      </button>
+    }
+  </div>
+  <p class="leyenda">
+    <span class="muestra libre"></span> Disponible
+    <span class="muestra ocupada"></span> Ocupado
+  </p>
+}

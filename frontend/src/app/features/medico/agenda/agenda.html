@@ -1,0 +1,32 @@
+<h1>Mi agenda</h1>
+<p class="lead">Tus citas con pacientes. Marca su estado tras la consulta.</p>
+
+@if (loading()) {
+  <p class="muted">Cargando…</p>
+} @else if (citas().length === 0) {
+  <div class="card empty">No tienes citas agendadas.</div>
+} @else {
+  <div class="lista">
+    @for (c of citas(); track c._id) {
+      <div class="card cita" [class.cancelada]="c.estado === 'cancelada'">
+        <div class="cita-fecha">
+          <span class="dia">{{ c.fechaHora | date: 'EEE dd/MM' }}</span>
+          <span class="hora">{{ c.fechaHora | date: 'HH:mm' }}</span>
+        </div>
+        <div class="cita-info">
+          <strong>{{ c.pacienteId.nombre }} {{ c.pacienteId.apellido }}</strong>
+          @if (c.motivo) {
+            <small>{{ c.motivo }}</small>
+          }
+        </div>
+        <span class="badge" [attr.data-estado]="c.estado">{{ estadoLabel(c.estado) }}</span>
+        @if (c.estado === 'reservada') {
+          <div class="acciones">
+            <button class="btn-sm ok" (click)="marcar(c, 'atendida')">Atendida</button>
+            <button class="btn-sm warn" (click)="marcar(c, 'no_asistio')">No asistió</button>
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

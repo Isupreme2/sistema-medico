@@ -43,7 +43,17 @@ export class Shell {
           { label: 'Tipos de cita', path: '/admin/tipos-cita' },
         ];
       case UserRole.MEDICO:
-        return [...base, { label: 'Mi horario', path: '/medico/horario' }];
+        return [
+          ...base,
+          { label: 'Mi agenda', path: '/medico/agenda' },
+          { label: 'Mi horario', path: '/medico/horario' },
+        ];
+      case UserRole.PACIENTE:
+        return [
+          ...base,
+          { label: 'Reservar cita', path: '/paciente/reservar' },
+          { label: 'Mis citas', path: '/paciente/mis-citas' },
+        ];
       default:
         return base;
     }
