@@ -1,0 +1,58 @@
+<h1>Historia clínica</h1>
+<p class="lead">Consultas registradas y evolución de signos vitales.</p>
+
+@if (loading()) {
+  <p class="muted">Cargando…</p>
+} @else if (records().length === 0) {
+  <div class="card empty">No hay consultas registradas todavía.</div>
+} @else {
+  @if (chartsConDatos().length > 0) {
+    <section class="charts">
+      @for (c of chartsConDatos(); track c.titulo) {
+        <app-line-chart [titulo]="c.titulo" [labels]="labels()" [series]="c.series" />
+      }
+    </section>
+  }
+
+  <h2>Consultas</h2>
+  <div class="lista">
+    @for (r of records(); track r._id) {
+      <div class="card consulta">
+        <div class="cabecera">
+          <div>
+            <strong>{{ r.diagnostico }}</strong>
+            @if (r.cie10) {
+              <span class="cie">CIE-10: {{ r.cie10 }}</span>
+            }
+          </div>
+          <span class="fecha">{{ r.fecha | date: 'dd/MM/yyyy HH:mm' }}</span>
+        </div>
+
+        <div class="meta">
+          Atendido por Dr(a). {{ r.medicoId.nombre }} {{ r.medicoId.apellido }}
+          @if (r.motivo) {
+            · Motivo: {{ r.motivo }}
+          }
+        </div>
+
+        @if (r.notas) {
+          <p class="bloque"><b>Notas:</b> {{ r.notas }}</p>
+        }
+        @if (r.tratamiento) {
+          <p class="bloque"><b>Tratamiento:</b> {{ r.tratamiento }}</p>
+        }
+
+        @if (r.signosVitales; as sv) {
+          <div class="vitales">
+            @if (sv.peso) { <span>Peso: {{ sv.peso }} kg</span> }
+            @if (sv.presionSistolica) { <span>PA: {{ sv.presionSistolica }}/{{ sv.presionDiastolica }}</span> }
+            @if (sv.frecuenciaCardiaca) { <span>FC: {{ sv.frecuenciaCardiaca }} lpm</span> }
+            @if (sv.temperatura) { <span>T°: {{ sv.temperatura }}°C</span> }
+            @if (sv.glucosa) { <span>Glucosa: {{ sv.glucosa }}</span> }
+            @if (sv.saturacionO2) { <span>SatO₂: {{ sv.saturacionO2 }}%</span> }
+          </div>
+        }
+      </div>
+    }
+  </div>
+}

@@ -113,7 +113,7 @@ Documentación interactiva: **http://localhost:4000/docs**
 - [x] **Fase 1** — Auth (JWT + refresh) + RBAC + 2FA
 - [x] **Fase 2** — Médicos, horarios, bloqueos y tipos de cita
 - [ ] **Fase 3** — Agenda atómica + calendario en tiempo real + lista de espera
-- [~] **Fase 4** — Historia clínica + signos vitales + CIE-10 *(backend listo; frontend + adjuntos/gráficas pendientes)*
+- [x] **Fase 4** — Historia clínica + signos vitales + CIE-10 + gráficas *(adjuntos de archivos pendientes como extra)*
 - [ ] **Fase 5** — Recetas + PDF + QR + alerta de alergias/interacciones
 - [ ] **Fase 6** — Recordatorios email + notificaciones + portal del paciente
 - [ ] **Fase 7** — Teleconsulta (video) + formulario pre-consulta

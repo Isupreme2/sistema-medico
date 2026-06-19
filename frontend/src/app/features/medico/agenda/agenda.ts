@@ -1,11 +1,12 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { Appointment, AppointmentStatus } from '../../../core/models/appointment.model';
 
 @Component({
   selector: 'app-medico-agenda',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './agenda.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../../paciente/mis-citas/mis-citas.scss', './agenda.scss'],

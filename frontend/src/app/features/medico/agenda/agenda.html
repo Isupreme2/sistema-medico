@@ -20,12 +20,18 @@
           }
         </div>
         <span class="badge" [attr.data-estado]="c.estado">{{ estadoLabel(c.estado) }}</span>
-        @if (c.estado === 'reservada') {
-          <div class="acciones">
-            <button class="btn-sm ok" (click)="marcar(c, 'atendida')">Atendida</button>
+        <div class="acciones">
+          @if (c.estado === 'reservada') {
+            <a
+              class="btn-sm primary"
+              [routerLink]="['/medico/consulta', c.pacienteId._id]"
+              [queryParams]="{ citaId: c._id, nombre: c.pacienteId.nombre + ' ' + c.pacienteId.apellido }"
+              >Atender</a
+            >
             <button class="btn-sm warn" (click)="marcar(c, 'no_asistio')">No asistió</button>
-          </div>
-        }
+          }
+          <a class="btn-sm ghost" [routerLink]="['/medico/historial', c.pacienteId._id]">Historial</a>
+        </div>
       </div>
     }
   </div>

@@ -48,6 +48,24 @@ export const routes: Routes = [
           import('./features/medico/agenda/agenda').then((m) => m.MedicoAgenda),
       },
       {
+        path: 'medico/consulta/:pacienteId',
+        canActivate: [roleGuard(UserRole.MEDICO)],
+        loadComponent: () =>
+          import('./features/medico/consulta/consulta').then((m) => m.Consulta),
+      },
+      {
+        path: 'medico/historial/:id',
+        canActivate: [roleGuard(UserRole.MEDICO)],
+        loadComponent: () =>
+          import('./features/historial/historial').then((m) => m.Historial),
+      },
+      {
+        path: 'paciente/historial',
+        canActivate: [roleGuard(UserRole.PACIENTE)],
+        loadComponent: () =>
+          import('./features/historial/historial').then((m) => m.Historial),
+      },
+      {
         path: 'paciente/reservar',
         canActivate: [roleGuard(UserRole.PACIENTE)],
         loadComponent: () =>

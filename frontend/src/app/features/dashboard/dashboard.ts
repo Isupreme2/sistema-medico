@@ -55,6 +55,7 @@ export class Dashboard {
         return [
           { icon: '📅', title: 'Reservar cita', desc: 'Calendario con horarios disponibles', status: 'listo', link: '/paciente/reservar' },
           { icon: '📋', title: 'Mis citas', desc: 'Tus reservas y su historial', status: 'listo', link: '/paciente/mis-citas' },
+          { icon: '🩺', title: 'Mi historial', desc: 'Consultas y signos vitales', status: 'listo', link: '/paciente/historial' },
           { icon: '💊', title: 'Mis recetas', desc: 'Descarga tus recetas en PDF', status: 'pronto' },
         ];
       default:

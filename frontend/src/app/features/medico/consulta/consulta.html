@@ -1,0 +1,56 @@
+<h1>Nueva consulta</h1>
+<p class="lead">Paciente: <strong>{{ pacienteNombre }}</strong></p>
+
+<form class="card" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  <h2>Datos clínicos</h2>
+  <div class="grid">
+    <label class="field grow">
+      <span>Motivo de consulta</span>
+      <input formControlName="motivo" placeholder="Ej. Dolor de cabeza" />
+    </label>
+    <label class="field grow">
+      <span>Diagnóstico *</span>
+      <input formControlName="diagnostico" placeholder="Ej. Cefalea tensional" />
+      @if (form.controls.diagnostico.touched && form.controls.diagnostico.invalid) {
+        <small class="err">El diagnóstico es obligatorio</small>
+      }
+    </label>
+    <label class="field">
+      <span>Código CIE-10</span>
+      <input formControlName="cie10" placeholder="Ej. G44.2" />
+    </label>
+  </div>
+
+  <div class="grid">
+    <label class="field grow">
+      <span>Notas</span>
+      <textarea formControlName="notas" rows="2"></textarea>
+    </label>
+    <label class="field grow">
+      <span>Tratamiento</span>
+      <textarea formControlName="tratamiento" rows="2"></textarea>
+    </label>
+  </div>
+
+  <h2>Signos vitales</h2>
+  <div class="grid vitales">
+    <label class="field"><span>Peso (kg)</span><input type="number" formControlName="peso" /></label>
+    <label class="field"><span>Talla (cm)</span><input type="number" formControlName="talla" /></label>
+    <label class="field"><span>P. sistólica</span><input type="number" formControlName="presionSistolica" /></label>
+    <label class="field"><span>P. diastólica</span><input type="number" formControlName="presionDiastolica" /></label>
+    <label class="field"><span>Frec. cardíaca</span><input type="number" formControlName="frecuenciaCardiaca" /></label>
+    <label class="field"><span>Temperatura (°C)</span><input type="number" step="0.1" formControlName="temperatura" /></label>
+    <label class="field"><span>Glucosa (mg/dL)</span><input type="number" formControlName="glucosa" /></label>
+    <label class="field"><span>SatO₂ (%)</span><input type="number" formControlName="saturacionO2" /></label>
+  </div>
+
+  @if (error()) {
+    <div class="alert err">{{ error() }}</div>
+  }
+
+  <div class="form-actions">
+    <button type="submit" class="btn-primary" [disabled]="saving()">
+      {{ saving() ? 'Guardando…' : 'Guardar consulta' }}
+    </button>
+  </div>
+</form>

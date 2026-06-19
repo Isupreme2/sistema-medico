@@ -53,6 +53,7 @@ export class Shell {
           ...base,
           { label: 'Reservar cita', path: '/paciente/reservar' },
           { label: 'Mis citas', path: '/paciente/mis-citas' },
+          { label: 'Mi historial', path: '/paciente/historial' },
         ];
       default:
         return base;
