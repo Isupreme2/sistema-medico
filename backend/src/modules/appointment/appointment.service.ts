@@ -7,23 +7,7 @@ import { UserRole } from '../../constants/roles';
 import { AppError } from '../../utils/AppError';
 import { AccessTokenPayload } from '../../utils/jwt';
 import { CreateAppointmentInput, UpdateStatusInput } from './appointment.validation';
-
-// ----- Helpers de tiempo -----
-const toMinutes = (hhmm: string): number => {
-  const [h, m] = hhmm.split(':').map(Number);
-  return h * 60 + m;
-};
-const toHHmm = (min: number): string =>
-  `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
-
-/** Construye un Date a partir de "YYYY-MM-DD" + "HH:mm" (hora local del servidor). */
-const buildDate = (fecha: string, hhmm: string): Date => new Date(`${fecha}T${hhmm}:00`);
-
-export interface Slot {
-  hora: string; // "HH:mm"
-  fechaHora: string; // ISO
-  disponible: boolean;
-}
+import { buildDate, computeSlots, dentroDeFranja } from '../../utils/slots';
 
 /**
  * Genera la disponibilidad de un médico para una fecha:
@@ -59,27 +43,15 @@ export async function getAvailability(medicoId: string, fecha: string) {
     hasta: { $gt: dayStart },
   });
 
-  const ahora = Date.now();
-  const slots: Slot[] = [];
+  const slots = computeSlots({
+    fecha,
+    franjasDelDia: franjas,
+    duracionSlotMin: dur,
+    ocupados,
+    bloqueos,
+    ahora: Date.now(),
+  });
 
-  for (const franja of franjas) {
-    const inicio = toMinutes(franja.horaInicio);
-    const fin = toMinutes(franja.horaFin);
-    for (let min = inicio; min + dur <= fin; min += dur) {
-      const hora = toHHmm(min);
-      const fechaHora = buildDate(fecha, hora);
-      const t = fechaHora.getTime();
-
-      const enBloqueo = bloqueos.some(
-        (b) => t < b.hasta.getTime() && t + dur * 60_000 > b.desde.getTime(),
-      );
-      const disponible = !ocupados.has(t) && !enBloqueo && t > ahora;
-
-      slots.push({ hora, fechaHora: fechaHora.toISOString(), disponible });
-    }
-  }
-
-  slots.sort((a, b) => a.hora.localeCompare(b.hora));
   return { fecha, medicoId, duracionSlotMin: dur, slots };
 }
 
@@ -109,13 +81,7 @@ export async function reservar(pacienteId: string, input: CreateAppointmentInput
   // Validación de que el slot cae dentro de una franja de atención
   const diaSemana = fechaHora.getDay();
   const minutos = fechaHora.getHours() * 60 + fechaHora.getMinutes();
-  const dentroDeFranja = profile.horarios.some(
-    (h) =>
-      h.diaSemana === diaSemana &&
-      minutos >= toMinutes(h.horaInicio) &&
-      minutos + duracionMin <= toMinutes(h.horaFin),
-  );
-  if (!dentroDeFranja) {
+  if (!dentroDeFranja(diaSemana, minutos, duracionMin, profile.horarios)) {
     throw AppError.unprocessable('Ese horario no está dentro de la atención del médico');
   }
 
