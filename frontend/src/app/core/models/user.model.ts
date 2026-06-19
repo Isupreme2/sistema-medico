@@ -11,6 +11,7 @@ export interface User {
   nombre: string;
   apellido: string;
   telefono?: string;
+  alergias?: string[];
   isActive: boolean;
   twoFactor: { enabled: boolean };
   createdAt: string;

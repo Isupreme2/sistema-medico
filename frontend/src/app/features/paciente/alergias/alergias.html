@@ -1,0 +1,38 @@
+<h1>Mis alergias</h1>
+<p class="lead">Registra tus alergias a medicamentos. El sistema alertará al médico al recetarte.</p>
+
+<div class="card">
+  <div class="add-row">
+    <input
+      type="text"
+      placeholder="Ej. Penicilina"
+      [value]="nueva()"
+      (input)="nueva.set($any($event.target).value)"
+      (keyup.enter)="agregar(nueva())"
+    />
+    <button class="btn-secondary" (click)="agregar(nueva())">+ Agregar</button>
+  </div>
+
+  @if (alergias().length === 0) {
+    <p class="muted">No has registrado alergias.</p>
+  } @else {
+    <div class="chips">
+      @for (a of alergias(); track a) {
+        <span class="chip">
+          {{ a }}
+          <button class="x" (click)="quitar(a)" aria-label="Quitar">×</button>
+        </span>
+      }
+    </div>
+  }
+
+  @if (msg()) {
+    <div class="alert ok">{{ msg() }}</div>
+  }
+
+  <div class="actions">
+    <button class="btn-primary" [disabled]="saving()" (click)="guardar()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</div>

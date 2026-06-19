@@ -60,10 +60,28 @@ export const routes: Routes = [
           import('./features/historial/historial').then((m) => m.Historial),
       },
       {
+        path: 'medico/recetar/:pacienteId',
+        canActivate: [roleGuard(UserRole.MEDICO)],
+        loadComponent: () =>
+          import('./features/medico/recetar/recetar').then((m) => m.Recetar),
+      },
+      {
         path: 'paciente/historial',
         canActivate: [roleGuard(UserRole.PACIENTE)],
         loadComponent: () =>
           import('./features/historial/historial').then((m) => m.Historial),
+      },
+      {
+        path: 'paciente/mis-recetas',
+        canActivate: [roleGuard(UserRole.PACIENTE)],
+        loadComponent: () =>
+          import('./features/paciente/mis-recetas/mis-recetas').then((m) => m.MisRecetas),
+      },
+      {
+        path: 'paciente/alergias',
+        canActivate: [roleGuard(UserRole.PACIENTE)],
+        loadComponent: () =>
+          import('./features/paciente/alergias/alergias').then((m) => m.Alergias),
       },
       {
         path: 'paciente/reservar',

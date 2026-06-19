@@ -49,14 +49,15 @@ export class Dashboard {
         return [
           { icon: '🗓️', title: 'Mi agenda', desc: 'Citas con pacientes y su estado', status: 'listo', link: '/medico/agenda' },
           { icon: '⏰', title: 'Mi horario', desc: 'Configura tu horario y bloqueos', status: 'listo', link: '/medico/horario' },
-          { icon: '💊', title: 'Recetas digitales', desc: 'Emitir recetas con QR de verificación', status: 'pronto' },
+          { icon: '💊', title: 'Recetas digitales', desc: 'Emite recetas desde tu agenda', status: 'listo', link: '/medico/agenda' },
         ];
       case UserRole.PACIENTE:
         return [
           { icon: '📅', title: 'Reservar cita', desc: 'Calendario con horarios disponibles', status: 'listo', link: '/paciente/reservar' },
           { icon: '📋', title: 'Mis citas', desc: 'Tus reservas y su historial', status: 'listo', link: '/paciente/mis-citas' },
           { icon: '🩺', title: 'Mi historial', desc: 'Consultas y signos vitales', status: 'listo', link: '/paciente/historial' },
-          { icon: '💊', title: 'Mis recetas', desc: 'Descarga tus recetas en PDF', status: 'pronto' },
+          { icon: '💊', title: 'Mis recetas', desc: 'Descarga tus recetas en PDF', status: 'listo', link: '/paciente/mis-recetas' },
+          { icon: '⚠️', title: 'Mis alergias', desc: 'Regístralas para tu seguridad', status: 'listo', link: '/paciente/alergias' },
         ];
       default:
         return [];

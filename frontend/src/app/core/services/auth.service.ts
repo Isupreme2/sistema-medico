@@ -1,6 +1,6 @@
 import { Injectable, computed, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, tap } from 'rxjs';
+import { Observable, map, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import {
   ApiResponse,
@@ -63,6 +63,18 @@ export class AuthService {
     return this.http
       .get<ApiResponse<{ user: User }>>(`${this.api}/me`)
       .pipe(tap((res) => this._user.set(res.data.user)));
+  }
+
+  updateMe(payload: { telefono?: string; alergias?: string[] }): Observable<User> {
+    return this.http
+      .patch<ApiResponse<{ user: User }>>(`${this.api}/me`, payload)
+      .pipe(
+        tap((res) => {
+          this._user.set(res.data.user);
+          localStorage.setItem(USER_KEY, JSON.stringify(res.data.user));
+        }),
+        map((res) => res.data.user),
+      );
   }
 
   logout(): Observable<unknown> {

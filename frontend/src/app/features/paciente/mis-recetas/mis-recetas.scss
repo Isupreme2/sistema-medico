@@ -1,0 +1,84 @@
+:host {
+  display: block;
+}
+
+h1 {
+  margin: 0;
+  color: #0f172a;
+}
+.lead {
+  margin: 0.3rem 0 1.5rem;
+  color: #64748b;
+}
+
+.card {
+  background: #fff;
+  border-radius: 14px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  padding: 1.1rem 1.25rem;
+}
+.muted {
+  color: #64748b;
+}
+.empty {
+  text-align: center;
+  color: #64748b;
+}
+
+.lista {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.receta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+
+  .cabecera {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+  .codigo {
+    color: #2563eb;
+    font-family: monospace;
+    font-size: 1rem;
+  }
+  .fecha {
+    color: #94a3b8;
+    font-size: 0.82rem;
+  }
+  .medico {
+    display: block;
+    color: #475569;
+    font-size: 0.85rem;
+    margin-top: 0.2rem;
+  }
+  .meds {
+    margin: 0.6rem 0 0;
+    padding-left: 1.1rem;
+    color: #334155;
+    font-size: 0.85rem;
+    li {
+      margin-bottom: 0.15rem;
+    }
+  }
+}
+
+.btn-pdf {
+  border: none;
+  background: #2563eb;
+  color: #fff;
+  padding: 0.55rem 1rem;
+  border-radius: 9px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+  white-space: nowrap;
+  &:hover {
+    background: #1d4ed8;
+  }
+}

@@ -1,0 +1,28 @@
+<h1>Mis recetas</h1>
+<p class="lead">Tus recetas digitales. Descárgalas en PDF con su código de verificación.</p>
+
+@if (loading()) {
+  <p class="muted">Cargando…</p>
+} @else if (recetas().length === 0) {
+  <div class="card empty">Aún no tienes recetas emitidas.</div>
+} @else {
+  <div class="lista">
+    @for (r of recetas(); track r._id) {
+      <div class="card receta">
+        <div class="info">
+          <div class="cabecera">
+            <strong class="codigo">{{ r.codigo }}</strong>
+            <span class="fecha">{{ r.emitidaEn | date: 'dd/MM/yyyy' }}</span>
+          </div>
+          <span class="medico">Dr(a). {{ r.medicoId.nombre }} {{ r.medicoId.apellido }}</span>
+          <ul class="meds">
+            @for (m of r.medicamentos; track $index) {
+              <li>{{ m.nombre }} — {{ m.dosis }} ({{ m.frecuencia }}, {{ m.duracion }})</li>
+            }
+          </ul>
+        </div>
+        <button class="btn-pdf" (click)="descargar(r)">⬇ PDF</button>
+      </div>
+    }
+  </div>
+}

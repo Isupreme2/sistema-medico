@@ -1,0 +1,81 @@
+<h1>Emitir receta</h1>
+<p class="lead">Paciente: <strong>{{ pacienteNombre }}</strong></p>
+
+@if (emitida(); as r) {
+  <!-- ===== Receta emitida ===== -->
+  <div class="card exito">
+    <div class="check">✓</div>
+    <h2>Receta emitida</h2>
+    <p>Código: <strong>{{ r.codigo }}</strong></p>
+    <div class="acciones">
+      <button class="btn-primary" (click)="descargar()">Descargar PDF</button>
+      <a class="btn-ghost" routerLink="/medico/agenda">Volver a la agenda</a>
+    </div>
+  </div>
+} @else {
+  <!-- ===== Alerta de seguridad ===== -->
+  @if (alerta(); as a) {
+    <div class="card alerta">
+      <h3>⚠️ Alertas de seguridad farmacológica</h3>
+      @if (a.alergias.length) {
+        <div class="grupo">
+          <strong>Alergias del paciente:</strong>
+          <ul>
+            @for (x of a.alergias; track $index) {
+              <li>{{ x.medicamento }} — alérgico a <b>{{ x.alergia }}</b></li>
+            }
+          </ul>
+        </div>
+      }
+      @if (a.interacciones.length) {
+        <div class="grupo">
+          <strong>Interacciones:</strong>
+          <ul>
+            @for (x of a.interacciones; track $index) {
+              <li>{{ x.entre[0] }} + {{ x.entre[1] }}: {{ x.descripcion }}</li>
+            }
+          </ul>
+        </div>
+      }
+      <p class="confirma">¿Deseas emitir la receta de todas formas bajo tu responsabilidad?</p>
+      <div class="acciones">
+        <button class="btn-danger" [disabled]="saving()" (click)="emitir(true)">
+          Confirmar y emitir igual
+        </button>
+        <button class="btn-ghost" (click)="alerta.set(null)">Revisar</button>
+      </div>
+    </div>
+  }
+
+  <!-- ===== Formulario ===== -->
+  <form class="card" [formGroup]="form" (ngSubmit)="emitir(false)" novalidate>
+    <h2>Medicamentos</h2>
+    <div formArrayName="medicamentos">
+      @for (med of medicamentos.controls; track $index) {
+        <div class="med-row" [formGroupName]="$index">
+          <input formControlName="nombre" placeholder="Medicamento" />
+          <input formControlName="dosis" placeholder="Dosis (500mg)" />
+          <input formControlName="frecuencia" placeholder="Frecuencia (c/8h)" />
+          <input formControlName="duracion" placeholder="Duración (7 días)" />
+          <button type="button" class="x" (click)="removeMed($index)" [disabled]="medicamentos.length === 1">×</button>
+        </div>
+      }
+    </div>
+    <button type="button" class="btn-secondary" (click)="addMed()">+ Otro medicamento</button>
+
+    <label class="field">
+      <span>Indicaciones generales</span>
+      <textarea formControlName="indicaciones" rows="2" placeholder="Ej. Tomar con alimentos"></textarea>
+    </label>
+
+    @if (error()) {
+      <div class="alert err">{{ error() }}</div>
+    }
+
+    <div class="acciones">
+      <button type="submit" class="btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Emitiendo…' : 'Emitir receta' }}
+      </button>
+    </div>
+  </form>
+}

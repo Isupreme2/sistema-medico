@@ -30,6 +30,12 @@
             >
             <button class="btn-sm warn" (click)="marcar(c, 'no_asistio')">No asistió</button>
           }
+          <a
+            class="btn-sm accent"
+            [routerLink]="['/medico/recetar', c.pacienteId._id]"
+            [queryParams]="{ nombre: c.pacienteId.nombre + ' ' + c.pacienteId.apellido }"
+            >Recetar</a
+          >
           <a class="btn-sm ghost" [routerLink]="['/medico/historial', c.pacienteId._id]">Historial</a>
         </div>
       </div>
