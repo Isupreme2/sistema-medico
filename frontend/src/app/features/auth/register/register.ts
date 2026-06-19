@@ -1,4 +1,4 @@
-import { Component, inject, signal } from '@angular/core';
+import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -8,6 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
   selector: 'app-register',
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['../login/login.scss'],
 })
 export class Register {

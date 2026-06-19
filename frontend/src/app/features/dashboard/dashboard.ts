@@ -1,4 +1,4 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { UserRole } from '../../core/models/user.model';
@@ -14,6 +14,7 @@ interface FeatureCard {
   selector: 'app-dashboard',
   imports: [],
   templateUrl: './dashboard.html',
+  changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
