@@ -140,6 +140,7 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/appointments/:id/preconsulta` | Médico/Dueño/Admin | Ver formulario de pre-consulta |
 | POST | `/api/v1/appointments/:id/preconsulta` | Paciente dueño | Enviar/actualizar pre-consulta |
 | GET/POST | `/api/v1/invoices` | Auth / Médico-Admin | Listar (por rol) / emitir factura |
+| GET | `/api/v1/invoices/:id/pdf` | Dueño/Médico/Admin | Descargar factura en PDF |
 | PATCH | `/api/v1/invoices/:id/pay` · `/void` | Admin | Marcar pagada / anular |
 | GET | `/api/v1/analytics/overview` | Admin | Métricas (citas, ausentismo, ingresos, top médicos) |
 | GET | `/api/v1/audit` | Admin | Bitácora de auditoría (paginada, filtrable) |

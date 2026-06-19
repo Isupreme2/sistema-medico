@@ -33,4 +33,16 @@ export class InvoiceService {
       .patch<ApiResponse<{ factura: Invoice }>>(`${this.api}/${id}/void`, {})
       .pipe(map((r) => r.data.factura));
   }
+
+  /** Descarga el PDF de la factura (token vía interceptor) y dispara la descarga. */
+  descargarPdf(factura: Invoice): void {
+    this.http.get(`${this.api}/${factura._id}/pdf`, { responseType: 'blob' }).subscribe((blob) => {
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `factura-${factura.numero}.pdf`;
+      a.click();
+      URL.revokeObjectURL(url);
+    });
+  }
 }

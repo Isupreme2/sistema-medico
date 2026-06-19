@@ -48,6 +48,18 @@ router.get('/:id', authenticate, ctrl.getById);
 
 /**
  * @openapi
+ * /invoices/{id}/pdf:
+ *   get:
+ *     tags: [Facturación]
+ *     summary: Descargar la factura en PDF (dueño, médico o admin)
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: PDF de la factura, content: { application/pdf: {} } }
+ */
+router.get('/:id/pdf', authenticate, ctrl.pdf);
+
+/**
+ * @openapi
  * /invoices/{id}/pay:
  *   patch:
  *     tags: [Facturación]

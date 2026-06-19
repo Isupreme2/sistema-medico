@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import { asyncHandler } from '../../utils/asyncHandler';
 import * as service from './invoice.service';
+import { generarPdfFactura } from './invoice.pdf';
 
 export const crear = asyncHandler(async (req: Request, res: Response) => {
   const factura = await service.crear(req.user!, req.body);
@@ -15,6 +16,11 @@ export const listar = asyncHandler(async (req: Request, res: Response) => {
 export const getById = asyncHandler(async (req: Request, res: Response) => {
   const factura = await service.getById(req.params.id, req.user!);
   res.json({ status: 'success', data: { factura } });
+});
+
+export const pdf = asyncHandler(async (req: Request, res: Response) => {
+  const factura = await service.getById(req.params.id, req.user!);
+  generarPdfFactura(factura, res);
 });
 
 export const marcarPagada = asyncHandler(async (req: Request, res: Response) => {
