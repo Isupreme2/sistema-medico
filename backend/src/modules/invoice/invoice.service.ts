@@ -1,11 +1,12 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
-import { Invoice, InvoiceStatus, IInvoiceItem } from '../../models/invoice.model';
+import { Invoice, InvoiceStatus } from '../../models/invoice.model';
 import { Appointment } from '../../models/appointment.model';
 import { User } from '../../models/user.model';
 import { UserRole } from '../../constants/roles';
 import { AppError } from '../../utils/AppError';
 import { AccessTokenPayload } from '../../utils/jwt';
+import { calcularTotales } from '../../utils/billing';
 import { CreateInvoiceInput } from './invoice.validation';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
@@ -14,13 +15,6 @@ function generarNumero(): string {
   const year = new Date().getFullYear();
   const rand = crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 6);
   return `FAC-${year}-${rand}`;
-}
-
-function calcularTotales(items: IInvoiceItem[], impuestoPct: number) {
-  const subtotal = items.reduce((acc, it) => acc + it.cantidad * it.precioUnitario, 0);
-  const impuesto = Math.round(subtotal * (impuestoPct / 100) * 100) / 100;
-  const total = Math.round((subtotal + impuesto) * 100) / 100;
-  return { subtotal: Math.round(subtotal * 100) / 100, impuesto, total };
 }
 
 /** Emite una factura. El médico factura sus consultas; el admin puede facturar a cualquiera. */

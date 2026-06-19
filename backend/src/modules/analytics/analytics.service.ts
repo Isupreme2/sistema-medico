@@ -2,6 +2,7 @@ import { Appointment } from '../../models/appointment.model';
 import { Invoice } from '../../models/invoice.model';
 import { User } from '../../models/user.model';
 import { UserRole } from '../../constants/roles';
+import { porcentajeAusentismo } from '../../utils/billing';
 
 /** Agrupa un aggregate [{_id, count}] en un objeto {clave: count}. */
 function toMap(rows: { _id: string; count: number }[]): Record<string, number> {
@@ -55,8 +56,7 @@ export async function overview() {
   const totalCitas = Object.values(citasPorEstado).reduce((a, b) => a + b, 0);
   const atendidas = citasPorEstado['atendida'] ?? 0;
   const noAsistio = citasPorEstado['no_asistio'] ?? 0;
-  const baseAusentismo = atendidas + noAsistio;
-  const ausentismoPct = baseAusentismo > 0 ? Math.round((noAsistio / baseAusentismo) * 100) : 0;
+  const ausentismoPct = porcentajeAusentismo(atendidas, noAsistio);
 
   const ingresos = { pendiente: 0, pagada: 0, anulada: 0, total: 0 };
   for (const row of ingresosRows) {

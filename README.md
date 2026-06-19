@@ -88,6 +88,13 @@ npm start                 # ng serve → http://localhost:4200
 | Admin | `admin@ehr.dev` | `Admin1234` |
 | Médico | `medico@ehr.dev` | `Medico1234` |
 | Paciente | `paciente@ehr.dev` | `Paciente1234` |
+| Paciente | `maria@ehr.dev` | `Paciente1234` |
+
+> El seed es **idempotente** y deja el sistema **listo para demostrar**: el médico
+> ya tiene perfil + horario (Lun-Vie), tipos de cita, citas en varios estados y
+> modalidades, una consulta clínica con signos vitales, una receta verificable
+> (`RX-DEMO-0001`) y facturas (una pendiente y una pagada). Para una base limpia,
+> elimina la base `ehr_dev` y vuelve a ejecutar `npm run seed`.
 
 ## API (estado actual)
 
