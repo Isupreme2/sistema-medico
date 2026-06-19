@@ -1,0 +1,35 @@
+# Dependencias
+node_modules/
+**/node_modules/
+
+# Build
+dist/
+build/
+**/dist/
+
+# Entorno (¡NUNCA subir secretos!)
+.env
+**/.env
+.env.local
+*.local
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# Editor / OS / herramientas
+.claude/
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Coverage / tests
+coverage/
+
+# Uploads temporales
+uploads/tmp/
+
+# Angular
+frontend/.angular/
