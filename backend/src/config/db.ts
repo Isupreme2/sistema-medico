@@ -1,3 +1,4 @@
+import dns from 'node:dns';
 import mongoose from 'mongoose';
 import { env } from './env';
 import { logger } from '../utils/logger';
@@ -7,6 +8,16 @@ import { logger } from '../utils/logger';
  * del ciclo de vida de la conexión.
  */
 export async function connectDatabase(): Promise<void> {
+  // Workaround DNS: si se configuran servidores de respaldo, los usamos para
+  // que la resolución del SRV de Atlas no dependa del resolver del sistema.
+  if (env.DNS_SERVERS) {
+    const servers = env.DNS_SERVERS.split(',').map((s) => s.trim()).filter(Boolean);
+    if (servers.length) {
+      dns.setServers(servers);
+      logger.info(`🌐 DNS de respaldo configurado: ${servers.join(', ')}`);
+    }
+  }
+
   mongoose.set('strictQuery', true);
 
   mongoose.connection.on('connected', () => {

@@ -89,12 +89,21 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/auth/me` | Auth | Perfil actual |
 | POST | `/api/v1/auth/2fa/setup` | Auth | Inicia 2FA (devuelve QR) |
 | POST | `/api/v1/auth/2fa/enable` | Auth | Activa 2FA con código TOTP |
+| GET | `/api/v1/medicos` | Auth | Lista de médicos |
+| POST | `/api/v1/medicos` | Admin | Crear médico (usuario + perfil) |
+| GET | `/api/v1/medicos/:id` | Auth | Detalle de un médico |
+| PATCH | `/api/v1/medicos/:id` | Admin/Médico | Actualizar perfil |
+| PUT | `/api/v1/medicos/:id/horario` | Admin/Médico | Definir horarios y duración de slot |
+| GET/POST | `/api/v1/medicos/:id/bloqueos` | Auth/Médico | Listar/crear bloqueos |
+| DELETE | `/api/v1/medicos/:id/bloqueos/:bloqueoId` | Admin/Médico | Eliminar bloqueo |
+| GET | `/api/v1/appointment-types` | Auth | Lista de tipos de cita |
+| POST/PATCH/DELETE | `/api/v1/appointment-types/:id?` | Admin | Gestionar tipos de cita |
 
 ## Roadmap
 
 - [x] **Fase 0** — Setup + arquitectura en capas + hardening + Swagger
 - [x] **Fase 1** — Auth (JWT + refresh) + RBAC + 2FA
-- [ ] **Fase 2** — Médicos, horarios, bloqueos y tipos de cita
+- [x] **Fase 2** — Médicos, horarios, bloqueos y tipos de cita
 - [ ] **Fase 3** — Agenda atómica + calendario en tiempo real + lista de espera
 - [ ] **Fase 4** — Historia clínica + signos vitales + adjuntos + CIE-10
 - [ ] **Fase 5** — Recetas + PDF + QR + alerta de alergias/interacciones

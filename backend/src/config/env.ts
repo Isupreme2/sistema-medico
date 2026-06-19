@@ -15,6 +15,13 @@ const envSchema = z.object({
 
   MONGODB_URI: z.string().min(1, 'MONGODB_URI es obligatorio'),
 
+  /**
+   * DNS de respaldo (coma-separados). Workaround para entornos donde el
+   * resolver interno de Node (c-ares) falla al resolver el SRV de Atlas
+   * (ECONNREFUSED). Ej: "8.8.8.8,1.1.1.1". Opcional.
+   */
+  DNS_SERVERS: z.string().optional(),
+
   JWT_ACCESS_SECRET: z.string().min(16, 'JWT_ACCESS_SECRET debe tener al menos 16 caracteres'),
   JWT_REFRESH_SECRET: z.string().min(16, 'JWT_REFRESH_SECRET debe tener al menos 16 caracteres'),
   JWT_ACCESS_EXPIRES: z.string().default('15m'),

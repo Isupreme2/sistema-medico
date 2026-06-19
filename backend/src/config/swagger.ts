@@ -23,6 +23,8 @@ const options: swaggerJSDoc.Options = {
     tags: [
       { name: 'Sistema', description: 'Estado y salud del servicio' },
       { name: 'Auth', description: 'Autenticación, sesión y 2FA' },
+      { name: 'Médicos', description: 'Perfiles, horarios y bloqueos de médicos' },
+      { name: 'Tipos de cita', description: 'Catálogo de tipos de cita (Admin)' },
     ],
   },
   // Lee las anotaciones @openapi de las rutas (en src para dev, en dist para prod)
