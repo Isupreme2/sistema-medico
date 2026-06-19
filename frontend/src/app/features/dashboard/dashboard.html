@@ -1,0 +1,35 @@
+<div class="layout">
+  <header class="navbar">
+    <div class="nav-brand">
+      <span class="logo">🩺</span>
+      <strong>Sistema Médico</strong>
+    </div>
+    <div class="nav-user">
+      <div class="user-meta">
+        <span class="name">{{ user()?.nombre }} {{ user()?.apellido }}</span>
+        <span class="role-badge">{{ roleLabel() }}</span>
+      </div>
+      <button class="btn-logout" (click)="logout()">Cerrar sesión</button>
+    </div>
+  </header>
+
+  <main class="content">
+    <h1>Hola, {{ user()?.nombre }} 👋</h1>
+    <p class="lead">Bienvenido a tu panel de <strong>{{ roleLabel() }}</strong>.</p>
+
+    <div class="cards">
+      @for (card of cards(); track card.title) {
+        <div class="card">
+          <span class="card-icon">{{ card.icon }}</span>
+          <div class="card-body">
+            <h3>{{ card.title }}</h3>
+            <p>{{ card.desc }}</p>
+          </div>
+          <span class="tag" [class.tag-soon]="card.status === 'pronto'">
+            {{ card.status === 'listo' ? 'Disponible' : 'Próximamente' }}
+          </span>
+        </div>
+      }
+    </div>
+  </main>
+</div>

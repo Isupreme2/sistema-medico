@@ -1,0 +1,99 @@
+.layout {
+  min-height: 100vh;
+  background: #f1f5f9;
+}
+
+.navbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: #fff;
+  padding: 0.85rem 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+
+  .nav-brand {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    color: #0f172a;
+    .logo { font-size: 1.4rem; }
+  }
+
+  .nav-user {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .user-meta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    .name { font-size: 0.9rem; font-weight: 600; color: #1e293b; }
+    .role-badge {
+      font-size: 0.7rem;
+      color: #2563eb;
+      background: #dbeafe;
+      padding: 0.1rem 0.5rem;
+      border-radius: 999px;
+      margin-top: 0.15rem;
+    }
+  }
+
+  .btn-logout {
+    border: 1px solid #cbd5e1;
+    background: #fff;
+    color: #334155;
+    padding: 0.45rem 0.9rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    transition: background 0.15s;
+    &:hover { background: #f8fafc; }
+  }
+}
+
+.content {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+
+  h1 { margin: 0; color: #0f172a; }
+  .lead { color: #64748b; margin-top: 0.35rem; }
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 1.1rem;
+  margin-top: 1.75rem;
+}
+
+.card {
+  position: relative;
+  background: #fff;
+  border-radius: 14px;
+  padding: 1.4rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  display: flex;
+  gap: 1rem;
+  align-items: flex-start;
+
+  .card-icon { font-size: 1.8rem; }
+  .card-body {
+    h3 { margin: 0 0 0.25rem; font-size: 1.02rem; color: #1e293b; }
+    p { margin: 0; font-size: 0.85rem; color: #64748b; }
+  }
+
+  .tag {
+    position: absolute;
+    top: 0.85rem;
+    right: 0.85rem;
+    font-size: 0.65rem;
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+    background: #dcfce7;
+    color: #16a34a;
+    &.tag-soon { background: #fef9c3; color: #ca8a04; }
+  }
+}

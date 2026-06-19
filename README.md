@@ -8,7 +8,7 @@ Sistema para agendar citas, gestionar historia clínica y emitir recetas digital
 |------|-----------|
 | Backend | Node.js + **Express** + TypeScript (arquitectura en capas) |
 | Base de datos | **MongoDB Atlas** + Mongoose |
-| Frontend | **Angular** (standalone components + signals) — *próximamente* |
+| Frontend | **Angular 20** (standalone components + signals) |
 | Auth | JWT (access + refresh httpOnly) + RBAC + 2FA (TOTP) |
 | Docs | Swagger / OpenAPI en `/docs` |
 
@@ -30,7 +30,12 @@ sistema-medico/
 │   │   └── server.ts     bootstrap (DB + listen + shutdown)
 │   ├── .env.example
 │   └── package.json
-└── frontend/         Angular (próximamente)
+└── frontend/         Angular 20 (standalone + signals)
+    └── src/app/
+        ├── core/         services (auth), interceptors (token+refresh), guards (auth/role), models
+        ├── features/     auth (login, register), dashboard (landing por rol)
+        ├── app.config.ts proveedores (HttpClient + interceptor)
+        └── app.routes.ts rutas con lazy loading y guards
 ```
 
 ## Puesta en marcha (backend)
@@ -50,6 +55,17 @@ npm run seed              # crea cuentas demo (ver abajo)
 | `npm start` | Ejecuta el build de producción |
 | `npm run typecheck` | Chequeo de tipos sin emitir |
 | `npm run seed` | Cuentas demo de los 3 roles |
+
+## Puesta en marcha (frontend)
+
+```bash
+cd frontend
+npm install
+npm start                 # ng serve → http://localhost:4200
+```
+
+> El backend debe estar corriendo en `:4000`. El login, registro y dashboard
+> por rol ya están conectados a la API (JWT + refresh por cookie httpOnly).
 
 ### Cuentas demo (tras `npm run seed`)
 
