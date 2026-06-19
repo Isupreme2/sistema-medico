@@ -8,32 +8,46 @@ Sistema para agendar citas, gestionar historia clínica y emitir recetas digital
 |------|-----------|
 | Backend | Node.js + **Express** + TypeScript (arquitectura en capas) |
 | Base de datos | **MongoDB Atlas** + Mongoose |
-| Frontend | **Angular 20** (standalone components + signals) |
+| Frontend | **Angular 22** (standalone components + signals) |
 | Auth | JWT (access + refresh httpOnly) + RBAC + 2FA (TOTP) |
+| Tiempo real | **Socket.io** (disponibilidad de slots + notificaciones in-app) |
+| Recetas | **PDFKit** (PDF en streaming) + QR de verificación |
+| Recordatorios | **node-cron** + **nodemailer** (modo *log* sin SMTP) |
+| Teleconsulta | **Jitsi Meet** embebido (sin servidor de medios propio) |
 | Docs | Swagger / OpenAPI en `/docs` |
 
 ## Estructura
 
 ```
 sistema-medico/
-├── backend/          API Express + TypeScript
+├── backend/          API Express + TypeScript (arquitectura en capas)
 │   ├── src/
-│   │   ├── config/       env (validado con Zod), db, swagger
+│   │   ├── config/       env (Zod), db (con fallback DNS), swagger
 │   │   ├── constants/    roles
 │   │   ├── middleware/   authenticate, authorize, validate, error
-│   │   ├── models/       user.model
-│   │   ├── modules/      auth (routes → controller → service → validation)
+│   │   ├── models/       user, medicoProfile, appointmentType, bloqueo,
+│   │   │                 appointment, medicalRecord, prescription,
+│   │   │                 notification, preConsulta
+│   │   ├── modules/      auth · medico · appointmentType · appointment
+│   │   │                 (incl. teleconsulta/preconsulta) · record ·
+│   │   │                 prescription · notification
+│   │   ├── jobs/         reminders (node-cron)
+│   │   ├── realtime/     socket.io (slots + notificaciones)
 │   │   ├── routes/       índice de rutas + /health
 │   │   ├── scripts/      seed
-│   │   ├── utils/        jwt, AppError, asyncHandler, logger
+│   │   ├── utils/        jwt, AppError, asyncHandler, logger, slots,
+│   │   │                 drugSafety, mailer
 │   │   ├── app.ts        ensamblado de Express
-│   │   └── server.ts     bootstrap (DB + listen + shutdown)
+│   │   └── server.ts     bootstrap (DB + sockets + cron + shutdown)
 │   ├── .env.example
 │   └── package.json
-└── frontend/         Angular 20 (standalone + signals)
+└── frontend/         Angular 22 (standalone + signals)
     └── src/app/
-        ├── core/         services (auth), interceptors (token+refresh), guards (auth/role), models
-        ├── features/     auth (login, register), dashboard (landing por rol)
+        ├── core/         services, interceptors (token+refresh), guards,
+        │                 models, layout (shell + campana de notificaciones)
+        ├── features/     auth · dashboard · admin · medico · paciente ·
+        │                 historial · preconsulta · teleconsulta
+        ├── shared/       line-chart (chart.js)
         ├── app.config.ts proveedores (HttpClient + interceptor)
         └── app.routes.ts rutas con lazy loading y guards
 ```
@@ -100,7 +114,7 @@ Documentación interactiva: **http://localhost:4000/docs**
 | POST/PATCH/DELETE | `/api/v1/appointment-types/:id?` | Admin | Gestionar tipos de cita |
 | GET | `/api/v1/appointments/disponibilidad/:id?fecha=` | Auth | Slots disponibles de un médico |
 | GET | `/api/v1/appointments` | Auth | Citas (filtradas por rol) |
-| POST | `/api/v1/appointments` | Paciente | Reservar cita (atómica) |
+| POST | `/api/v1/appointments` | Paciente | Reservar cita atómica (presencial o teleconsulta) |
 | PATCH | `/api/v1/appointments/:id/cancel` | Dueño/Médico/Admin | Cancelar (libera slot) |
 | PATCH | `/api/v1/appointments/:id/status` | Médico | Marcar atendida/no-asistió |
 | POST | `/api/v1/records` | Médico | Crear consulta clínica (con signos vitales) |
@@ -115,6 +129,9 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/notifications/unread-count` | Auth | Cantidad de no leídas |
 | PATCH | `/api/v1/notifications/read-all` | Auth | Marcar todas como leídas |
 | PATCH | `/api/v1/notifications/:id/read` | Auth | Marcar una como leída |
+| GET | `/api/v1/appointments/:id/video` | Participante | Datos de la sala de teleconsulta (+ventana horaria) |
+| GET | `/api/v1/appointments/:id/preconsulta` | Médico/Dueño/Admin | Ver formulario de pre-consulta |
+| POST | `/api/v1/appointments/:id/preconsulta` | Paciente dueño | Enviar/actualizar pre-consulta |
 
 ## Roadmap
 
@@ -125,9 +142,29 @@ Documentación interactiva: **http://localhost:4000/docs**
 - [x] **Fase 4** — Historia clínica + signos vitales + CIE-10 + gráficas *(adjuntos de archivos pendientes como extra)*
 - [x] **Fase 5** — Recetas + PDF + QR + alerta de alergias/interacciones
 - [x] **Fase 6** — Recordatorios email (node-cron) + notificaciones in-app en tiempo real
-- [ ] **Fase 7** — Teleconsulta (video) + formulario pre-consulta
+- [x] **Fase 7** — Teleconsulta por video (Jitsi embebido) + formulario de pre-consulta
 - [ ] **Fase 8** — Dashboard analítico + facturación + auditoría
 - [ ] **Fase 9** — PWA + i18n + modo oscuro + tests + Docker
+
+## Decisiones de diseño destacadas
+
+- **Reserva atómica anti doble-cita.** El arbitraje lo hace la base de datos vía
+  un índice único *parcial* `{medicoId, fechaHora}` filtrado por `estado: 'reservada'`.
+  Se intenta `create()` y se captura el error 11000 → `409`; al cancelar, el slot
+  se libera solo. Sin chequeo previo: no hay condición de carrera.
+- **Teleconsulta sin servidor de medios propio.** Se usa **Jitsi Meet embebido**.
+  El backend solo genera una sala única e impredecible por cita y valida participante
+  + ventana horaria (la sala se habilita 10 min antes y se cierra 30 min después).
+  Cero infraestructura de video que mantener.
+- **Tiempo real con salas dirigidas.** Socket.io usa salas `medico:{id}` (cambios de
+  disponibilidad) y `user:{id}` (notificaciones), evitando *broadcasts* globales.
+- **Recordatorios tolerantes a fallos.** El job de `node-cron` y el envío de correo
+  nunca tumban el flujo de negocio; sin SMTP configurado, el mailer cae a modo *log*.
+- **Seguridad farmacológica.** Al emitir una receta se cruzan los medicamentos contra
+  las alergias del paciente e interacciones conocidas (`422` con alertas; el médico
+  debe confirmar para emitir igual).
+- **Integridad de receta.** Cada receta lleva un hash SHA-256; el endpoint público de
+  verificación lo recalcula para confirmar que no fue alterada.
 
 ## Seguridad
 

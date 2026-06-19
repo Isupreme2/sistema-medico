@@ -55,6 +55,9 @@ const envSchema = z.object({
   /** URL del frontend (para enlaces en los correos). */
   FRONTEND_URL: z.string().default('http://localhost:4200'),
 
+  /** Dominio del servidor Jitsi para la teleconsulta (video embebido). */
+  JITSI_DOMAIN: z.string().default('meet.jit.si'),
+
   /** Cron de recordatorios (por defecto cada 15 min). */
   REMINDER_CRON: z.string().default('*/15 * * * *'),
   /** Ventana (horas) hacia adelante para enviar recordatorios de citas. */

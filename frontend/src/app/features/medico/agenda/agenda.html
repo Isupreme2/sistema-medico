@@ -15,9 +15,10 @@
         </div>
         <div class="cita-info">
           <strong>{{ c.pacienteId.nombre }} {{ c.pacienteId.apellido }}</strong>
-          @if (c.motivo) {
-            <small>{{ c.motivo }}</small>
-          }
+          <small>
+            @if (c.modalidad === 'teleconsulta') { 🎥 Teleconsulta } @else { 🏥 Presencial }
+            @if (c.motivo) { · {{ c.motivo }} }
+          </small>
         </div>
         <span class="badge" [attr.data-estado]="c.estado">{{ estadoLabel(c.estado) }}</span>
         <div class="acciones">
@@ -28,8 +29,12 @@
               [queryParams]="{ citaId: c._id, nombre: c.pacienteId.nombre + ' ' + c.pacienteId.apellido }"
               >Atender</a
             >
+            @if (c.modalidad === 'teleconsulta') {
+              <a class="btn-sm ok" [routerLink]="['/teleconsulta', c._id]">🎥 Videollamada</a>
+            }
             <button class="btn-sm warn" (click)="marcar(c, 'no_asistio')">No asistió</button>
           }
+          <a class="btn-sm ghost" [routerLink]="['/preconsulta', c._id]">Pre-consulta</a>
           <a
             class="btn-sm accent"
             [routerLink]="['/medico/recetar', c.pacienteId._id]"

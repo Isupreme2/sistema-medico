@@ -15,14 +15,21 @@
         </div>
         <div class="cita-info">
           <strong>Dr(a). {{ c.medicoId.nombre }} {{ c.medicoId.apellido }}</strong>
-          @if (c.motivo) {
-            <small>{{ c.motivo }}</small>
-          }
+          <small>
+            @if (c.modalidad === 'teleconsulta') { 🎥 Teleconsulta } @else { 🏥 Presencial }
+            @if (c.motivo) { · {{ c.motivo }} }
+          </small>
         </div>
         <span class="badge" [attr.data-estado]="c.estado">{{ estadoLabel(c.estado) }}</span>
-        @if (c.estado === 'reservada') {
-          <button class="link-btn danger" (click)="cancelar(c)">Cancelar</button>
-        }
+        <div class="acciones">
+          @if (c.estado === 'reservada') {
+            <a class="btn-sm ghost" [routerLink]="['/preconsulta', c._id]">Pre-consulta</a>
+            @if (c.modalidad === 'teleconsulta') {
+              <a class="btn-sm primary" [routerLink]="['/teleconsulta', c._id]">🎥 Videollamada</a>
+            }
+            <button class="btn-sm danger" (click)="cancelar(c)">Cancelar</button>
+          }
+        </div>
       </div>
     }
   </div>

@@ -3,7 +3,15 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/user.model';
-import { Appointment, AppointmentStatus, Availability } from '../models/appointment.model';
+import {
+  Appointment,
+  AppointmentModality,
+  AppointmentStatus,
+  Availability,
+  PreConsulta,
+  PreConsultaPayload,
+  VideoAccess,
+} from '../models/appointment.model';
 
 @Injectable({ providedIn: 'root' })
 export class AppointmentService {
@@ -20,6 +28,7 @@ export class AppointmentService {
     medicoId: string;
     fechaHora: string;
     appointmentTypeId?: string;
+    modalidad?: AppointmentModality;
     motivo?: string;
   }): Observable<Appointment> {
     return this.http
@@ -47,5 +56,23 @@ export class AppointmentService {
     return this.http
       .patch<ApiResponse<{ cita: Appointment }>>(`${this.api}/${id}/status`, { estado })
       .pipe(map((r) => r.data.cita));
+  }
+
+  videoAccess(id: string): Observable<VideoAccess> {
+    return this.http
+      .get<ApiResponse<{ video: VideoAccess }>>(`${this.api}/${id}/video`)
+      .pipe(map((r) => r.data.video));
+  }
+
+  getPreConsulta(id: string): Observable<PreConsulta | null> {
+    return this.http
+      .get<ApiResponse<{ preConsulta: PreConsulta | null }>>(`${this.api}/${id}/preconsulta`)
+      .pipe(map((r) => r.data.preConsulta));
+  }
+
+  submitPreConsulta(id: string, payload: PreConsultaPayload): Observable<PreConsulta> {
+    return this.http
+      .post<ApiResponse<{ preConsulta: PreConsulta }>>(`${this.api}/${id}/preconsulta`, payload)
+      .pipe(map((r) => r.data.preConsulta));
   }
 }

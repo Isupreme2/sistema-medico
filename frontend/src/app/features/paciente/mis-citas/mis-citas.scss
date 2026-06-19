@@ -113,3 +113,37 @@ h1 {
     color: #dc2626;
   }
 }
+
+.acciones {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.btn-sm {
+  border: none;
+  border-radius: 8px;
+  padding: 0.4rem 0.75rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  text-decoration: none;
+  display: inline-block;
+
+  &:hover {
+    opacity: 0.85;
+  }
+  &.primary {
+    background: #2563eb;
+    color: #fff;
+  }
+  &.ghost {
+    background: #f1f5f9;
+    color: #475569;
+  }
+  &.danger {
+    background: #fee2e2;
+    color: #dc2626;
+  }
+}

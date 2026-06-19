@@ -4,7 +4,11 @@ import { authenticate } from '../../middleware/authenticate';
 import { authorize } from '../../middleware/authorize';
 import { validate } from '../../middleware/validate';
 import { UserRole } from '../../constants/roles';
-import { createAppointmentSchema, updateStatusSchema } from './appointment.validation';
+import {
+  createAppointmentSchema,
+  updateStatusSchema,
+  preConsultaSchema,
+} from './appointment.validation';
 
 const router = Router();
 
@@ -85,6 +89,45 @@ router.patch(
   authorize(UserRole.MEDICO, UserRole.ADMIN),
   validate(updateStatusSchema),
   ctrl.actualizarEstado,
+);
+
+/**
+ * @openapi
+ * /appointments/{id}/video:
+ *   get:
+ *     tags: [Teleconsulta]
+ *     summary: Datos de acceso a la sala de video (participante de la cita)
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Sala, dominio y si se puede entrar (ventana horaria) }
+ *       422: { description: La cita no es teleconsulta }
+ */
+router.get('/:id/video', authenticate, ctrl.videoAccess);
+
+/**
+ * @openapi
+ * /appointments/{id}/preconsulta:
+ *   get:
+ *     tags: [Teleconsulta]
+ *     summary: Ver el formulario de pre-consulta (médico de la cita, paciente dueño o admin)
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Formulario (o null si no existe) }
+ *   post:
+ *     tags: [Teleconsulta]
+ *     summary: Enviar/actualizar el formulario de pre-consulta (Paciente dueño)
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       201: { description: Formulario guardado }
+ *       403: { description: Solo el paciente de la cita }
+ */
+router.get('/:id/preconsulta', authenticate, ctrl.getPreConsulta);
+router.post(
+  '/:id/preconsulta',
+  authenticate,
+  authorize(UserRole.PACIENTE),
+  validate(preConsultaSchema),
+  ctrl.submitPreConsulta,
 );
 
 export default router;

@@ -42,3 +42,18 @@ export const actualizarEstado = asyncHandler(async (req: Request, res: Response)
   const cita = await service.actualizarEstado(req.params.id, req.user!, req.body);
   res.json({ status: 'success', data: { cita } });
 });
+
+export const videoAccess = asyncHandler(async (req: Request, res: Response) => {
+  const video = await service.getVideoAccess(req.params.id, req.user!);
+  res.json({ status: 'success', data: { video } });
+});
+
+export const submitPreConsulta = asyncHandler(async (req: Request, res: Response) => {
+  const preConsulta = await service.submitPreConsulta(req.params.id, req.user!, req.body);
+  res.status(201).json({ status: 'success', data: { preConsulta } });
+});
+
+export const getPreConsulta = asyncHandler(async (req: Request, res: Response) => {
+  const preConsulta = await service.getPreConsulta(req.params.id, req.user!);
+  res.json({ status: 'success', data: { preConsulta } });
+});

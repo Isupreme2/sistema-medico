@@ -1,15 +1,30 @@
+import crypto from 'node:crypto';
 import mongoose from 'mongoose';
-import { Appointment, AppointmentStatus } from '../../models/appointment.model';
+import {
+  Appointment,
+  AppointmentStatus,
+  AppointmentModality,
+} from '../../models/appointment.model';
 import { AppointmentType } from '../../models/appointmentType.model';
 import { MedicoProfile } from '../../models/medicoProfile.model';
 import { Bloqueo } from '../../models/bloqueo.model';
+import { PreConsulta } from '../../models/preConsulta.model';
 import { UserRole } from '../../constants/roles';
 import { AppError } from '../../utils/AppError';
 import { AccessTokenPayload } from '../../utils/jwt';
-import { CreateAppointmentInput, UpdateStatusInput } from './appointment.validation';
+import { env } from '../../config/env';
+import {
+  CreateAppointmentInput,
+  UpdateStatusInput,
+  PreConsultaInput,
+} from './appointment.validation';
 import { buildDate, computeSlots, dentroDeFranja } from '../../utils/slots';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
+
+/** Minutos antes/después de la cita en que la sala de teleconsulta está activa. */
+const VIDEO_ANTES_MIN = 10;
+const VIDEO_DESPUES_MIN = 30;
 
 const fmtCita = new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' });
 
@@ -104,6 +119,12 @@ export async function reservar(pacienteId: string, input: CreateAppointmentInput
   });
   if (enBloqueo) throw AppError.conflict('Ese horario está bloqueado');
 
+  // En teleconsulta generamos una sala de video única e impredecible
+  const esTeleconsulta = input.modalidad === AppointmentModality.TELECONSULTA;
+  const videoRoom = esTeleconsulta
+    ? `EHR-${crypto.randomBytes(12).toString('hex')}`
+    : undefined;
+
   try {
     const cita = await Appointment.create({
       medicoId: input.medicoId,
@@ -111,6 +132,8 @@ export async function reservar(pacienteId: string, input: CreateAppointmentInput
       appointmentTypeId: input.appointmentTypeId,
       fechaHora,
       duracionMin,
+      modalidad: input.modalidad,
+      videoRoom,
       motivo: input.motivo,
     });
     const populated = await cita.populate([
@@ -232,4 +255,104 @@ export async function actualizarEstado(
   cita.estado = input.estado;
   await cita.save();
   return cita;
+}
+
+/**
+ * Devuelve los datos para entrar a la sala de teleconsulta, validando que el
+ * solicitante sea participante y que esté dentro de la ventana horaria. No
+ * lanza por "es muy temprano/tarde": devuelve canJoin=false + motivo para que
+ * el front muestre el estado de la sala.
+ */
+export async function getVideoAccess(id: string, requester: AccessTokenPayload) {
+  const cita = await getOwnedAppointment(id, requester);
+  if (cita.modalidad !== AppointmentModality.TELECONSULTA || !cita.videoRoom) {
+    throw AppError.unprocessable('Esta cita no es una teleconsulta');
+  }
+
+  await cita.populate([
+    { path: 'medicoId', select: 'nombre apellido' },
+    { path: 'pacienteId', select: 'nombre apellido' },
+  ]);
+  const medico = cita.medicoId as unknown as PersonaPop;
+  const paciente = cita.pacienteId as unknown as PersonaPop;
+  // El paciente es quien coincide con pacienteId; cualquier otro (médico/admin)
+  // entra con la identidad del médico.
+  const soyMedico = requester.sub !== paciente._id.toString();
+
+  const yo = soyMedico ? medico : paciente;
+  const contraparte = soyMedico
+    ? `${paciente.nombre} ${paciente.apellido}`
+    : `Dr(a). ${medico.nombre} ${medico.apellido}`;
+
+  const inicio = cita.fechaHora.getTime();
+  const fin = inicio + cita.duracionMin * 60_000;
+  const ahora = Date.now();
+
+  let canJoin = true;
+  let motivo = '';
+  if (cita.estado === AppointmentStatus.CANCELADA) {
+    canJoin = false;
+    motivo = 'La cita fue cancelada.';
+  } else if (ahora < inicio - VIDEO_ANTES_MIN * 60_000) {
+    canJoin = false;
+    motivo = `La sala se habilita ${VIDEO_ANTES_MIN} minutos antes de la cita.`;
+  } else if (ahora > fin + VIDEO_DESPUES_MIN * 60_000) {
+    canJoin = false;
+    motivo = 'La teleconsulta ya finalizó.';
+  }
+
+  return {
+    canJoin,
+    motivo,
+    room: cita.videoRoom,
+    domain: env.JITSI_DOMAIN,
+    displayName: `${yo.nombre} ${yo.apellido}`,
+    contraparte,
+    inicio: cita.fechaHora,
+    fin: new Date(fin),
+    estado: cita.estado,
+  };
+}
+
+/** El paciente dueño envía/actualiza su formulario de pre-consulta. */
+export async function submitPreConsulta(
+  id: string,
+  requester: AccessTokenPayload,
+  input: PreConsultaInput,
+) {
+  const cita = await getOwnedAppointment(id, requester);
+  if (
+    requester.role !== UserRole.PACIENTE ||
+    cita.pacienteId.toString() !== requester.sub
+  ) {
+    throw AppError.forbidden('Solo el paciente de la cita puede llenar la pre-consulta');
+  }
+
+  const form = await PreConsulta.findOneAndUpdate(
+    { appointmentId: cita._id },
+    {
+      ...input,
+      appointmentId: cita._id,
+      pacienteId: cita.pacienteId,
+      medicoId: cita.medicoId,
+      enviadoEn: new Date(),
+    },
+    { new: true, upsert: true, setDefaultsOnInsert: true },
+  );
+
+  await notify({
+    userId: cita.medicoId.toString(),
+    tipo: NotificationType.SISTEMA,
+    titulo: 'Formulario pre-consulta recibido',
+    mensaje: 'Un paciente completó su formulario previo a la cita.',
+    link: '/medico/agenda',
+  });
+
+  return form;
+}
+
+/** Obtiene la pre-consulta de una cita (médico de la cita, paciente dueño o admin). */
+export async function getPreConsulta(id: string, requester: AccessTokenPayload) {
+  await getOwnedAppointment(id, requester); // valida propiedad/rol
+  return PreConsulta.findOne({ appointmentId: id });
 }

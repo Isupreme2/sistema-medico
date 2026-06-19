@@ -12,7 +12,7 @@ import { MedicoService } from '../../../core/services/medico.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { MedicoProfile } from '../../../core/models/medico.model';
-import { Slot } from '../../../core/models/appointment.model';
+import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
 
 @Component({
   selector: 'app-reservar',
@@ -30,6 +30,7 @@ export class Reservar {
   readonly medicos = signal<MedicoProfile[]>([]);
   readonly medicoId = signal<string>('');
   readonly fecha = signal<string>(new Date().toISOString().slice(0, 10));
+  readonly modalidad = signal<AppointmentModality>('presencial');
   readonly slots = signal<Slot[]>([]);
   readonly loading = signal(false);
   readonly msg = signal<string | null>(null);
@@ -90,10 +91,15 @@ export class Reservar {
     this.msg.set(null);
     this.error.set(null);
     this.appointmentService
-      .reservar({ medicoId: this.medicoId(), fechaHora: slot.fechaHora })
+      .reservar({
+        medicoId: this.medicoId(),
+        fechaHora: slot.fechaHora,
+        modalidad: this.modalidad(),
+      })
       .subscribe({
         next: () => {
-          this.msg.set(`Cita reservada para las ${slot.hora} 🎉`);
+          const via = this.modalidad() === 'teleconsulta' ? ' (teleconsulta 🎥)' : '';
+          this.msg.set(`Cita reservada para las ${slot.hora}${via} 🎉`);
           this.cargarDisponibilidad();
         },
         error: (err: HttpErrorResponse) => {

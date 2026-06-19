@@ -1,11 +1,12 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { Appointment } from '../../../core/models/appointment.model';
 
 @Component({
   selector: 'app-mis-citas',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './mis-citas.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './mis-citas.scss',

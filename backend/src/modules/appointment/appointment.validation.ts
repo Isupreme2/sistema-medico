@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AppointmentStatus } from '../../models/appointment.model';
+import { AppointmentStatus, AppointmentModality } from '../../models/appointment.model';
 
 const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Id inválido');
 
@@ -8,6 +8,9 @@ export const createAppointmentSchema = z.object({
     medicoId: objectId,
     fechaHora: z.coerce.date(),
     appointmentTypeId: objectId.optional(),
+    modalidad: z
+      .enum([AppointmentModality.PRESENCIAL, AppointmentModality.TELECONSULTA])
+      .default(AppointmentModality.PRESENCIAL),
     motivo: z.string().max(500).optional(),
   }),
 });
@@ -18,5 +21,17 @@ export const updateStatusSchema = z.object({
   }),
 });
 
+export const preConsultaSchema = z.object({
+  body: z.object({
+    motivoConsulta: z.string().min(1, 'El motivo es obligatorio').max(1000),
+    sintomas: z.string().max(2000).optional(),
+    inicioSintomas: z.string().max(200).optional(),
+    nivelDolor: z.coerce.number().min(0).max(10).optional(),
+    medicacionActual: z.string().max(2000).optional(),
+    antecedentes: z.string().max(2000).optional(),
+  }),
+});
+
 export type CreateAppointmentInput = z.infer<typeof createAppointmentSchema>['body'];
 export type UpdateStatusInput = z.infer<typeof updateStatusSchema>['body'];
+export type PreConsultaInput = z.infer<typeof preConsultaSchema>['body'];

@@ -1,0 +1,65 @@
+<h1>Formulario de pre-consulta</h1>
+<p class="lead">
+  @if (esPaciente) {
+    Cuéntale a tu médico el motivo de la consulta para agilizar la atención.
+  } @else {
+    Información que el paciente registró antes de la cita.
+  }
+</p>
+
+@if (loading()) {
+  <p class="muted">Cargando…</p>
+} @else {
+  @if (!esPaciente && !enviado()) {
+    <div class="card empty">El paciente aún no ha completado su pre-consulta.</div>
+  } @else {
+    <form class="card form" [formGroup]="form" (ngSubmit)="guardar()">
+      <label class="field">
+        <span>Motivo de la consulta *</span>
+        <textarea formControlName="motivoConsulta" rows="2"
+          placeholder="¿Por qué solicitas la consulta?"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Síntomas</span>
+        <textarea formControlName="sintomas" rows="2"
+          placeholder="Describe lo que sientes"></textarea>
+      </label>
+
+      <div class="row">
+        <label class="field">
+          <span>¿Desde cuándo?</span>
+          <input formControlName="inicioSintomas" placeholder="Ej: hace 3 días" />
+        </label>
+        <label class="field">
+          <span>Nivel de dolor (0-10)</span>
+          <input type="number" min="0" max="10" formControlName="nivelDolor" />
+        </label>
+      </div>
+
+      <label class="field">
+        <span>Medicación actual</span>
+        <textarea formControlName="medicacionActual" rows="2"
+          placeholder="Medicamentos que tomas actualmente"></textarea>
+      </label>
+
+      <label class="field">
+        <span>Antecedentes relevantes</span>
+        <textarea formControlName="antecedentes" rows="2"
+          placeholder="Enfermedades, cirugías, condiciones previas"></textarea>
+      </label>
+
+      @if (msg()) {
+        <div class="alert ok">{{ msg() }}</div>
+      }
+
+      @if (esPaciente) {
+        <button class="btn primary" type="submit" [disabled]="saving()">
+          {{ saving() ? 'Guardando…' : (enviado() ? 'Actualizar' : 'Enviar') }}
+        </button>
+      } @else if (enviado()) {
+        <p class="muted">Enviado por el paciente.</p>
+      }
+    </form>
+  }
+}

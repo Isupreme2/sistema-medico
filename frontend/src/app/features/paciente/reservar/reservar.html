@@ -16,6 +16,13 @@
     <span>Fecha</span>
     <input type="date" [value]="fecha()" (change)="onFechaChange($any($event.target).value)" />
   </label>
+  <label class="field">
+    <span>Modalidad</span>
+    <select [value]="modalidad()" (change)="modalidad.set($any($event.target).value)">
+      <option value="presencial">🏥 Presencial</option>
+      <option value="teleconsulta">🎥 Teleconsulta (video)</option>
+    </select>
+  </label>
   <span class="realtime">🟢 En vivo</span>
 </div>
 

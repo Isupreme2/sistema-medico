@@ -7,6 +7,11 @@ export enum AppointmentStatus {
   NO_ASISTIO = 'no_asistio',
 }
 
+export enum AppointmentModality {
+  PRESENCIAL = 'presencial',
+  TELECONSULTA = 'teleconsulta',
+}
+
 export interface IAppointment extends Document {
   _id: mongoose.Types.ObjectId;
   medicoId: mongoose.Types.ObjectId;
@@ -15,6 +20,9 @@ export interface IAppointment extends Document {
   fechaHora: Date; // inicio del slot
   duracionMin: number;
   estado: AppointmentStatus;
+  modalidad: AppointmentModality;
+  /** Nombre de sala de video (solo en teleconsulta); impredecible. */
+  videoRoom?: string;
   motivo?: string;
   /** Evita reenviar el recordatorio por email de una misma cita. */
   recordatorioEnviado: boolean;
@@ -35,6 +43,12 @@ const appointmentSchema = new Schema<IAppointment>(
       default: AppointmentStatus.RESERVADA,
       index: true,
     },
+    modalidad: {
+      type: String,
+      enum: Object.values(AppointmentModality),
+      default: AppointmentModality.PRESENCIAL,
+    },
+    videoRoom: { type: String },
     motivo: { type: String, trim: true, maxlength: 500 },
     recordatorioEnviado: { type: Boolean, default: false },
   },

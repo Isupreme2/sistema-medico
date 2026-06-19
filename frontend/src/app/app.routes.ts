@@ -95,6 +95,18 @@ export const routes: Routes = [
         loadComponent: () =>
           import('./features/paciente/mis-citas/mis-citas').then((m) => m.MisCitas),
       },
+      {
+        // Sala de teleconsulta: accesible para el médico y el paciente de la cita
+        path: 'teleconsulta/:appointmentId',
+        loadComponent: () =>
+          import('./features/teleconsulta/sala/sala').then((m) => m.TeleconsultaSala),
+      },
+      {
+        // Pre-consulta: el paciente la edita, el médico la ve
+        path: 'preconsulta/:appointmentId',
+        loadComponent: () =>
+          import('./features/preconsulta/preconsulta').then((m) => m.PreConsultaForm),
+      },
     ],
   },
   { path: '**', redirectTo: '' },
