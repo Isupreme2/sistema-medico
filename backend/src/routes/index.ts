@@ -2,6 +2,7 @@ import { Router } from 'express';
 import authRoutes from '../modules/auth/auth.routes';
 import medicoRoutes from '../modules/medico/medico.routes';
 import appointmentTypeRoutes from '../modules/appointmentType/appointmentType.routes';
+import appointmentRoutes from '../modules/appointment/appointment.routes';
 
 const router = Router();
 
@@ -25,9 +26,9 @@ router.get('/health', (_req, res) => {
 router.use('/auth', authRoutes);
 router.use('/medicos', medicoRoutes);
 router.use('/appointment-types', appointmentTypeRoutes);
+router.use('/appointments', appointmentRoutes);
 
 // Aquí se montarán los próximos módulos:
-// router.use('/appointments', appointmentRoutes);
 // router.use('/records', recordRoutes);
 // router.use('/prescriptions', prescriptionRoutes);
 

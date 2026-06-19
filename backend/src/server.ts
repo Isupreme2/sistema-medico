@@ -1,5 +1,7 @@
+import http from 'node:http';
 import { createApp } from './app';
 import { connectDatabase, disconnectDatabase } from './config/db';
+import { initSocket } from './realtime/socket';
 import { env } from './config/env';
 import { logger } from './utils/logger';
 
@@ -7,7 +9,12 @@ async function bootstrap(): Promise<void> {
   await connectDatabase();
 
   const app = createApp();
-  const server = app.listen(env.PORT, () => {
+  const server = http.createServer(app);
+
+  // Tiempo real (Socket.io) sobre el mismo servidor HTTP
+  initSocket(server);
+
+  server.listen(env.PORT, () => {
     logger.info(`🚀 API escuchando en http://localhost:${env.PORT}${env.API_PREFIX}`);
     logger.info(`📚 Swagger en       http://localhost:${env.PORT}/docs`);
   });

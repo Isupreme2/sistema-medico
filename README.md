@@ -98,6 +98,11 @@ Documentación interactiva: **http://localhost:4000/docs**
 | DELETE | `/api/v1/medicos/:id/bloqueos/:bloqueoId` | Admin/Médico | Eliminar bloqueo |
 | GET | `/api/v1/appointment-types` | Auth | Lista de tipos de cita |
 | POST/PATCH/DELETE | `/api/v1/appointment-types/:id?` | Admin | Gestionar tipos de cita |
+| GET | `/api/v1/appointments/disponibilidad/:id?fecha=` | Auth | Slots disponibles de un médico |
+| GET | `/api/v1/appointments` | Auth | Citas (filtradas por rol) |
+| POST | `/api/v1/appointments` | Paciente | Reservar cita (atómica) |
+| PATCH | `/api/v1/appointments/:id/cancel` | Dueño/Médico/Admin | Cancelar (libera slot) |
+| PATCH | `/api/v1/appointments/:id/status` | Médico | Marcar atendida/no-asistió |
 
 ## Roadmap
 
