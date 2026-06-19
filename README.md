@@ -103,6 +103,9 @@ Documentación interactiva: **http://localhost:4000/docs**
 | POST | `/api/v1/appointments` | Paciente | Reservar cita (atómica) |
 | PATCH | `/api/v1/appointments/:id/cancel` | Dueño/Médico/Admin | Cancelar (libera slot) |
 | PATCH | `/api/v1/appointments/:id/status` | Médico | Marcar atendida/no-asistió |
+| POST | `/api/v1/records` | Médico | Crear consulta clínica (con signos vitales) |
+| GET | `/api/v1/records/paciente/:id` | Médico/Dueño/Admin | Historial clínico de un paciente |
+| GET | `/api/v1/records/:id` | Médico/Dueño/Admin | Detalle de una consulta |
 
 ## Roadmap
 
@@ -110,7 +113,7 @@ Documentación interactiva: **http://localhost:4000/docs**
 - [x] **Fase 1** — Auth (JWT + refresh) + RBAC + 2FA
 - [x] **Fase 2** — Médicos, horarios, bloqueos y tipos de cita
 - [ ] **Fase 3** — Agenda atómica + calendario en tiempo real + lista de espera
-- [ ] **Fase 4** — Historia clínica + signos vitales + adjuntos + CIE-10
+- [~] **Fase 4** — Historia clínica + signos vitales + CIE-10 *(backend listo; frontend + adjuntos/gráficas pendientes)*
 - [ ] **Fase 5** — Recetas + PDF + QR + alerta de alergias/interacciones
 - [ ] **Fase 6** — Recordatorios email + notificaciones + portal del paciente
 - [ ] **Fase 7** — Teleconsulta (video) + formulario pre-consulta

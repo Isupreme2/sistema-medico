@@ -3,6 +3,7 @@ import authRoutes from '../modules/auth/auth.routes';
 import medicoRoutes from '../modules/medico/medico.routes';
 import appointmentTypeRoutes from '../modules/appointmentType/appointmentType.routes';
 import appointmentRoutes from '../modules/appointment/appointment.routes';
+import recordRoutes from '../modules/record/record.routes';
 
 const router = Router();
 
@@ -27,9 +28,9 @@ router.use('/auth', authRoutes);
 router.use('/medicos', medicoRoutes);
 router.use('/appointment-types', appointmentTypeRoutes);
 router.use('/appointments', appointmentRoutes);
+router.use('/records', recordRoutes);
 
 // Aquí se montarán los próximos módulos:
-// router.use('/records', recordRoutes);
 // router.use('/prescriptions', prescriptionRoutes);
 
 export default router;
