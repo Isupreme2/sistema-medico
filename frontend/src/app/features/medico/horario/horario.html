@@ -1,0 +1,107 @@
+<h1>Mi horario</h1>
+<p class="lead">Configura tus franjas de atención semanal y tus bloqueos.</p>
+
+@if (loading()) {
+  <p class="muted">Cargando…</p>
+} @else {
+  @if (msg()) {
+    <div class="alert ok">{{ msg() }}</div>
+  }
+  @if (error()) {
+    <div class="alert err">{{ error() }}</div>
+  }
+
+  <!-- ===== Horario semanal ===== -->
+  <section class="card">
+    <h2>Franjas de atención</h2>
+
+    <form class="franja-form" [formGroup]="franjaForm" (ngSubmit)="addFranja()">
+      <label class="field">
+        <span>Día</span>
+        <select formControlName="diaSemana">
+          @for (d of dias; track d.valor) {
+            <option [value]="d.valor">{{ d.nombre }}</option>
+          }
+        </select>
+      </label>
+      <label class="field">
+        <span>Desde</span>
+        <input type="time" formControlName="horaInicio" />
+      </label>
+      <label class="field">
+        <span>Hasta</span>
+        <input type="time" formControlName="horaFin" />
+      </label>
+      <button type="submit" class="btn-secondary">+ Agregar franja</button>
+    </form>
+
+    @if (horariosOrdenados().length === 0) {
+      <p class="muted">Aún no has agregado franjas de atención.</p>
+    } @else {
+      <ul class="franja-list">
+        @for (h of horariosOrdenados(); track $index) {
+          <li>
+            <span class="dia">{{ diaNombre(h.diaSemana) }}</span>
+            <span class="rango">{{ h.horaInicio }} – {{ h.horaFin }}</span>
+            <button class="link-btn danger" (click)="removeFranja($index)">Quitar</button>
+          </li>
+        }
+      </ul>
+    }
+
+    <div class="slot-row">
+      <label class="field inline">
+        <span>Duración de cada cita (min)</span>
+        <input
+          type="number"
+          min="5"
+          max="240"
+          [value]="duracionSlotMin()"
+          (input)="duracionSlotMin.set(+$any($event.target).value)"
+        />
+      </label>
+      <button class="btn-primary" [disabled]="savingHorario()" (click)="guardarHorario()">
+        {{ savingHorario() ? 'Guardando…' : 'Guardar horario' }}
+      </button>
+    </div>
+  </section>
+
+  <!-- ===== Bloqueos ===== -->
+  <section class="card">
+    <h2>Bloqueos (vacaciones, feriados, etc.)</h2>
+
+    <form class="bloqueo-form" [formGroup]="bloqueoForm" (ngSubmit)="addBloqueo()">
+      <label class="field">
+        <span>Desde</span>
+        <input type="datetime-local" formControlName="desde" />
+      </label>
+      <label class="field">
+        <span>Hasta</span>
+        <input type="datetime-local" formControlName="hasta" />
+      </label>
+      <label class="field grow">
+        <span>Motivo (opcional)</span>
+        <input formControlName="motivo" placeholder="Vacaciones" />
+      </label>
+      <button type="submit" class="btn-secondary">+ Agregar bloqueo</button>
+    </form>
+
+    @if (bloqueos().length === 0) {
+      <p class="muted">Sin bloqueos registrados.</p>
+    } @else {
+      <ul class="bloqueo-list">
+        @for (b of bloqueos(); track b._id) {
+          <li>
+            <span class="rango">
+              {{ b.desde | date: 'dd/MM/yyyy HH:mm' }} → {{ b.hasta | date: 'dd/MM/yyyy HH:mm' }}
+            </span>
+            @if (b.motivo) {
+              <span class="motivo">{{ b.motivo }}</span>
+            }
+            <button class="link-btn danger" (click)="removeBloqueo(b._id)">Eliminar</button>
+          </li>
+        }
+      </ul>
+    }
+  </section>
+}

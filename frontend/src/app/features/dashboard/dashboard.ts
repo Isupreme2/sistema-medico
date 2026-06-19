@@ -1,5 +1,5 @@
-import { Component, computed, inject, ChangeDetectionStrategy } from '@angular/core';
-import { Router } from '@angular/router';
+import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { UserRole } from '../../core/models/user.model';
 
@@ -8,18 +8,18 @@ interface FeatureCard {
   title: string;
   desc: string;
   status: 'listo' | 'pronto';
+  link?: string;
 }
 
 @Component({
   selector: 'app-dashboard',
-  imports: [],
+  imports: [RouterLink],
   templateUrl: './dashboard.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './dashboard.scss',
 })
 export class Dashboard {
   private auth = inject(AuthService);
-  private router = inject(Router);
 
   readonly user = this.auth.user;
 
@@ -41,14 +41,14 @@ export class Dashboard {
     switch (this.auth.role()) {
       case UserRole.ADMIN:
         return [
-          { icon: '👥', title: 'Gestión de usuarios', desc: 'Crear médicos y administrar cuentas', status: 'pronto' },
+          { icon: '👨‍⚕️', title: 'Gestión de médicos', desc: 'Crear y administrar médicos', status: 'listo', link: '/admin/medicos' },
+          { icon: '🏷️', title: 'Tipos de cita', desc: 'Catálogo de tipos y duraciones', status: 'listo', link: '/admin/tipos-cita' },
           { icon: '📊', title: 'Dashboard analítico', desc: 'Métricas, ausentismo e ingresos', status: 'pronto' },
-          { icon: '🛡️', title: 'Auditoría', desc: 'Bitácora de accesos y cambios', status: 'pronto' },
         ];
       case UserRole.MEDICO:
         return [
+          { icon: '⏰', title: 'Mi horario', desc: 'Configura tu horario y bloqueos', status: 'listo', link: '/medico/horario' },
           { icon: '🗓️', title: 'Mi agenda', desc: 'Citas del día y la semana', status: 'pronto' },
-          { icon: '📋', title: 'Historias clínicas', desc: 'Consultas y diagnósticos', status: 'pronto' },
           { icon: '💊', title: 'Recetas digitales', desc: 'Emitir recetas con QR de verificación', status: 'pronto' },
         ];
       case UserRole.PACIENTE:
@@ -61,11 +61,4 @@ export class Dashboard {
         return [];
     }
   });
-
-  logout(): void {
-    this.auth.logout().subscribe({
-      next: () => this.router.navigate(['/login']),
-      error: () => this.router.navigate(['/login']),
-    });
-  }
 }

@@ -1,0 +1,102 @@
+<div class="page-head">
+  <div>
+    <h1>Médicos</h1>
+    <p class="lead">Crea y administra los médicos del consultorio.</p>
+  </div>
+  <button class="btn-primary" (click)="toggleForm()">
+    {{ showForm() ? 'Cancelar' : '+ Nuevo médico' }}
+  </button>
+</div>
+
+@if (ok()) {
+  <div class="alert ok">{{ ok() }}</div>
+}
+
+@if (showForm()) {
+  <form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+    <div class="grid">
+      <label class="field">
+        <span>Nombre</span>
+        <input formControlName="nombre" />
+      </label>
+      <label class="field">
+        <span>Apellido</span>
+        <input formControlName="apellido" />
+      </label>
+      <label class="field">
+        <span>Email</span>
+        <input type="email" formControlName="email" />
+      </label>
+      <label class="field">
+        <span>Teléfono (opcional)</span>
+        <input formControlName="telefono" />
+      </label>
+      <label class="field">
+        <span>Especialidad</span>
+        <input formControlName="especialidad" />
+      </label>
+      <label class="field">
+        <span>N° Colegiatura</span>
+        <input formControlName="numeroColegiatura" />
+      </label>
+      <label class="field">
+        <span>Duración de slot (min)</span>
+        <input type="number" formControlName="duracionSlotMin" min="5" max="240" />
+      </label>
+      <label class="field">
+        <span>Contraseña inicial</span>
+        <input type="text" formControlName="password" placeholder="Mín 8, may/min/número" />
+      </label>
+    </div>
+
+    @if (error()) {
+      <div class="alert err">{{ error() }}</div>
+    }
+
+    <div class="form-actions">
+      <button type="submit" class="btn-primary" [disabled]="saving()">
+        {{ saving() ? 'Guardando…' : 'Crear médico' }}
+      </button>
+    </div>
+  </form>
+}
+
+@if (loading()) {
+  <p class="muted">Cargando médicos…</p>
+} @else if (medicos().length === 0) {
+  <div class="card empty">Aún no hay médicos registrados.</div>
+} @else {
+  <div class="card table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th>Médico</th>
+          <th>Especialidad</th>
+          <th>Colegiatura</th>
+          <th>Slot</th>
+          <th>Horarios</th>
+          <th>Estado</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (m of medicos(); track m._id) {
+          <tr>
+            <td>
+              <strong>{{ m.userId.nombre }} {{ m.userId.apellido }}</strong>
+              <small>{{ m.userId.email }}</small>
+            </td>
+            <td>{{ m.especialidad }}</td>
+            <td>{{ m.numeroColegiatura }}</td>
+            <td>{{ m.duracionSlotMin }} min</td>
+            <td>{{ m.horarios.length }} franja(s)</td>
+            <td>
+              <span class="badge" [class.badge-off]="!m.activo">
+                {{ m.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}
