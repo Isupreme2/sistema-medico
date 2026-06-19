@@ -51,6 +51,12 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
   res.json({ status: 'success', data: { user } });
 });
 
+export const updateMe = asyncHandler(async (req: Request, res: Response) => {
+  const { telefono, alergias } = req.body as { telefono?: string; alergias?: string[] };
+  const user = await authService.updateMe(req.user!.sub, { telefono, alergias });
+  res.json({ status: 'success', data: { user } });
+});
+
 export const setup2FA = asyncHandler(async (req: Request, res: Response) => {
   const result = await authService.setup2FA(req.user!.sub);
   res.json({ status: 'success', data: result });

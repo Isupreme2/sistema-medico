@@ -28,6 +28,8 @@ const envSchema = z.object({
   JWT_REFRESH_EXPIRES: z.string().default('7d'),
 
   CORS_ORIGIN: z.string().default('http://localhost:4200'),
+  /** URL pública del API (para el QR de verificación de recetas). */
+  PUBLIC_URL: z.string().default('http://localhost:4000'),
   COOKIE_SECURE: z
     .string()
     .default('false')

@@ -103,6 +103,18 @@ router.get('/me', authenticate, authController.me);
 
 /**
  * @openapi
+ * /auth/me:
+ *   patch:
+ *     tags: [Auth]
+ *     summary: Actualiza datos propios (teléfono, alergias)
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Perfil actualizado }
+ */
+router.patch('/me', authenticate, authController.updateMe);
+
+/**
+ * @openapi
  * /auth/2fa/setup:
  *   post:
  *     tags: [Auth]

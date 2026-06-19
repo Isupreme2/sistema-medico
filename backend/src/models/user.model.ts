@@ -10,6 +10,8 @@ export interface IUser extends Document {
   nombre: string;
   apellido: string;
   telefono?: string;
+  /** Alergias del paciente (a fármacos). Base de la alerta al recetar. */
+  alergias: string[];
   isActive: boolean;
 
   /** Se incrementa para invalidar todos los refresh tokens del usuario. */
@@ -53,6 +55,7 @@ const userSchema = new Schema<IUser>(
     nombre: { type: String, required: true, trim: true },
     apellido: { type: String, required: true, trim: true },
     telefono: { type: String, trim: true },
+    alergias: { type: [String], default: [] },
     isActive: { type: Boolean, default: true },
 
     tokenVersion: { type: Number, default: 0 },

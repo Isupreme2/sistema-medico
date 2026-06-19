@@ -155,6 +155,22 @@ export async function getMe(userId: string): Promise<IUser> {
   return user;
 }
 
+/** Actualiza datos propios del usuario (teléfono y alergias). */
+export async function updateMe(
+  userId: string,
+  input: { telefono?: string; alergias?: string[] },
+): Promise<IUser> {
+  const user = await User.findById(userId);
+  if (!user) throw AppError.notFound('Usuario no encontrado');
+
+  if (input.telefono !== undefined) user.telefono = input.telefono;
+  if (input.alergias !== undefined) {
+    user.alergias = input.alergias.map((a) => a.trim()).filter(Boolean);
+  }
+  await user.save();
+  return user;
+}
+
 /**
  * Inicia la configuración de 2FA: genera un secreto y un QR para escanear.
  * El usuario debe confirmar con un código antes de que se active (enable2FA).

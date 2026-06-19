@@ -27,6 +27,7 @@ const options: swaggerJSDoc.Options = {
       { name: 'Tipos de cita', description: 'Catálogo de tipos de cita (Admin)' },
       { name: 'Citas', description: 'Disponibilidad, reserva y gestión de citas' },
       { name: 'Historia clínica', description: 'Consultas, diagnósticos y signos vitales' },
+      { name: 'Recetas', description: 'Emisión, PDF, QR y verificación de recetas' },
     ],
   },
   // Lee las anotaciones @openapi de las rutas (en src para dev, en dist para prod)

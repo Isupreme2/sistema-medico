@@ -106,6 +106,11 @@ Documentación interactiva: **http://localhost:4000/docs**
 | POST | `/api/v1/records` | Médico | Crear consulta clínica (con signos vitales) |
 | GET | `/api/v1/records/paciente/:id` | Médico/Dueño/Admin | Historial clínico de un paciente |
 | GET | `/api/v1/records/:id` | Médico/Dueño/Admin | Detalle de una consulta |
+| PATCH | `/api/v1/auth/me` | Auth | Actualizar datos propios (teléfono, alergias) |
+| POST | `/api/v1/prescriptions` | Médico | Emitir receta (con alerta de alergias/interacciones) |
+| GET | `/api/v1/prescriptions/paciente/:id` | Médico/Dueño/Admin | Recetas de un paciente |
+| GET | `/api/v1/prescriptions/:id/pdf` | Médico/Dueño/Admin | Descargar receta en PDF |
+| GET | `/api/v1/prescriptions/verify/:codigo` | **Público** | Verificar autenticidad (QR) |
 
 ## Roadmap
 
@@ -114,7 +119,7 @@ Documentación interactiva: **http://localhost:4000/docs**
 - [x] **Fase 2** — Médicos, horarios, bloqueos y tipos de cita
 - [ ] **Fase 3** — Agenda atómica + calendario en tiempo real + lista de espera
 - [x] **Fase 4** — Historia clínica + signos vitales + CIE-10 + gráficas *(adjuntos de archivos pendientes como extra)*
-- [ ] **Fase 5** — Recetas + PDF + QR + alerta de alergias/interacciones
+- [~] **Fase 5** — Recetas + PDF + QR + alerta de alergias/interacciones *(backend listo; frontend pendiente)*
 - [ ] **Fase 6** — Recordatorios email + notificaciones + portal del paciente
 - [ ] **Fase 7** — Teleconsulta (video) + formulario pre-consulta
 - [ ] **Fase 8** — Dashboard analítico + facturación + auditoría
