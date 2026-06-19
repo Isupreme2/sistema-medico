@@ -16,6 +16,8 @@ export interface IAppointment extends Document {
   duracionMin: number;
   estado: AppointmentStatus;
   motivo?: string;
+  /** Evita reenviar el recordatorio por email de una misma cita. */
+  recordatorioEnviado: boolean;
   createdAt: Date;
   updatedAt: Date;
 }
@@ -34,6 +36,7 @@ const appointmentSchema = new Schema<IAppointment>(
       index: true,
     },
     motivo: { type: String, trim: true, maxlength: 500 },
+    recordatorioEnviado: { type: Boolean, default: false },
   },
   { timestamps: true },
 );

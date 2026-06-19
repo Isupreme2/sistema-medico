@@ -1,0 +1,35 @@
+<div class="bell-wrap">
+  <button class="bell-btn" (click)="toggle($event)" aria-label="Notificaciones">
+    🔔
+    @if (unread() > 0) {
+      <span class="badge">{{ unread() > 9 ? '9+' : unread() }}</span>
+    }
+  </button>
+
+  @if (open()) {
+    <div class="panel" (click)="$event.stopPropagation()">
+      <div class="panel-head">
+        <strong>Notificaciones</strong>
+        @if (unread() > 0) {
+          <button class="link" (click)="marcarTodas($event)">Marcar todas como leídas</button>
+        }
+      </div>
+
+      <div class="panel-list">
+        @for (n of items(); track n._id) {
+          <button class="item" [class.unread]="!n.leida" (click)="onSelect(n)">
+            <span class="item-icon">{{ icon[n.tipo] }}</span>
+            <span class="item-body">
+              <span class="item-title">{{ n.titulo }}</span>
+              <span class="item-msg">{{ n.mensaje }}</span>
+              <span class="item-time">{{ hace(n.createdAt) }}</span>
+            </span>
+            @if (!n.leida) { <span class="dot"></span> }
+          </button>
+        } @empty {
+          <p class="empty">No tienes notificaciones.</p>
+        }
+      </div>
+    </div>
+  }
+</div>

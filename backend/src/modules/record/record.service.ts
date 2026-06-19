@@ -4,6 +4,8 @@ import { UserRole } from '../../constants/roles';
 import { AppError } from '../../utils/AppError';
 import { AccessTokenPayload } from '../../utils/jwt';
 import { CreateRecordInput } from './record.validation';
+import { notify } from '../notification/notification.service';
+import { NotificationType } from '../../models/notification.model';
 
 /** El médico crea una consulta clínica para un paciente. */
 export async function createRecord(medicoId: string, input: CreateRecordInput) {
@@ -17,10 +19,20 @@ export async function createRecord(medicoId: string, input: CreateRecordInput) {
     medicoId,
   });
 
-  return record.populate([
+  const populated = await record.populate([
     { path: 'medicoId', select: 'nombre apellido' },
     { path: 'pacienteId', select: 'nombre apellido' },
   ]);
+
+  await notify({
+    userId: input.pacienteId,
+    tipo: NotificationType.CONSULTA_REGISTRADA,
+    titulo: 'Nueva consulta en tu historial',
+    mensaje: 'Tu médico registró una nueva consulta clínica. Ya puedes revisarla.',
+    link: '/paciente/historial',
+  });
+
+  return populated;
 }
 
 /**

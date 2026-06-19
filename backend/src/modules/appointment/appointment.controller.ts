@@ -31,7 +31,7 @@ export const listar = asyncHandler(async (req: Request, res: Response) => {
 export const cancelar = asyncHandler(async (req: Request, res: Response) => {
   const cita = await service.cancelar(req.params.id, req.user!);
   emitSlotChange({
-    medicoId: cita.medicoId.toString(),
+    medicoId: cita.medicoId._id.toString(),
     fechaHora: cita.fechaHora.toISOString(),
     estado: cita.estado,
   });

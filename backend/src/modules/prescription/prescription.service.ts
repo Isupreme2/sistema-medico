@@ -6,6 +6,8 @@ import { AppError } from '../../utils/AppError';
 import { AccessTokenPayload } from '../../utils/jwt';
 import { checkPrescription, tieneConflictos } from '../../utils/drugSafety';
 import { EmitirInput } from './prescription.validation';
+import { notify } from '../notification/notification.service';
+import { NotificationType } from '../../models/notification.model';
 
 /** Genera un código legible y único de receta: RX-AAAA-XXXXXX. */
 function generarCodigo(): string {
@@ -74,6 +76,14 @@ export async function emitir(medicoId: string, input: EmitirInput) {
     { path: 'medicoId', select: 'nombre apellido' },
     { path: 'pacienteId', select: 'nombre apellido' },
   ]);
+
+  await notify({
+    userId: input.pacienteId,
+    tipo: NotificationType.RECETA_EMITIDA,
+    titulo: 'Nueva receta digital',
+    mensaje: `Se emitió tu receta ${codigo}. Ya puedes descargarla en PDF.`,
+    link: '/paciente/mis-recetas',
+  });
 
   return { receta: populated, safety };
 }

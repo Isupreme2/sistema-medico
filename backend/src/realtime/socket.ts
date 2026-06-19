@@ -21,6 +21,16 @@ export function initSocket(server: HttpServer): void {
     socket.on('unwatch:medico', (medicoId: string) => {
       socket.leave(`medico:${medicoId}`);
     });
+
+    // Cada usuario escucha SUS notificaciones en su propia sala
+    socket.on('watch:user', (userId: string) => {
+      if (typeof userId === 'string' && userId) {
+        socket.join(`user:${userId}`);
+      }
+    });
+    socket.on('unwatch:user', (userId: string) => {
+      socket.leave(`user:${userId}`);
+    });
   });
 
   logger.info('🔌 Socket.io inicializado');
@@ -38,4 +48,9 @@ export interface SlotChange {
  */
 export function emitSlotChange(change: SlotChange): void {
   io?.to(`medico:${change.medicoId}`).emit('appointment:changed', change);
+}
+
+/** Empuja una notificación en tiempo real a la sala del usuario destinatario. */
+export function emitNotification(userId: string, notification: unknown): void {
+  io?.to(`user:${userId}`).emit('notification:new', notification);
 }

@@ -8,6 +8,16 @@ import { AppError } from '../../utils/AppError';
 import { AccessTokenPayload } from '../../utils/jwt';
 import { CreateAppointmentInput, UpdateStatusInput } from './appointment.validation';
 import { buildDate, computeSlots, dentroDeFranja } from '../../utils/slots';
+import { notify } from '../notification/notification.service';
+import { NotificationType } from '../../models/notification.model';
+
+const fmtCita = new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' });
+
+interface PersonaPop {
+  _id: { toString(): string };
+  nombre: string;
+  apellido: string;
+}
 
 /**
  * Genera la disponibilidad de un médico para una fecha:
@@ -103,11 +113,23 @@ export async function reservar(pacienteId: string, input: CreateAppointmentInput
       duracionMin,
       motivo: input.motivo,
     });
-    return cita.populate([
+    const populated = await cita.populate([
       { path: 'medicoId', select: 'nombre apellido' },
       { path: 'pacienteId', select: 'nombre apellido' },
       { path: 'appointmentTypeId', select: 'nombre color' },
     ]);
+
+    // Avisar al médico de la nueva reserva
+    const paciente = populated.pacienteId as unknown as PersonaPop;
+    await notify({
+      userId: input.medicoId,
+      tipo: NotificationType.CITA_RESERVADA,
+      titulo: 'Nueva cita reservada',
+      mensaje: `${paciente.nombre} ${paciente.apellido} reservó para el ${fmtCita.format(populated.fechaHora)}.`,
+      link: '/medico/agenda',
+    });
+
+    return populated;
   } catch (err) {
     if (err instanceof mongoose.mongo.MongoServerError && err.code === 11000) {
       throw AppError.conflict('Ese horario acaba de ser reservado, elige otro');
@@ -168,6 +190,35 @@ export async function cancelar(id: string, requester: AccessTokenPayload) {
   }
   cita.estado = AppointmentStatus.CANCELADA;
   await cita.save();
+
+  // Notificar a la contraparte: si cancela el paciente, avisar al médico; si
+  // cancela el médico/admin, avisar al paciente.
+  await cita.populate([
+    { path: 'medicoId', select: 'nombre apellido' },
+    { path: 'pacienteId', select: 'nombre apellido' },
+  ]);
+  const medico = cita.medicoId as unknown as PersonaPop;
+  const paciente = cita.pacienteId as unknown as PersonaPop;
+  const cuando = fmtCita.format(cita.fechaHora);
+
+  if (requester.role === UserRole.PACIENTE) {
+    await notify({
+      userId: medico._id.toString(),
+      tipo: NotificationType.CITA_CANCELADA,
+      titulo: 'Cita cancelada',
+      mensaje: `${paciente.nombre} ${paciente.apellido} canceló su cita del ${cuando}.`,
+      link: '/medico/agenda',
+    });
+  } else {
+    await notify({
+      userId: paciente._id.toString(),
+      tipo: NotificationType.CITA_CANCELADA,
+      titulo: 'Tu cita fue cancelada',
+      mensaje: `Tu cita del ${cuando} fue cancelada. Puedes reprogramarla cuando quieras.`,
+      link: '/paciente/reservar',
+    });
+  }
+
   return cita;
 }
 

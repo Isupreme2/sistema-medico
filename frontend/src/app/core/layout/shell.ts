@@ -1,6 +1,8 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { NotificationService } from '../services/notification.service';
+import { NotificationBell } from './notification-bell/notification-bell';
 import { UserRole } from '../models/user.model';
 
 interface NavLink {
@@ -10,15 +12,20 @@ interface NavLink {
 
 @Component({
   selector: 'app-shell',
-  imports: [RouterOutlet, RouterLink, RouterLinkActive],
+  imports: [RouterOutlet, RouterLink, RouterLinkActive, NotificationBell],
   templateUrl: './shell.html',
   styleUrl: './shell.scss',
 })
-export class Shell {
+export class Shell implements OnInit {
   private auth = inject(AuthService);
+  private notifications = inject(NotificationService);
   private router = inject(Router);
 
   readonly user = this.auth.user;
+
+  ngOnInit(): void {
+    this.notifications.start();
+  }
 
   readonly roleLabel = computed(() => {
     switch (this.auth.role()) {
@@ -63,6 +70,7 @@ export class Shell {
   });
 
   logout(): void {
+    this.notifications.stop();
     this.auth.logout().subscribe({
       next: () => this.router.navigate(['/login']),
       error: () => this.router.navigate(['/login']),

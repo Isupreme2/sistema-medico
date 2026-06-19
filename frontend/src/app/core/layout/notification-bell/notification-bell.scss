@@ -1,0 +1,140 @@
+.bell-wrap {
+  position: relative;
+}
+
+.bell-btn {
+  position: relative;
+  border: 1px solid #e2e8f0;
+  background: #fff;
+  border-radius: 10px;
+  width: 38px;
+  height: 38px;
+  font-size: 1.1rem;
+  cursor: pointer;
+  transition: background 0.15s;
+  &:hover {
+    background: #f8fafc;
+  }
+}
+
+.badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background: #ef4444;
+  color: #fff;
+  font-size: 0.65rem;
+  font-weight: 700;
+  min-width: 18px;
+  height: 18px;
+  line-height: 18px;
+  border-radius: 999px;
+  padding: 0 4px;
+}
+
+.panel {
+  position: absolute;
+  right: 0;
+  top: calc(100% + 8px);
+  width: 340px;
+  max-width: 90vw;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  box-shadow: 0 12px 28px rgba(15, 23, 42, 0.18);
+  z-index: 50;
+  overflow: hidden;
+}
+
+.panel-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.75rem 1rem;
+  border-bottom: 1px solid #f1f5f9;
+
+  .link {
+    border: none;
+    background: none;
+    color: #2563eb;
+    font-size: 0.75rem;
+    cursor: pointer;
+    padding: 0;
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+.panel-list {
+  max-height: 380px;
+  overflow-y: auto;
+}
+
+.item {
+  display: flex;
+  gap: 0.6rem;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  padding: 0.7rem 1rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f8fafc;
+  transition: background 0.12s;
+  &:hover {
+    background: #f8fafc;
+  }
+  &.unread {
+    background: #eff6ff;
+    &:hover {
+      background: #dbeafe;
+    }
+  }
+}
+
+.item-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.item-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  flex: 1;
+  min-width: 0;
+}
+
+.item-title {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: #1e293b;
+}
+
+.item-msg {
+  font-size: 0.78rem;
+  color: #64748b;
+  line-height: 1.3;
+}
+
+.item-time {
+  font-size: 0.68rem;
+  color: #94a3b8;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #2563eb;
+  flex-shrink: 0;
+  margin-top: 0.35rem;
+}
+
+.empty {
+  text-align: center;
+  color: #94a3b8;
+  font-size: 0.85rem;
+  padding: 1.5rem 1rem;
+}

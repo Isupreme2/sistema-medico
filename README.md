@@ -111,16 +111,20 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/prescriptions/paciente/:id` | Médico/Dueño/Admin | Recetas de un paciente |
 | GET | `/api/v1/prescriptions/:id/pdf` | Médico/Dueño/Admin | Descargar receta en PDF |
 | GET | `/api/v1/prescriptions/verify/:codigo` | **Público** | Verificar autenticidad (QR) |
+| GET | `/api/v1/notifications` | Auth | Mis notificaciones + contador no leídas |
+| GET | `/api/v1/notifications/unread-count` | Auth | Cantidad de no leídas |
+| PATCH | `/api/v1/notifications/read-all` | Auth | Marcar todas como leídas |
+| PATCH | `/api/v1/notifications/:id/read` | Auth | Marcar una como leída |
 
 ## Roadmap
 
 - [x] **Fase 0** — Setup + arquitectura en capas + hardening + Swagger
 - [x] **Fase 1** — Auth (JWT + refresh) + RBAC + 2FA
 - [x] **Fase 2** — Médicos, horarios, bloqueos y tipos de cita
-- [ ] **Fase 3** — Agenda atómica + calendario en tiempo real + lista de espera
+- [x] **Fase 3** — Agenda atómica (índice único parcial) + calendario en tiempo real *(lista de espera pendiente como extra)*
 - [x] **Fase 4** — Historia clínica + signos vitales + CIE-10 + gráficas *(adjuntos de archivos pendientes como extra)*
 - [x] **Fase 5** — Recetas + PDF + QR + alerta de alergias/interacciones
-- [ ] **Fase 6** — Recordatorios email + notificaciones + portal del paciente
+- [x] **Fase 6** — Recordatorios email (node-cron) + notificaciones in-app en tiempo real
 - [ ] **Fase 7** — Teleconsulta (video) + formulario pre-consulta
 - [ ] **Fase 8** — Dashboard analítico + facturación + auditoría
 - [ ] **Fase 9** — PWA + i18n + modo oscuro + tests + Docker

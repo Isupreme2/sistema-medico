@@ -3,6 +3,7 @@ import { io, Socket } from 'socket.io-client';
 import { Observable } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { SlotChange } from '../models/appointment.model';
+import { AppNotification } from '../models/notification.model';
 
 /** URL base del servidor de sockets (mismo host que la API, sin el prefijo). */
 const SOCKET_URL = environment.apiUrl.replace(/\/api\/v1\/?$/, '');
@@ -32,6 +33,23 @@ export class SocketService {
       return () => {
         socket.off('appointment:changed', handler);
         socket.emit('unwatch:medico', medicoId);
+      };
+    });
+  }
+
+  /** Se suscribe a las notificaciones en tiempo real del usuario autenticado. */
+  watchUser(userId: string): Observable<AppNotification> {
+    const socket = this.connect();
+    socket.emit('watch:user', userId);
+
+    return new Observable<AppNotification>((subscriber) => {
+      const handler = (noti: AppNotification) =>
+        this.zone.run(() => subscriber.next(noti));
+      socket.on('notification:new', handler);
+
+      return () => {
+        socket.off('notification:new', handler);
+        socket.emit('unwatch:user', userId);
       };
     });
   }

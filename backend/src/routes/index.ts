@@ -5,6 +5,7 @@ import appointmentTypeRoutes from '../modules/appointmentType/appointmentType.ro
 import appointmentRoutes from '../modules/appointment/appointment.routes';
 import recordRoutes from '../modules/record/record.routes';
 import prescriptionRoutes from '../modules/prescription/prescription.routes';
+import notificationRoutes from '../modules/notification/notification.routes';
 
 const router = Router();
 
@@ -31,5 +32,6 @@ router.use('/appointment-types', appointmentTypeRoutes);
 router.use('/appointments', appointmentRoutes);
 router.use('/records', recordRoutes);
 router.use('/prescriptions', prescriptionRoutes);
+router.use('/notifications', notificationRoutes);
 
 export default router;
