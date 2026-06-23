@@ -26,7 +26,9 @@ export class Dashboard {
   readonly roleLabel = computed(() => {
     switch (this.auth.role()) {
       case UserRole.ADMIN:
-        return 'Administrador';
+        return 'Director / Administrador';
+      case UserRole.RECEPCIONISTA:
+        return 'Recepción';
       case UserRole.MEDICO:
         return 'Médico';
       case UserRole.PACIENTE:
@@ -46,6 +48,13 @@ export class Dashboard {
           { icon: '🏷️', title: 'Tipos de cita', desc: 'Catálogo de tipos y duraciones', status: 'listo', link: '/admin/tipos-cita' },
           { icon: '🧾', title: 'Facturación', desc: 'Comprobantes y cobros', status: 'listo', link: '/admin/facturacion' },
           { icon: '🛡️', title: 'Auditoría', desc: 'Bitácora de acciones del sistema', status: 'listo', link: '/admin/auditoria' },
+        ];
+      case UserRole.RECEPCIONISTA:
+        return [
+          { icon: '🗓️', title: 'Agendar cita', desc: 'Reserva citas a nombre de pacientes', status: 'listo', link: '/recepcion/agendar' },
+          { icon: '📋', title: 'Citas', desc: 'Todas las citas de la clínica', status: 'listo', link: '/recepcion/citas' },
+          { icon: '🧑‍🤝‍🧑', title: 'Pacientes', desc: 'Busca y registra pacientes', status: 'listo', link: '/recepcion/pacientes' },
+          { icon: '🧾', title: 'Facturación', desc: 'Emite comprobantes y registra cobros', status: 'listo', link: '/recepcion/facturacion' },
         ];
       case UserRole.MEDICO:
         return [

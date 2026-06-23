@@ -1,7 +1,18 @@
 export enum UserRole {
   ADMIN = 'admin',
+  RECEPCIONISTA = 'recepcionista',
   MEDICO = 'medico',
   PACIENTE = 'paciente',
+}
+
+/** Paciente en versión reducida (lo que devuelve la búsqueda de Recepción). */
+export interface PatientLite {
+  _id: string;
+  nombre: string;
+  apellido: string;
+  email: string;
+  telefono?: string;
+  alergias?: string[];
 }
 
 export interface User {

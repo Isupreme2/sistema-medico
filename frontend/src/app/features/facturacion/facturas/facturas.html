@@ -45,8 +45,10 @@
 
         <div class="acciones">
           <button class="btn-sm ghost" (click)="descargarPdf(f)">⬇ PDF</button>
-          @if (esAdmin && f.estado === 'pendiente') {
+          @if ((esAdmin || esRecepcion) && f.estado === 'pendiente') {
             <button class="btn-sm ok" (click)="pagar(f)">Marcar pagada</button>
+          }
+          @if (esAdmin && f.estado === 'pendiente') {
             <button class="btn-sm danger" (click)="anular(f)">Anular</button>
           }
         </div>

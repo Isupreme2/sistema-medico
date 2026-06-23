@@ -54,6 +54,30 @@ export const routes: Routes = [
           import('./features/admin/auditoria/auditoria').then((m) => m.Auditoria),
       },
       {
+        path: 'recepcion/agendar',
+        canActivate: [roleGuard(UserRole.RECEPCIONISTA, UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/recepcion/agendar/agendar').then((m) => m.RecepcionAgendar),
+      },
+      {
+        path: 'recepcion/citas',
+        canActivate: [roleGuard(UserRole.RECEPCIONISTA, UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/recepcion/citas/citas').then((m) => m.RecepcionCitas),
+      },
+      {
+        path: 'recepcion/pacientes',
+        canActivate: [roleGuard(UserRole.RECEPCIONISTA, UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/recepcion/pacientes/pacientes').then((m) => m.RecepcionPacientes),
+      },
+      {
+        path: 'recepcion/facturacion',
+        canActivate: [roleGuard(UserRole.RECEPCIONISTA, UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/facturacion/facturas/facturas').then((m) => m.Facturas),
+      },
+      {
         path: 'medico/horario',
         canActivate: [roleGuard(UserRole.MEDICO)],
         loadComponent: () =>
@@ -91,7 +115,7 @@ export const routes: Routes = [
       },
       {
         path: 'facturar/:appointmentId',
-        canActivate: [roleGuard(UserRole.MEDICO, UserRole.ADMIN)],
+        canActivate: [roleGuard(UserRole.MEDICO, UserRole.ADMIN, UserRole.RECEPCIONISTA)],
         loadComponent: () =>
           import('./features/facturacion/crear/crear-factura').then((m) => m.CrearFactura),
       },

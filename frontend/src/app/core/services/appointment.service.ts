@@ -26,6 +26,8 @@ export class AppointmentService {
 
   reservar(payload: {
     medicoId: string;
+    /** Solo lo envía Recepción/Admin al agendar por un tercero. */
+    pacienteId?: string;
     fechaHora: string;
     appointmentTypeId?: string;
     modalidad?: AppointmentModality;

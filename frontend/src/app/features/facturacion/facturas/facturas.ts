@@ -19,6 +19,7 @@ export class Facturas {
   readonly facturas = signal<Invoice[]>([]);
   readonly loading = signal(true);
   readonly esAdmin = this.auth.role() === UserRole.ADMIN;
+  readonly esRecepcion = this.auth.role() === UserRole.RECEPCIONISTA;
   readonly esPaciente = this.auth.role() === UserRole.PACIENTE;
 
   constructor() {

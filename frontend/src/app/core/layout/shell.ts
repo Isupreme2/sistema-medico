@@ -30,7 +30,9 @@ export class Shell implements OnInit {
   readonly roleLabel = computed(() => {
     switch (this.auth.role()) {
       case UserRole.ADMIN:
-        return 'Administrador';
+        return 'Director / Administrador';
+      case UserRole.RECEPCIONISTA:
+        return 'Recepción';
       case UserRole.MEDICO:
         return 'Médico';
       case UserRole.PACIENTE:
@@ -51,6 +53,14 @@ export class Shell implements OnInit {
           { label: 'Tipos de cita', path: '/admin/tipos-cita' },
           { label: 'Facturación', path: '/admin/facturacion' },
           { label: 'Auditoría', path: '/admin/auditoria' },
+        ];
+      case UserRole.RECEPCIONISTA:
+        return [
+          ...base,
+          { label: 'Agendar cita', path: '/recepcion/agendar' },
+          { label: 'Citas', path: '/recepcion/citas' },
+          { label: 'Pacientes', path: '/recepcion/pacientes' },
+          { label: 'Facturación', path: '/recepcion/facturacion' },
         ];
       case UserRole.MEDICO:
         return [
