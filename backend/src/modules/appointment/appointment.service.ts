@@ -244,22 +244,31 @@ export async function cancelar(id: string, requester: AccessTokenPayload) {
   const paciente = cita.pacienteId as unknown as PersonaPop;
   const cuando = fmtCita.format(cita.fechaHora);
 
-  if (requester.role === UserRole.PACIENTE) {
-    await notify({
+  const avisarMedico = () =>
+    notify({
       userId: medico._id.toString(),
       tipo: NotificationType.CITA_CANCELADA,
       titulo: 'Cita cancelada',
-      mensaje: `${paciente.nombre} ${paciente.apellido} canceló su cita del ${cuando}.`,
+      mensaje: `La cita del ${cuando} con ${paciente.nombre} ${paciente.apellido} fue cancelada.`,
       link: '/medico/agenda',
     });
-  } else {
-    await notify({
+  const avisarPaciente = () =>
+    notify({
       userId: paciente._id.toString(),
       tipo: NotificationType.CITA_CANCELADA,
       titulo: 'Tu cita fue cancelada',
       mensaje: `Tu cita del ${cuando} fue cancelada. Puedes reprogramarla cuando quieras.`,
       link: '/paciente/reservar',
     });
+
+  // El paciente cancela → avisa al médico; el médico cancela → avisa al paciente;
+  // Recepción/Admin cancelan → avisan a ambas partes.
+  if (requester.role === UserRole.PACIENTE) {
+    await avisarMedico();
+  } else if (requester.role === UserRole.MEDICO) {
+    await avisarPaciente();
+  } else {
+    await Promise.all([avisarMedico(), avisarPaciente()]);
   }
 
   return cita;

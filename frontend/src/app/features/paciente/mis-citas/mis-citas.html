@@ -1,6 +1,10 @@
 <h1>Mis citas</h1>
 <p class="lead">Tus citas reservadas y su historial.</p>
 
+@if (error()) {
+  <div class="card" style="border-color:#dc2626;color:#b91c1c;">{{ error() }}</div>
+}
+
 @if (loading()) {
   <p class="muted">Cargando…</p>
 } @else if (citas().length === 0) {

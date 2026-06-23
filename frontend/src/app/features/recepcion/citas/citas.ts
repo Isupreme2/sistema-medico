@@ -16,6 +16,8 @@ import { Appointment } from '../../../core/models/appointment.model';
         <p class="muted">Todas las citas de la clínica.</p>
       </header>
 
+      @if (error()) { <p class="err">{{ error() }}</p> }
+
       @if (loading()) {
         <p class="muted">Cargando…</p>
       } @else if (!citas().length) {
@@ -64,6 +66,7 @@ import { Appointment } from '../../../core/models/appointment.model';
       .badge[data-estado='atendida'] { background: #dcfce7; color: #166534; }
       .badge[data-estado='cancelada'] { background: #fee2e2; color: #991b1b; }
       .badge[data-estado='no_asistio'] { background: #fef3c7; color: #92400e; }
+      .err { color: #b91c1c; }
     `,
   ],
 })
@@ -72,6 +75,7 @@ export class RecepcionCitas {
 
   readonly citas = signal<Appointment[]>([]);
   readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   constructor() {
     this.load();
@@ -89,7 +93,11 @@ export class RecepcionCitas {
   }
 
   cancelar(c: Appointment): void {
-    this.appointments.cancelar(c._id).subscribe({ next: () => this.load() });
+    this.error.set(null);
+    this.appointments.cancelar(c._id).subscribe({
+      next: () => this.load(),
+      error: (err) => this.error.set(err.error?.message ?? 'No se pudo cancelar la cita'),
+    });
   }
 
   estadoLabel(e: string): string {

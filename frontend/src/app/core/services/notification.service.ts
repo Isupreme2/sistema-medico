@@ -53,6 +53,8 @@ export class NotificationService {
     this.sub = null;
     this._items.set([]);
     this._unread.set(0);
+    // Cierra el socket para que el próximo login reconecte con su propio token.
+    this.socket.disconnect();
   }
 
   refresh(): void {

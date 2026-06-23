@@ -16,6 +16,7 @@ export class MisCitas {
 
   readonly citas = signal<Appointment[]>([]);
   readonly loading = signal(true);
+  readonly error = signal<string | null>(null);
 
   constructor() {
     this.load();
@@ -33,7 +34,11 @@ export class MisCitas {
   }
 
   cancelar(c: Appointment): void {
-    this.service.cancelar(c._id).subscribe({ next: () => this.load() });
+    this.error.set(null);
+    this.service.cancelar(c._id).subscribe({
+      next: () => this.load(),
+      error: (err) => this.error.set(err.error?.message ?? 'No se pudo cancelar la cita'),
+    });
   }
 
   estadoLabel(e: string): string {

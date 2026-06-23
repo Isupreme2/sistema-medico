@@ -1,6 +1,9 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subject, of } from 'rxjs';
+import { debounceTime, startWith, switchMap, catchError } from 'rxjs/operators';
 import { PatientService, CreatePatientPayload } from '../../../core/services/patient.service';
 import { PatientLite } from '../../../core/models/user.model';
 
@@ -84,31 +87,35 @@ export class RecepcionPacientes {
 
   readonly q = signal('');
   readonly pacientes = signal<PatientLite[]>([]);
-  readonly loading = signal(false);
+  readonly loading = signal(true);
   readonly saving = signal(false);
   readonly msg = signal<string | null>(null);
   readonly error = signal<string | null>(null);
 
   form: CreatePatientPayload = { nombre: '', apellido: '', email: '', password: '', telefono: '' };
 
+  // La búsqueda se hace con debounce (250 ms) y switchMap, que cancela la
+  // petición anterior: ni una llamada por tecla ni resultados fuera de orden.
+  private search$ = new Subject<string>();
+
   constructor() {
-    this.buscar();
+    this.search$
+      .pipe(
+        startWith(''),
+        debounceTime(250),
+        switchMap((q) => this.patients.search(q).pipe(catchError(() => of([] as PatientLite[])))),
+        takeUntilDestroyed(),
+      )
+      .subscribe((p) => {
+        this.pacientes.set(p);
+        this.loading.set(false);
+      });
   }
 
   onSearch(value: string): void {
     this.q.set(value);
-    this.buscar();
-  }
-
-  private buscar(): void {
     this.loading.set(true);
-    this.patients.search(this.q()).subscribe({
-      next: (p) => {
-        this.pacientes.set(p);
-        this.loading.set(false);
-      },
-      error: () => this.loading.set(false),
-    });
+    this.search$.next(value);
   }
 
   registrar(): void {
@@ -120,7 +127,7 @@ export class RecepcionPacientes {
         this.msg.set(`Paciente ${p.nombre} ${p.apellido} registrado correctamente.`);
         this.form = { nombre: '', apellido: '', email: '', password: '', telefono: '' };
         this.saving.set(false);
-        this.buscar();
+        this.search$.next(this.q());
       },
       error: (err: HttpErrorResponse) => {
         this.error.set(err.error?.message ?? 'No se pudo registrar al paciente');

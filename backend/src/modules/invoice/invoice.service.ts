@@ -1,7 +1,7 @@
 import crypto from 'node:crypto';
 import mongoose from 'mongoose';
 import { Invoice, InvoiceStatus } from '../../models/invoice.model';
-import { Appointment } from '../../models/appointment.model';
+import { Appointment, AppointmentStatus } from '../../models/appointment.model';
 import { User } from '../../models/user.model';
 import { UserRole } from '../../constants/roles';
 import { AppError } from '../../utils/AppError';
@@ -32,6 +32,21 @@ export async function crear(creator: AccessTokenPayload, input: CreateInvoiceInp
       creator.role === UserRole.MEDICO && cita.medicoId.toString() === creator.sub;
     if (!esGestor && !esMedicoDeCita) {
       throw AppError.forbidden('No puedes facturar esta cita');
+    }
+    // No tiene sentido facturar una cita cancelada o a la que el paciente no asistió.
+    if (
+      cita.estado === AppointmentStatus.CANCELADA ||
+      cita.estado === AppointmentStatus.NO_ASISTIO
+    ) {
+      throw AppError.unprocessable('No se puede facturar una cita cancelada o no atendida');
+    }
+    // Evitar facturar dos veces la misma cita (salvo que la previa esté anulada).
+    const yaFacturada = await Invoice.findOne({
+      appointmentId: input.appointmentId,
+      estado: { $ne: InvoiceStatus.ANULADA },
+    });
+    if (yaFacturada) {
+      throw AppError.conflict(`Esta cita ya tiene la factura ${yaFacturada.numero}`);
     }
     pacienteId = cita.pacienteId.toString();
     medicoId = cita.medicoId.toString();

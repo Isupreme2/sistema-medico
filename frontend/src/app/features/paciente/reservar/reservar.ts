@@ -14,6 +14,13 @@ import { SocketService } from '../../../core/services/socket.service';
 import { MedicoProfile } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
 
+/** Fecha de hoy en formato YYYY-MM-DD según la zona horaria LOCAL (no UTC). */
+function hoyLocal(): string {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+}
+
 @Component({
   selector: 'app-reservar',
   imports: [],
@@ -29,7 +36,7 @@ export class Reservar {
 
   readonly medicos = signal<MedicoProfile[]>([]);
   readonly medicoId = signal<string>('');
-  readonly fecha = signal<string>(new Date().toISOString().slice(0, 10));
+  readonly fecha = signal<string>(hoyLocal());
   readonly modalidad = signal<AppointmentModality>('presencial');
   readonly slots = signal<Slot[]>([]);
   readonly loading = signal(false);

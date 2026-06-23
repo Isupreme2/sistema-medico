@@ -37,6 +37,15 @@ export function errorHandler(
     return;
   }
 
+  // Id con formato inválido (ObjectId malformado) → 400 en vez de 500
+  if (err instanceof mongoose.Error.CastError) {
+    res.status(400).json({
+      status: 'error',
+      message: `Valor inválido para "${err.path}"`,
+    });
+    return;
+  }
+
   // Error de validación de Mongoose → 422
   if (err instanceof mongoose.Error.ValidationError) {
     res.status(422).json({

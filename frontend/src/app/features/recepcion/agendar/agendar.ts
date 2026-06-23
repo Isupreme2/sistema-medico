@@ -1,12 +1,22 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
+import { Subject, of } from 'rxjs';
+import { debounceTime, switchMap, catchError } from 'rxjs/operators';
 import { MedicoService } from '../../../core/services/medico.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { PatientService } from '../../../core/services/patient.service';
 import { MedicoProfile } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
 import { PatientLite } from '../../../core/models/user.model';
+
+/** Fecha de hoy en formato YYYY-MM-DD según la zona horaria LOCAL (no UTC). */
+function hoyLocal(): string {
+  const d = new Date();
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
+  return d.toISOString().slice(0, 10);
+}
 
 /** Recepción agenda una cita a nombre de un paciente. */
 @Component({
@@ -135,7 +145,7 @@ export class RecepcionAgendar {
 
   readonly medicos = signal<MedicoProfile[]>([]);
   readonly medicoId = signal('');
-  readonly fecha = signal(new Date().toISOString().slice(0, 10));
+  readonly fecha = signal(hoyLocal());
   modalidadSel: AppointmentModality = 'presencial';
   readonly slots = signal<Slot[]>([]);
   readonly loading = signal(false);
@@ -147,11 +157,22 @@ export class RecepcionAgendar {
   readonly msg = signal<string | null>(null);
   readonly error = signal<string | null>(null);
 
+  // Búsqueda con debounce + switchMap (cancela la petición anterior).
+  private search$ = new Subject<string>();
+
   constructor() {
     this.medicoService.list(true).subscribe((m) => {
       this.medicos.set(m);
       if (m.length) this.onMedicoChange(m[0].userId._id);
     });
+
+    this.search$
+      .pipe(
+        debounceTime(250),
+        switchMap((q) => this.patients.search(q).pipe(catchError(() => of([] as PatientLite[])))),
+        takeUntilDestroyed(),
+      )
+      .subscribe((p) => this.pacientes.set(p));
   }
 
   onSearch(value: string): void {
@@ -160,7 +181,7 @@ export class RecepcionAgendar {
       this.pacientes.set([]);
       return;
     }
-    this.patients.search(value).subscribe((p) => this.pacientes.set(p));
+    this.search$.next(value);
   }
 
   seleccionar(p: PatientLite): void {

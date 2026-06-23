@@ -21,7 +21,12 @@ export const validate =
     } catch (err) {
       if (err instanceof ZodError) {
         const details = err.flatten().fieldErrors;
-        throw AppError.unprocessable('Error de validación', details);
+        // Mensaje legible: el primer error concreto (las reglas de Zod ya están
+        // en español), para que el usuario sepa qué corregir y no solo vea "Error
+        // de validación". El detalle completo por campo va en `details`.
+        const primer = err.issues[0];
+        const mensaje = primer?.message ?? 'Error de validación';
+        throw AppError.unprocessable(mensaje, details);
       }
       throw err;
     }
