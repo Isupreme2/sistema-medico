@@ -34,6 +34,14 @@ const envSchema = z.object({
     .string()
     .default('false')
     .transform((v) => v === 'true'),
+  /**
+   * Política SameSite de la cookie de refresh.
+   *   - 'strict' (default): correcto en local / mismo sitio.
+   *   - 'none': obligatorio para que la cookie viaje cross-site (frontend y
+   *     backend en dominios distintos, ej. Vercel ↔ Render). Exige HTTPS, por
+   *     lo que fuerza Secure=true automáticamente.
+   */
+  COOKIE_SAMESITE: z.enum(['strict', 'lax', 'none']).default('strict'),
 
   APP_NAME: z.string().default('Sistema Medico EHR'),
 

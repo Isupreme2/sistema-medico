@@ -7,13 +7,25 @@ import * as authService from './auth.service';
 const REFRESH_COOKIE = 'refreshToken';
 const REFRESH_COOKIE_MAXAGE = 7 * 24 * 60 * 60 * 1000; // 7 días
 
+// SameSite=None solo es válido junto con Secure (requisito del navegador). Por
+// eso, si la cookie es cross-site, forzamos Secure aunque COOKIE_SECURE sea false.
+const COOKIE_SAMESITE = env.COOKIE_SAMESITE;
+const COOKIE_SECURE = env.COOKIE_SECURE || COOKIE_SAMESITE === 'none';
+
+/** Atributos comunes de la cookie de refresh (set y clear deben coincidir). */
+function refreshCookieOptions() {
+  return {
+    httpOnly: true,
+    secure: COOKIE_SECURE,
+    sameSite: COOKIE_SAMESITE,
+    path: env.API_PREFIX + '/auth',
+  } as const;
+}
+
 function setRefreshCookie(res: Response, token: string): void {
   res.cookie(REFRESH_COOKIE, token, {
-    httpOnly: true,
-    secure: env.COOKIE_SECURE,
-    sameSite: 'strict',
+    ...refreshCookieOptions(),
     maxAge: REFRESH_COOKIE_MAXAGE,
-    path: env.API_PREFIX + '/auth',
   });
 }
 
@@ -42,7 +54,7 @@ export const refresh = asyncHandler(async (req: Request, res: Response) => {
 
 export const logout = asyncHandler(async (req: Request, res: Response) => {
   if (req.user) await authService.logout(req.user.sub);
-  res.clearCookie(REFRESH_COOKIE, { path: env.API_PREFIX + '/auth' });
+  res.clearCookie(REFRESH_COOKIE, refreshCookieOptions());
   res.json({ status: 'success', message: 'Sesión cerrada' });
 });
 

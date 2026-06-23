@@ -16,6 +16,11 @@ import { notFoundHandler, errorHandler } from './middleware/error';
 export function createApp(): Application {
   const app = express();
 
+  // En producción la app corre detrás de un proxy (Render, etc.). Esto hace que
+  // Express confíe en X-Forwarded-* para obtener la IP real del cliente
+  // (auditoría, rate-limit) y reconocer que la conexión original es HTTPS.
+  if (isProd) app.set('trust proxy', 1);
+
   // --- Seguridad / hardening ---
   app.use(helmet());
   app.use(
