@@ -1,6 +1,8 @@
 # Sistema de Gestión de Consultorios Médicos (EHR)
 
-Sistema para agendar citas, gestionar historia clínica y emitir recetas digitales, con roles **Administrador / Médico / Paciente**.
+Sistema para agendar citas, gestionar historia clínica y emitir recetas digitales, con un modelo de roles cercano a una clínica real: **Director/Administrador · Recepción · Médico · Paciente**.
+
+> 🌐 **Desplegado en producción:** Frontend en **Vercel**, backend en **Render**, base de datos en **MongoDB Atlas**. Ver [Despliegue](#despliegue-en-producción).
 
 ## Stack
 
@@ -22,21 +24,21 @@ Sistema para agendar citas, gestionar historia clínica y emitir recetas digital
 sistema-medico/
 ├── backend/          API Express + TypeScript (arquitectura en capas)
 │   ├── src/
-│   │   ├── config/       env (Zod), db (con fallback DNS), swagger
-│   │   ├── constants/    roles
-│   │   ├── middleware/   authenticate, authorize, validate, error
+│   │   ├── config/       env (Zod), db (con fallback DNS), cors (dinámico), swagger
+│   │   ├── constants/    roles (admin · recepcionista · medico · paciente)
+│   │   ├── middleware/   authenticate, authorize, validate, audit, error
 │   │   ├── models/       user, medicoProfile, appointmentType, bloqueo,
 │   │   │                 appointment, medicalRecord, prescription,
-│   │   │                 notification, preConsulta
+│   │   │                 notification, preConsulta, invoice, auditLog
 │   │   ├── modules/      auth · medico · appointmentType · appointment
-│   │   │                 (incl. teleconsulta/preconsulta) · record ·
-│   │   │                 prescription · notification
+│   │   │                 (incl. teleconsulta/preconsulta) · patient · record ·
+│   │   │                 prescription · notification · invoice · analytics · audit
 │   │   ├── jobs/         reminders (node-cron)
 │   │   ├── realtime/     socket.io (slots + notificaciones)
 │   │   ├── routes/       índice de rutas + /health
 │   │   ├── scripts/      seed
 │   │   ├── utils/        jwt, AppError, asyncHandler, logger, slots,
-│   │   │                 drugSafety, mailer
+│   │   │                 drugSafety, billing, mailer
 │   │   ├── app.ts        ensamblado de Express
 │   │   └── server.ts     bootstrap (DB + sockets + cron + shutdown)
 │   ├── .env.example
@@ -45,9 +47,10 @@ sistema-medico/
     └── src/app/
         ├── core/         services, interceptors (token+refresh), guards,
         │                 models, layout (shell + campana de notificaciones)
-        ├── features/     auth · dashboard · admin · medico · paciente ·
-        │                 historial · preconsulta · teleconsulta
-        ├── shared/       line-chart (chart.js)
+        ├── features/     auth · dashboard · admin · recepcion · medico ·
+        │                 paciente · facturacion · historial · preconsulta ·
+        │                 teleconsulta
+        ├── shared/       line-chart / bar-chart (chart.js)
         ├── app.config.ts proveedores (HttpClient + interceptor)
         └── app.routes.ts rutas con lazy loading y guards
 ```
@@ -68,7 +71,8 @@ npm run seed              # crea cuentas demo (ver abajo)
 | `npm run build` | Compila TypeScript a `dist/` |
 | `npm start` | Ejecuta el build de producción |
 | `npm run typecheck` | Chequeo de tipos sin emitir |
-| `npm run seed` | Cuentas demo de los 3 roles |
+| `npm run seed` | Cuentas demo de los 4 roles (idempotente) |
+| `npm test` | Batería de pruebas (Vitest) |
 
 ## Puesta en marcha (frontend)
 
@@ -85,7 +89,8 @@ npm start                 # ng serve → http://localhost:4200
 
 | Rol | Email | Contraseña |
 |-----|-------|-----------|
-| Admin | `admin@ehr.dev` | `Admin1234` |
+| Director / Admin | `admin@ehr.dev` | `Admin1234` |
+| Recepción | `recepcion@ehr.dev` | `Recepcion1234` |
 | Médico | `medico@ehr.dev` | `Medico1234` |
 | Paciente | `paciente@ehr.dev` | `Paciente1234` |
 | Paciente | `maria@ehr.dev` | `Paciente1234` |
@@ -121,9 +126,11 @@ Documentación interactiva: **http://localhost:4000/docs**
 | POST/PATCH/DELETE | `/api/v1/appointment-types/:id?` | Admin | Gestionar tipos de cita |
 | GET | `/api/v1/appointments/disponibilidad/:id?fecha=` | Auth | Slots disponibles de un médico |
 | GET | `/api/v1/appointments` | Auth | Citas (filtradas por rol) |
-| POST | `/api/v1/appointments` | Paciente | Reservar cita atómica (presencial o teleconsulta) |
-| PATCH | `/api/v1/appointments/:id/cancel` | Dueño/Médico/Admin | Cancelar (libera slot) |
+| POST | `/api/v1/appointments` | Paciente/Recepción/Admin | Reservar cita atómica (Recepción/Admin agendan a nombre del paciente) |
+| PATCH | `/api/v1/appointments/:id/cancel` | Dueño/Médico/Recepción/Admin | Cancelar (libera slot) |
 | PATCH | `/api/v1/appointments/:id/status` | Médico | Marcar atendida/no-asistió |
+| GET | `/api/v1/patients?q=` | Recepción/Médico/Admin | Buscar pacientes por nombre/email |
+| POST | `/api/v1/patients` | Recepción/Admin | Registrar un paciente |
 | POST | `/api/v1/records` | Médico | Crear consulta clínica (con signos vitales) |
 | GET | `/api/v1/records/paciente/:id` | Médico/Dueño/Admin | Historial clínico de un paciente |
 | GET | `/api/v1/records/:id` | Médico/Dueño/Admin | Detalle de una consulta |
@@ -139,11 +146,43 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/appointments/:id/video` | Participante | Datos de la sala de teleconsulta (+ventana horaria) |
 | GET | `/api/v1/appointments/:id/preconsulta` | Médico/Dueño/Admin | Ver formulario de pre-consulta |
 | POST | `/api/v1/appointments/:id/preconsulta` | Paciente dueño | Enviar/actualizar pre-consulta |
-| GET/POST | `/api/v1/invoices` | Auth / Médico-Admin | Listar (por rol) / emitir factura |
-| GET | `/api/v1/invoices/:id/pdf` | Dueño/Médico/Admin | Descargar factura en PDF |
-| PATCH | `/api/v1/invoices/:id/pay` · `/void` | Admin | Marcar pagada / anular |
+| GET/POST | `/api/v1/invoices` | Auth / Médico-Recepción-Admin | Listar (por rol) / emitir factura |
+| GET | `/api/v1/invoices/:id/pdf` | Dueño/Médico/Recepción/Admin | Descargar factura en PDF |
+| PATCH | `/api/v1/invoices/:id/pay` | Recepción/Admin | Registrar cobro (marcar pagada) |
+| PATCH | `/api/v1/invoices/:id/void` | Admin | Anular factura |
 | GET | `/api/v1/analytics/overview` | Admin | Métricas (citas, ausentismo, ingresos, top médicos) |
 | GET | `/api/v1/audit` | Admin | Bitácora de auditoría (paginada, filtrable) |
+
+## Despliegue en producción
+
+Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
+
+```
+[Vercel] frontend Angular (estático)  ──HTTPS──▶  [Render] backend Express (proceso persistente)
+                                                          │
+                                                          ▼
+                                                  [MongoDB Atlas]
+```
+
+- **Frontend → Vercel.** Root Directory `frontend`. Config en `frontend/vercel.json`
+  (output `dist/frontend/browser` + *rewrite* SPA). La URL del backend se inyecta en
+  `index.html` vía `window.__API_URL__`, **solo** fuera de local/Codespaces.
+- **Backend → Render** (Web Service). Root Directory `backend`. Build Command
+  `npm ci --include=dev && npm run build`, Start `npm run start`. Node fijado a 22
+  con `.node-version`. Se eligió Render (no Vercel) porque el backend necesita un
+  **proceso vivo** para Socket.io y el cron de recordatorios, imposible en *serverless*.
+- **Base de datos → Atlas.** El *Network Access* debe permitir `0.0.0.0/0` (Render usa
+  IPs de salida dinámicas).
+
+**Variables de entorno en Render:** `NODE_ENV=production`, `MONGODB_URI`,
+`JWT_ACCESS_SECRET`, `JWT_REFRESH_SECRET`, `COOKIE_SAMESITE=none`, `COOKIE_SECURE=true`,
+`CORS_ORIGIN`/`FRONTEND_URL` = URL de Vercel, `PUBLIC_URL` = URL de Render,
+`DNS_SERVERS=8.8.8.8,1.1.1.1`. **No** definir `PORT` (Render lo inyecta).
+
+> La **resolución de la URL del API en runtime** y el **CORS dinámico** permiten que el
+> *mismo build* funcione en local, GitHub Codespaces y producción sin recompilar. La
+> cookie de sesión usa `SameSite=None; Secure` para sobrevivir entre dominios distintos
+> (Vercel ↔ Render).
 
 ## Roadmap
 
@@ -156,7 +195,10 @@ Documentación interactiva: **http://localhost:4000/docs**
 - [x] **Fase 6** — Recordatorios email (node-cron) + notificaciones in-app en tiempo real
 - [x] **Fase 7** — Teleconsulta por video (Jitsi embebido) + formulario de pre-consulta
 - [x] **Fase 8** — Panel analítico + facturación básica + visor de auditoría
-- [ ] **Fase 9** — PWA + i18n + modo oscuro + tests + Docker
+- [x] **Fase 9** — Factura en PDF (PDFKit) + seed de demostración enriquecido e idempotente + módulo de facturación con pruebas
+- [x] **Rol Recepción / Director** — modelo de roles de clínica real: Recepción agenda por el paciente, lo registra y cobra; Admin = Director
+- [x] **Despliegue en producción** — Vercel (frontend) + Render (backend) + Atlas, con URL del API y CORS resueltos en runtime
+- [ ] **Futuro** — PWA, i18n (ES/EN), modo oscuro, Docker, adjuntos a la historia clínica, lista de espera
 
 ## Decisiones de diseño destacadas
 
@@ -185,7 +227,8 @@ Documentación interactiva: **http://localhost:4000/docs**
 ## Seguridad
 
 - Contraseñas con **bcrypt** (12 rounds), nunca expuestas en respuestas.
-- **Helmet**, rate limiting, CORS estricto, sanitización anti NoSQL-injection.
+- **Helmet**, rate limiting, **CORS dinámico** por entorno, sanitización anti NoSQL-injection.
+- Cookie de *refresh* `httpOnly` con `SameSite`/`Secure` configurables (soporte cross-domain).
 - Bloqueo temporal de cuenta tras 5 intentos fallidos.
 - Validación de entrada con **Zod** en cada endpoint.
 - Secretos en `.env` (excluido del control de versiones).
