@@ -9,6 +9,7 @@ import { AppointmentType } from '../../models/appointmentType.model';
 import { MedicoProfile } from '../../models/medicoProfile.model';
 import { Bloqueo } from '../../models/bloqueo.model';
 import { PreConsulta } from '../../models/preConsulta.model';
+import { User } from '../../models/user.model';
 import { UserRole } from '../../constants/roles';
 import { AppError } from '../../utils/AppError';
 import { AccessTokenPayload } from '../../utils/jwt';
@@ -85,7 +86,24 @@ export async function getAvailability(medicoId: string, fecha: string) {
  * No hace "chequeo previo": intenta insertar y deja que el índice único
  * de la base de datos sea el árbitro (error 11000 → 409 Conflict).
  */
-export async function reservar(pacienteId: string, input: CreateAppointmentInput) {
+export async function reservar(requester: AccessTokenPayload, input: CreateAppointmentInput) {
+  // ¿A nombre de quién es la cita?
+  //  - Paciente: siempre para sí mismo (no puede agendar a terceros).
+  //  - Recepción/Admin: para el paciente indicado en el body.
+  let pacienteId: string;
+  if (requester.role === UserRole.PACIENTE) {
+    pacienteId = requester.sub;
+  } else {
+    if (!input.pacienteId) {
+      throw AppError.badRequest('Debes indicar el paciente para el que se agenda la cita');
+    }
+    const paciente = await User.findById(input.pacienteId);
+    if (!paciente || paciente.role !== UserRole.PACIENTE) {
+      throw AppError.notFound('Paciente no encontrado');
+    }
+    pacienteId = input.pacienteId;
+  }
+
   const profile = await MedicoProfile.findOne({ userId: input.medicoId });
   if (!profile || !profile.activo) {
     throw AppError.notFound('Médico no disponible');
@@ -193,13 +211,15 @@ async function getOwnedAppointment(id: string, requester: AccessTokenPayload) {
   const cita = await Appointment.findById(id);
   if (!cita) throw AppError.notFound('Cita no encontrada');
 
-  const esAdmin = requester.role === UserRole.ADMIN;
+  // Admin y Recepción gestionan cualquier cita; médico/paciente solo las suyas.
+  const esGestor =
+    requester.role === UserRole.ADMIN || requester.role === UserRole.RECEPCIONISTA;
   const esMedico =
     requester.role === UserRole.MEDICO && cita.medicoId.toString() === requester.sub;
   const esPaciente =
     requester.role === UserRole.PACIENTE && cita.pacienteId.toString() === requester.sub;
 
-  if (!esAdmin && !esMedico && !esPaciente) {
+  if (!esGestor && !esMedico && !esPaciente) {
     throw AppError.forbidden('No puedes gestionar esta cita');
   }
   return cita;

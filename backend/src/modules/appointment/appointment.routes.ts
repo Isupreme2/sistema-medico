@@ -56,7 +56,7 @@ router.get('/', authenticate, ctrl.listar);
 router.post(
   '/',
   authenticate,
-  authorize(UserRole.PACIENTE),
+  authorize(UserRole.PACIENTE, UserRole.RECEPCIONISTA, UserRole.ADMIN),
   validate(createAppointmentSchema),
   ctrl.reservar,
 );

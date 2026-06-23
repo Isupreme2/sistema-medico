@@ -29,7 +29,7 @@ router.get('/', authenticate, ctrl.listar);
 router.post(
   '/',
   authenticate,
-  authorize(UserRole.MEDICO, UserRole.ADMIN),
+  authorize(UserRole.MEDICO, UserRole.ADMIN, UserRole.RECEPCIONISTA),
   validate(createInvoiceSchema),
   ctrl.crear,
 );
@@ -68,7 +68,12 @@ router.get('/:id/pdf', authenticate, ctrl.pdf);
  *     responses:
  *       200: { description: Factura pagada }
  */
-router.patch('/:id/pay', authenticate, authorize(UserRole.ADMIN), ctrl.marcarPagada);
+router.patch(
+  '/:id/pay',
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.RECEPCIONISTA),
+  ctrl.marcarPagada,
+);
 
 /**
  * @openapi

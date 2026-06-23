@@ -21,6 +21,7 @@ import { logger } from '../utils/logger';
 
 const DEMO_USERS = [
   { email: 'admin@ehr.dev', password: 'Admin1234', role: UserRole.ADMIN, nombre: 'Ana', apellido: 'Administradora' },
+  { email: 'recepcion@ehr.dev', password: 'Recepcion1234', role: UserRole.RECEPCIONISTA, nombre: 'Rosa', apellido: 'Recepción' },
   { email: 'medico@ehr.dev', password: 'Medico1234', role: UserRole.MEDICO, nombre: 'Carlos', apellido: 'Pérez' },
   { email: 'paciente@ehr.dev', password: 'Paciente1234', role: UserRole.PACIENTE, nombre: 'Juan', apellido: 'Gómez', alergias: ['penicilina'] },
   { email: 'maria@ehr.dev', password: 'Paciente1234', role: UserRole.PACIENTE, nombre: 'María', apellido: 'Torres' },

@@ -3,7 +3,10 @@
  * tanto en el modelo de datos como en el middleware authorize().
  */
 export enum UserRole {
+  /** Dirección / Administración del sistema (config, usuarios, auditoría, analítica). */
   ADMIN = 'admin',
+  /** Recepción / Registro: agenda por los pacientes, los registra y cobra. */
+  RECEPCIONISTA = 'recepcionista',
   MEDICO = 'medico',
   PACIENTE = 'paciente',
 }

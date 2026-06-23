@@ -6,6 +6,11 @@ const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Id inválido');
 export const createAppointmentSchema = z.object({
   body: z.object({
     medicoId: objectId,
+    /**
+     * Paciente para el que se reserva. Lo usa Recepción/Admin al agendar por un
+     * tercero; cuando reserva el propio paciente se ignora (se toma su id del token).
+     */
+    pacienteId: objectId.optional(),
     fechaHora: z.coerce.date(),
     appointmentTypeId: objectId.optional(),
     modalidad: z

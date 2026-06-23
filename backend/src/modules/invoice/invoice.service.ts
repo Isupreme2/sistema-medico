@@ -26,17 +26,20 @@ export async function crear(creator: AccessTokenPayload, input: CreateInvoiceInp
     const cita = await Appointment.findById(input.appointmentId);
     if (!cita) throw AppError.notFound('Cita no encontrada');
 
-    const esAdmin = creator.role === UserRole.ADMIN;
+    const esGestor =
+      creator.role === UserRole.ADMIN || creator.role === UserRole.RECEPCIONISTA;
     const esMedicoDeCita =
       creator.role === UserRole.MEDICO && cita.medicoId.toString() === creator.sub;
-    if (!esAdmin && !esMedicoDeCita) {
+    if (!esGestor && !esMedicoDeCita) {
       throw AppError.forbidden('No puedes facturar esta cita');
     }
     pacienteId = cita.pacienteId.toString();
     medicoId = cita.medicoId.toString();
   } else {
-    if (creator.role !== UserRole.ADMIN) {
-      throw AppError.forbidden('Solo el admin puede facturar sin una cita');
+    const esGestor =
+      creator.role === UserRole.ADMIN || creator.role === UserRole.RECEPCIONISTA;
+    if (!esGestor) {
+      throw AppError.forbidden('Solo Recepción o Admin pueden facturar sin una cita');
     }
     const paciente = await User.findById(input.pacienteId);
     if (!paciente || paciente.role !== UserRole.PACIENTE) {
@@ -95,12 +98,13 @@ async function getOwned(id: string, requester: AccessTokenPayload) {
     .populate('medicoId', 'nombre apellido');
   if (!factura) throw AppError.notFound('Factura no encontrada');
 
-  const esAdmin = requester.role === UserRole.ADMIN;
+  const esGestor =
+    requester.role === UserRole.ADMIN || requester.role === UserRole.RECEPCIONISTA;
   const esMedico =
     requester.role === UserRole.MEDICO && factura.medicoId?._id.toString() === requester.sub;
   const esPaciente =
     requester.role === UserRole.PACIENTE && factura.pacienteId._id.toString() === requester.sub;
-  if (!esAdmin && !esMedico && !esPaciente) {
+  if (!esGestor && !esMedico && !esPaciente) {
     throw AppError.forbidden('No puedes ver esta factura');
   }
   return factura;

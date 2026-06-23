@@ -10,7 +10,7 @@ export const disponibilidad = asyncHandler(async (req: Request, res: Response) =
 });
 
 export const reservar = asyncHandler(async (req: Request, res: Response) => {
-  const cita = await service.reservar(req.user!.sub, req.body);
+  const cita = await service.reservar(req.user!, req.body);
   emitSlotChange({
     medicoId: cita.medicoId._id.toString(),
     fechaHora: cita.fechaHora.toISOString(),
