@@ -229,6 +229,25 @@ Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
 - Contraseñas con **bcrypt** (12 rounds), nunca expuestas en respuestas.
 - **Helmet**, rate limiting, **CORS dinámico** por entorno, sanitización anti NoSQL-injection.
 - Cookie de *refresh* `httpOnly` con `SameSite`/`Secure` configurables (soporte cross-domain).
+- **Socket.io autenticado por token**: la sala de notificaciones se deriva del JWT verificado, no del id del cliente.
 - Bloqueo temporal de cuenta tras 5 intentos fallidos.
 - Validación de entrada con **Zod** en cada endpoint.
 - Secretos en `.env` (excluido del control de versiones).
+
+## Auditoría de calidad y seguridad
+
+Terminadas las funcionalidades se auditó el código y se corrigieron **9 hallazgos** por causa raíz (re-verificando tests + build AOT tras cada cambio):
+
+**Seguridad**
+- Socket.io autenticado por token: la sala `user:{id}` se deriva del JWT verificado, no del id que envíe el cliente → un usuario no puede recibir las notificaciones de otro.
+
+**Robustez del API**
+- Mensajes de validación **específicos** (primer error de Zod), no un genérico "Error de validación".
+- IDs con formato inválido → **400** en vez de 500 (manejo de `CastError`).
+- No se permite **facturar dos veces** la misma cita, ni una cita **cancelada o no atendida**.
+
+**Experiencia de uso (frontend)**
+- Fecha inicial del calendario en **hora local** (no UTC).
+- Errores de cancelación **visibles** (ya no fallan en silencio).
+- Búsqueda de pacientes con **debounce** + `switchMap` (sin una petición por tecla ni resultados fuera de orden).
+- Al cancelar Recepción/Admin se notifica a **médico y paciente**.
