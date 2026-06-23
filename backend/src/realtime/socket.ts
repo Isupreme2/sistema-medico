@@ -1,6 +1,6 @@
 import { Server as HttpServer } from 'node:http';
 import { Server as IOServer } from 'socket.io';
-import { env } from '../config/env';
+import { corsOrigin } from '../config/cors';
 import { logger } from '../utils/logger';
 
 let io: IOServer | null = null;
@@ -8,7 +8,7 @@ let io: IOServer | null = null;
 /** Inicializa Socket.io sobre el servidor HTTP. */
 export function initSocket(server: HttpServer): void {
   io = new IOServer(server, {
-    cors: { origin: env.CORS_ORIGIN, credentials: true },
+    cors: { origin: corsOrigin, credentials: true },
   });
 
   io.on('connection', (socket) => {

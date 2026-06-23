@@ -7,6 +7,7 @@ import mongoSanitize from 'express-mongo-sanitize';
 import swaggerUi from 'swagger-ui-express';
 
 import { env, isProd } from './config/env';
+import { corsOrigin } from './config/cors';
 import { swaggerSpec } from './config/swagger';
 import apiRoutes from './routes';
 import { auditTrail } from './middleware/audit';
@@ -19,7 +20,7 @@ export function createApp(): Application {
   app.use(helmet());
   app.use(
     cors({
-      origin: env.CORS_ORIGIN,
+      origin: corsOrigin,
       credentials: true,
     }),
   );
