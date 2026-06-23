@@ -6,6 +6,21 @@
   <base href="/">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/x-icon" href="favicon.ico">
+  <!--
+    URL del backend en producción (Render). El resolver de environment.ts lee
+    window.__API_URL__ con máxima prioridad, por lo que SOLO lo definimos cuando
+    NO estamos en local ni en Codespaces (ahí el resolver detecta el host solo).
+    Este script inline corre antes que el bundle de Angular (module diferido).
+  -->
+  <script>
+    (function () {
+      var h = location.hostname;
+      var isDev = h === 'localhost' || h === '127.0.0.1' || h.endsWith('.app.github.dev');
+      if (!isDev) {
+        window.__API_URL__ = 'https://sistema-medico-backend-nvf0.onrender.com/api/v1';
+      }
+    })();
+  </script>
 </head>
 <body>
   <app-root></app-root>
