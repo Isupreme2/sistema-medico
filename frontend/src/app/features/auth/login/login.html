@@ -1,9 +1,9 @@
 <div class="auth-wrapper">
   <div class="auth-card">
     <div class="brand">
-      <span class="logo">🩺</span>
-      <h1>Sistema Médico</h1>
-      <p class="subtitle">Gestión de Consultorios — EHR</p>
+      <span class="mark"><span class="mark__inner"></span></span>
+      <h1>Clínica Cordillera</h1>
+      <p class="subtitle">Portal clínico — Inicia sesión</p>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
@@ -41,6 +41,9 @@
 
     <p class="footer">
       ¿No tienes cuenta? <a routerLink="/register">Regístrate como paciente</a>
+    </p>
+    <p class="footer back">
+      <a routerLink="/">← Volver al sitio</a>
     </p>
   </div>
 </div>

@@ -3,6 +3,48 @@ import { authGuard, roleGuard } from './core/guards/auth.guard';
 import { UserRole } from './core/models/user.model';
 
 export const routes: Routes = [
+  // ===== Sitio público de marketing (sin autenticación) =====
+  {
+    path: '',
+    pathMatch: 'full',
+    loadComponent: () => import('./features/public/home/home').then((m) => m.Home),
+  },
+  {
+    path: 'especialidades',
+    loadComponent: () =>
+      import('./features/public/especialidades/especialidades').then((m) => m.Especialidades),
+  },
+  {
+    path: 'equipo',
+    loadComponent: () => import('./features/public/equipo/equipo').then((m) => m.Equipo),
+  },
+  {
+    path: 'nosotros',
+    loadComponent: () => import('./features/public/nosotros/nosotros').then((m) => m.Nosotros),
+  },
+  {
+    path: 'blog',
+    loadComponent: () => import('./features/public/blog/blog').then((m) => m.Blog),
+  },
+  {
+    path: 'faq',
+    loadComponent: () => import('./features/public/faq/faq').then((m) => m.Faq),
+  },
+  {
+    path: 'contacto',
+    loadComponent: () => import('./features/public/contacto/contacto').then((m) => m.Contacto),
+  },
+  {
+    path: 'testimonios',
+    loadComponent: () =>
+      import('./features/public/testimonios/testimonios').then((m) => m.Testimonios),
+  },
+  {
+    path: 'citas',
+    loadComponent: () => import('./features/public/citas/citas').then((m) => m.Citas),
+  },
+
+  // ===== Autenticación =====
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login/login').then((m) => m.Login),
@@ -12,12 +54,13 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./features/auth/register/register').then((m) => m.Register),
   },
+
+  // ===== App interna autenticada (shell en path '' prefix, al final) =====
   {
     path: '',
     canActivate: [authGuard],
     loadComponent: () => import('./core/layout/shell').then((m) => m.Shell),
     children: [
-      { path: '', pathMatch: 'full', redirectTo: 'dashboard' },
       {
         path: 'dashboard',
         loadComponent: () =>

@@ -1,10 +1,10 @@
 <div class="shell">
   <header class="navbar">
     <div class="nav-left">
-      <div class="nav-brand">
-        <span class="logo">🩺</span>
-        <strong>Sistema Médico</strong>
-      </div>
+      <a class="nav-brand" routerLink="/dashboard">
+        <span class="mark"><span class="mark__inner"></span></span>
+        <strong>Clínica Cordillera</strong>
+      </a>
       <nav class="nav-links">
         @for (link of links(); track link.path) {
           <a [routerLink]="link.path" routerLinkActive="active">{{ link.label }}</a>
