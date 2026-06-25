@@ -13,8 +13,8 @@ export interface Invoice {
   numero: string;
   pacienteId: PersonaRef;
   medicoId?: PersonaRef;
-  appointmentId?: string;
-  items: InvoiceItem[];
+  citaId?: string;
+  conceptos: InvoiceItem[];
   subtotal: number;
   impuestoPct: number;
   impuesto: number;
@@ -26,9 +26,9 @@ export interface Invoice {
 }
 
 export interface CreateInvoicePayload {
-  appointmentId?: string;
+  citaId?: string;
   pacienteId?: string;
   impuestoPct?: number;
   notas?: string;
-  items: InvoiceItem[];
+  conceptos: InvoiceItem[];
 }

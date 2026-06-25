@@ -5,11 +5,11 @@ import { logger } from '../../utils/logger';
 import { AccessTokenPayload } from '../../utils/jwt';
 
 export interface NotifyInput {
-  userId: string;
+  usuarioId: string;
   tipo: NotificationType;
   titulo: string;
   mensaje: string;
-  link?: string;
+  enlace?: string;
 }
 
 /**
@@ -20,7 +20,7 @@ export interface NotifyInput {
 export async function notify(input: NotifyInput): Promise<void> {
   try {
     const noti = await Notification.create(input);
-    emitNotification(input.userId, noti.toJSON());
+    emitNotification(input.usuarioId, noti.toJSON());
   } catch (err) {
     logger.error('No se pudo crear la notificación:', err);
   }
@@ -28,19 +28,19 @@ export async function notify(input: NotifyInput): Promise<void> {
 
 /** Lista las notificaciones del usuario autenticado (recientes primero). */
 export async function listMine(userId: string, soloNoLeidas = false) {
-  const query: Record<string, unknown> = { userId };
+  const query: Record<string, unknown> = { usuarioId: userId };
   if (soloNoLeidas) query.leida = false;
-  return Notification.find(query).sort({ createdAt: -1 }).limit(50);
+  return Notification.find(query).sort({ creadoEn: -1 }).limit(50);
 }
 
 export async function unreadCount(userId: string): Promise<number> {
-  return Notification.countDocuments({ userId, leida: false });
+  return Notification.countDocuments({ usuarioId: userId, leida: false });
 }
 
 export async function markRead(id: string, requester: AccessTokenPayload) {
   const noti = await Notification.findById(id);
   if (!noti) throw AppError.notFound('Notificación no encontrada');
-  if (noti.userId.toString() !== requester.sub) {
+  if (noti.usuarioId.toString() !== requester.sub) {
     throw AppError.forbidden('No puedes modificar esta notificación');
   }
   noti.leida = true;
@@ -50,7 +50,7 @@ export async function markRead(id: string, requester: AccessTokenPayload) {
 
 export async function markAllRead(userId: string): Promise<number> {
   const res = await Notification.updateMany(
-    { userId, leida: false },
+    { usuarioId: userId, leida: false },
     { $set: { leida: true } },
   );
   return res.modifiedCount;

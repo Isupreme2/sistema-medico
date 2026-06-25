@@ -15,7 +15,7 @@ export interface MedicalRecord {
   _id: string;
   pacienteId: PersonaRef;
   medicoId: PersonaRef;
-  appointmentId?: string;
+  citaId?: string;
   fecha: string;
   motivo?: string;
   diagnostico: string;
@@ -23,12 +23,12 @@ export interface MedicalRecord {
   notas?: string;
   tratamiento?: string;
   signosVitales?: SignosVitales;
-  createdAt: string;
+  creadoEn: string;
 }
 
 export interface CreateRecordPayload {
   pacienteId: string;
-  appointmentId?: string;
+  citaId?: string;
   motivo?: string;
   diagnostico: string;
   cie10?: string;

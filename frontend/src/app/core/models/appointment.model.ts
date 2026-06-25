@@ -30,7 +30,7 @@ export interface Appointment {
   _id: string;
   medicoId: PersonaRef;
   pacienteId: PersonaRef;
-  appointmentTypeId?: TipoRef;
+  tipoCitaId?: TipoRef;
   fechaHora: string;
   duracionMin: number;
   estado: AppointmentStatus;
@@ -58,7 +58,7 @@ export interface VideoAccess {
 
 export interface PreConsulta {
   _id?: string;
-  appointmentId: string;
+  citaId: string;
   motivoConsulta: string;
   sintomas?: string;
   inicioSintomas?: string;
@@ -68,4 +68,4 @@ export interface PreConsulta {
   enviadoEn?: string;
 }
 
-export type PreConsultaPayload = Omit<PreConsulta, '_id' | 'appointmentId' | 'enviadoEn'>;
+export type PreConsultaPayload = Omit<PreConsulta, '_id' | 'citaId' | 'enviadoEn'>;

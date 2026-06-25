@@ -33,7 +33,7 @@ export class NotificationBell {
   onSelect(noti: AppNotification): void {
     this.notis.markRead(noti);
     this.open.set(false);
-    if (noti.link) this.router.navigateByUrl(noti.link);
+    if (noti.enlace) this.router.navigateByUrl(noti.enlace);
   }
 
   marcarTodas(event: MouseEvent): void {

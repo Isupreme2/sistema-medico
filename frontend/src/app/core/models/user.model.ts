@@ -18,15 +18,15 @@ export interface PatientLite {
 export interface User {
   _id: string;
   email: string;
-  role: UserRole;
+  rol: UserRole;
   nombre: string;
   apellido: string;
   telefono?: string;
   alergias?: string[];
-  isActive: boolean;
-  twoFactor: { enabled: boolean };
-  createdAt: string;
-  updatedAt: string;
+  activo: boolean;
+  dosFactores: { habilitado: boolean };
+  creadoEn: string;
+  actualizadoEn: string;
 }
 
 export interface LoginRequest {

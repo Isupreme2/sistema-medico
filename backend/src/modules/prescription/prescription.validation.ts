@@ -5,7 +5,7 @@ const objectId = z.string().regex(/^[0-9a-fA-F]{24}$/, 'Id inválido');
 export const emitirSchema = z.object({
   body: z.object({
     pacienteId: objectId,
-    recordId: objectId.optional(),
+    historialId: objectId.optional(),
     medicamentos: z
       .array(
         z.object({

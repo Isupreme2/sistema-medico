@@ -27,7 +27,7 @@ export class Auditoria {
     this.current = p;
     this.loading.set(true);
     this.service
-      .list({ method: this.metodo() || undefined, role: this.rol() || undefined, page: p })
+      .list({ metodo: this.metodo() || undefined, rol: this.rol() || undefined, page: p })
       .subscribe({
         next: (data) => {
           this.page.set(data);

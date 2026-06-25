@@ -10,10 +10,10 @@ export class AuditService {
   private http = inject(HttpClient);
   private api = `${environment.apiUrl}/audit`;
 
-  list(filtros?: { method?: string; role?: string; page?: number }): Observable<AuditPage> {
+  list(filtros?: { metodo?: string; rol?: string; page?: number }): Observable<AuditPage> {
     const params = new URLSearchParams();
-    if (filtros?.method) params.set('method', filtros.method);
-    if (filtros?.role) params.set('role', filtros.role);
+    if (filtros?.metodo) params.set('metodo', filtros.metodo);
+    if (filtros?.rol) params.set('rol', filtros.rol);
     if (filtros?.page) params.set('page', String(filtros.page));
     const qs = params.toString();
     return this.http

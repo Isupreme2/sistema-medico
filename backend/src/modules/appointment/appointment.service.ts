@@ -44,7 +44,7 @@ export async function getAvailability(medicoId: string, fecha: string) {
     throw AppError.badRequest('Fecha inválida (usar YYYY-MM-DD)');
   }
 
-  const profile = await MedicoProfile.findOne({ userId: medicoId });
+  const profile = await MedicoProfile.findOne({ usuarioId: medicoId });
   if (!profile) throw AppError.notFound('Médico no encontrado');
 
   const diaSemana = buildDate(fecha, '00:00').getDay();
@@ -98,13 +98,13 @@ export async function reservar(requester: AccessTokenPayload, input: CreateAppoi
       throw AppError.badRequest('Debes indicar el paciente para el que se agenda la cita');
     }
     const paciente = await User.findById(input.pacienteId);
-    if (!paciente || paciente.role !== UserRole.PACIENTE) {
+    if (!paciente || paciente.rol !== UserRole.PACIENTE) {
       throw AppError.notFound('Paciente no encontrado');
     }
     pacienteId = input.pacienteId;
   }
 
-  const profile = await MedicoProfile.findOne({ userId: input.medicoId });
+  const profile = await MedicoProfile.findOne({ usuarioId: input.medicoId });
   if (!profile || !profile.activo) {
     throw AppError.notFound('Médico no disponible');
   }
@@ -116,8 +116,8 @@ export async function reservar(requester: AccessTokenPayload, input: CreateAppoi
 
   // Duración: del tipo de cita si se indica, si no la del slot del médico
   let duracionMin = profile.duracionSlotMin;
-  if (input.appointmentTypeId) {
-    const tipo = await AppointmentType.findById(input.appointmentTypeId);
+  if (input.tipoCitaId) {
+    const tipo = await AppointmentType.findById(input.tipoCitaId);
     if (tipo) duracionMin = tipo.duracionMin;
   }
 
@@ -139,7 +139,7 @@ export async function reservar(requester: AccessTokenPayload, input: CreateAppoi
 
   // En teleconsulta generamos una sala de video única e impredecible
   const esTeleconsulta = input.modalidad === AppointmentModality.TELECONSULTA;
-  const videoRoom = esTeleconsulta
+  const salaVideo = esTeleconsulta
     ? `EHR-${crypto.randomBytes(12).toString('hex')}`
     : undefined;
 
@@ -147,27 +147,27 @@ export async function reservar(requester: AccessTokenPayload, input: CreateAppoi
     const cita = await Appointment.create({
       medicoId: input.medicoId,
       pacienteId,
-      appointmentTypeId: input.appointmentTypeId,
+      tipoCitaId: input.tipoCitaId,
       fechaHora,
       duracionMin,
       modalidad: input.modalidad,
-      videoRoom,
+      salaVideo,
       motivo: input.motivo,
     });
     const populated = await cita.populate([
       { path: 'medicoId', select: 'nombre apellido' },
       { path: 'pacienteId', select: 'nombre apellido' },
-      { path: 'appointmentTypeId', select: 'nombre color' },
+      { path: 'tipoCitaId', select: 'nombre color' },
     ]);
 
     // Avisar al médico de la nueva reserva
     const paciente = populated.pacienteId as unknown as PersonaPop;
     await notify({
-      userId: input.medicoId,
+      usuarioId: input.medicoId,
       tipo: NotificationType.CITA_RESERVADA,
       titulo: 'Nueva cita reservada',
       mensaje: `${paciente.nombre} ${paciente.apellido} reservó para el ${fmtCita.format(populated.fechaHora)}.`,
-      link: '/medico/agenda',
+      enlace: '/medico/agenda',
     });
 
     return populated;
@@ -203,7 +203,7 @@ export async function listAppointments(
   return Appointment.find(query)
     .populate('medicoId', 'nombre apellido')
     .populate('pacienteId', 'nombre apellido')
-    .populate('appointmentTypeId', 'nombre color')
+    .populate('tipoCitaId', 'nombre color')
     .sort({ fechaHora: 1 });
 }
 
@@ -246,19 +246,19 @@ export async function cancelar(id: string, requester: AccessTokenPayload) {
 
   const avisarMedico = () =>
     notify({
-      userId: medico._id.toString(),
+      usuarioId: medico._id.toString(),
       tipo: NotificationType.CITA_CANCELADA,
       titulo: 'Cita cancelada',
       mensaje: `La cita del ${cuando} con ${paciente.nombre} ${paciente.apellido} fue cancelada.`,
-      link: '/medico/agenda',
+      enlace: '/medico/agenda',
     });
   const avisarPaciente = () =>
     notify({
-      userId: paciente._id.toString(),
+      usuarioId: paciente._id.toString(),
       tipo: NotificationType.CITA_CANCELADA,
       titulo: 'Tu cita fue cancelada',
       mensaje: `Tu cita del ${cuando} fue cancelada. Puedes reprogramarla cuando quieras.`,
-      link: '/paciente/reservar',
+      enlace: '/paciente/reservar',
     });
 
   // El paciente cancela → avisa al médico; el médico cancela → avisa al paciente;
@@ -294,7 +294,7 @@ export async function actualizarEstado(
  */
 export async function getVideoAccess(id: string, requester: AccessTokenPayload) {
   const cita = await getOwnedAppointment(id, requester);
-  if (cita.modalidad !== AppointmentModality.TELECONSULTA || !cita.videoRoom) {
+  if (cita.modalidad !== AppointmentModality.TELECONSULTA || !cita.salaVideo) {
     throw AppError.unprocessable('Esta cita no es una teleconsulta');
   }
 
@@ -333,7 +333,7 @@ export async function getVideoAccess(id: string, requester: AccessTokenPayload) 
   return {
     canJoin,
     motivo,
-    room: cita.videoRoom,
+    room: cita.salaVideo,
     domain: env.JITSI_DOMAIN,
     displayName: `${yo.nombre} ${yo.apellido}`,
     contraparte,
@@ -358,10 +358,10 @@ export async function submitPreConsulta(
   }
 
   const form = await PreConsulta.findOneAndUpdate(
-    { appointmentId: cita._id },
+    { citaId: cita._id },
     {
       ...input,
-      appointmentId: cita._id,
+      citaId: cita._id,
       pacienteId: cita.pacienteId,
       medicoId: cita.medicoId,
       enviadoEn: new Date(),
@@ -370,11 +370,11 @@ export async function submitPreConsulta(
   );
 
   await notify({
-    userId: cita.medicoId.toString(),
+    usuarioId: cita.medicoId.toString(),
     tipo: NotificationType.SISTEMA,
     titulo: 'Formulario pre-consulta recibido',
     mensaje: 'Un paciente completó su formulario previo a la cita.',
-    link: '/medico/agenda',
+    enlace: '/medico/agenda',
   });
 
   return form;
@@ -383,5 +383,5 @@ export async function submitPreConsulta(
 /** Obtiene la pre-consulta de una cita (médico de la cita, paciente dueño o admin). */
 export async function getPreConsulta(id: string, requester: AccessTokenPayload) {
   await getOwnedAppointment(id, requester); // valida propiedad/rol
-  return PreConsulta.findOne({ appointmentId: id });
+  return PreConsulta.findOne({ citaId: id });
 }

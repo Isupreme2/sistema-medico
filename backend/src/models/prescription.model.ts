@@ -12,13 +12,13 @@ export interface IPrescription extends Document {
   codigo: string; // ej. RX-2026-A3F9K2
   medicoId: mongoose.Types.ObjectId;
   pacienteId: mongoose.Types.ObjectId;
-  recordId?: mongoose.Types.ObjectId;
+  historialId?: mongoose.Types.ObjectId;
   medicamentos: IMedicamento[];
   indicaciones?: string;
   emitidaEn: Date;
   hash: string; // SHA-256 del contenido → integridad/verificación
-  createdAt: Date;
-  updatedAt: Date;
+  creadoEn: Date;
+  actualizadoEn: Date;
 }
 
 const medicamentoSchema = new Schema<IMedicamento>(
@@ -36,13 +36,13 @@ const prescriptionSchema = new Schema<IPrescription>(
     codigo: { type: String, required: true, unique: true, index: true },
     medicoId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     pacienteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    recordId: { type: Schema.Types.ObjectId, ref: 'MedicalRecord' },
+    historialId: { type: Schema.Types.ObjectId, ref: 'MedicalRecord' },
     medicamentos: { type: [medicamentoSchema], required: true },
     indicaciones: { type: String, trim: true, maxlength: 2000 },
     emitidaEn: { type: Date, default: Date.now },
     hash: { type: String, required: true },
   },
-  { timestamps: true },
+  { collection: 'recetas', timestamps: { createdAt: 'creadoEn', updatedAt: 'actualizadoEn' } },
 );
 
 export const Prescription: Model<IPrescription> = mongoose.model<IPrescription>(

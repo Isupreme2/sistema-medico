@@ -12,7 +12,7 @@ export const createAppointmentSchema = z.object({
      */
     pacienteId: objectId.optional(),
     fechaHora: z.coerce.date(),
-    appointmentTypeId: objectId.optional(),
+    tipoCitaId: objectId.optional(),
     modalidad: z
       .enum([AppointmentModality.PRESENCIAL, AppointmentModality.TELECONSULTA])
       .default(AppointmentModality.PRESENCIAL),

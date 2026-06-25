@@ -52,7 +52,7 @@ export class Reservar {
       .subscribe((m) => {
         this.medicos.set(m);
         if (m.length && !this.medicoId()) {
-          this.onMedicoChange(m[0].userId._id);
+          this.onMedicoChange(m[0].usuarioId._id);
         }
       });
   }

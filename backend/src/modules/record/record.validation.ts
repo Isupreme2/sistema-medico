@@ -18,7 +18,7 @@ const signosVitales = z
 export const createRecordSchema = z.object({
   body: z.object({
     pacienteId: objectId,
-    appointmentId: objectId.optional(),
+    citaId: objectId.optional(),
     motivo: z.string().max(500).optional(),
     diagnostico: z.string().min(1, 'El diagnóstico es obligatorio').max(2000),
     cie10: z.string().max(20).optional(),

@@ -8,14 +8,14 @@ export type NotificationType =
 
 export interface AppNotification {
   _id: string;
-  userId: string;
+  usuarioId: string;
   tipo: NotificationType;
   titulo: string;
   mensaje: string;
-  link?: string;
+  enlace?: string;
   leida: boolean;
-  createdAt: string;
-  updatedAt: string;
+  creadoEn: string;
+  actualizadoEn: string;
 }
 
 /** Ícono por tipo, para la UI. */

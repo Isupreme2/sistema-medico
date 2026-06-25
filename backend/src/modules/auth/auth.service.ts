@@ -25,12 +25,12 @@ function issueTokens(user: IUser): AuthTokens {
   return {
     accessToken: signAccessToken({
       sub: user._id.toString(),
-      role: user.role,
+      role: user.rol,
       email: user.email,
     }),
     refreshToken: signRefreshToken({
       sub: user._id.toString(),
-      tokenVersion: user.tokenVersion,
+      tokenVersion: user.versionToken,
     }),
   };
 }
@@ -45,12 +45,12 @@ export async function register(input: RegisterInput): Promise<IUser> {
     throw AppError.conflict('Ya existe una cuenta con ese email');
   }
 
-  const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
+  const claveHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
 
   const user = await User.create({
     email: input.email.toLowerCase(),
-    passwordHash,
-    role: UserRole.PACIENTE,
+    claveHash,
+    rol: UserRole.PACIENTE,
     nombre: input.nombre,
     apellido: input.apellido,
     telefono: input.telefono,
@@ -66,9 +66,9 @@ export async function register(input: RegisterInput): Promise<IUser> {
 export async function login(
   input: LoginInput,
 ): Promise<{ user: IUser; tokens: AuthTokens }> {
-  // +passwordHash y +twoFactor.secret están con select:false en el esquema
+  // +claveHash y +dosFactores.secreto están con select:false en el esquema
   const user = await User.findOne({ email: input.email.toLowerCase() })
-    .select('+passwordHash +twoFactor.secret');
+    .select('+claveHash +dosFactores.secreto');
 
   if (!user) {
     throw AppError.unauthorized('Credenciales inválidas');
@@ -80,28 +80,28 @@ export async function login(
     );
   }
 
-  if (!user.isActive) {
+  if (!user.activo) {
     throw AppError.forbidden('La cuenta está desactivada');
   }
 
   const ok = await user.comparePassword(input.password);
   if (!ok) {
-    user.failedLoginAttempts += 1;
-    if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
-      user.lockUntil = new Date(Date.now() + LOCK_MINUTES * 60_000);
-      user.failedLoginAttempts = 0;
+    user.intentosFallidos += 1;
+    if (user.intentosFallidos >= MAX_FAILED_ATTEMPTS) {
+      user.bloqueadoHasta = new Date(Date.now() + LOCK_MINUTES * 60_000);
+      user.intentosFallidos = 0;
     }
     await user.save();
     throw AppError.unauthorized('Credenciales inválidas');
   }
 
   // Segundo factor (si está habilitado)
-  if (user.twoFactor.enabled) {
+  if (user.dosFactores.habilitado) {
     if (!input.totp) {
       throw AppError.unauthorized('Se requiere el código de verificación (2FA)');
     }
     const valid = speakeasy.totp.verify({
-      secret: user.twoFactor.secret ?? '',
+      secret: user.dosFactores.secreto ?? '',
       encoding: 'base32',
       token: input.totp,
       window: 1,
@@ -112,8 +112,8 @@ export async function login(
   }
 
   // Login correcto → reset de contadores de seguridad
-  user.failedLoginAttempts = 0;
-  user.lockUntil = undefined;
+  user.intentosFallidos = 0;
+  user.bloqueadoHasta = undefined;
   await user.save();
 
   return { user, tokens: issueTokens(user) };
@@ -132,10 +132,10 @@ export async function refresh(refreshToken: string): Promise<AuthTokens> {
   }
 
   const user = await User.findById(payload.sub);
-  if (!user || !user.isActive) {
+  if (!user || !user.activo) {
     throw AppError.unauthorized('Usuario no válido');
   }
-  if (user.tokenVersion !== payload.tokenVersion) {
+  if (user.versionToken !== payload.tokenVersion) {
     throw AppError.unauthorized('Sesión revocada, inicia sesión nuevamente');
   }
 
@@ -144,7 +144,7 @@ export async function refresh(refreshToken: string): Promise<AuthTokens> {
 
 /** Logout global: invalida todos los refresh tokens incrementando la versión. */
 export async function logout(userId: string): Promise<void> {
-  await User.findByIdAndUpdate(userId, { $inc: { tokenVersion: 1 } });
+  await User.findByIdAndUpdate(userId, { $inc: { versionToken: 1 } });
 }
 
 export async function getMe(userId: string): Promise<IUser> {
@@ -185,8 +185,8 @@ export async function setup2FA(
     name: `${env.APP_NAME} (${user.email})`,
   });
 
-  user.twoFactor.secret = secret.base32;
-  user.twoFactor.enabled = false; // se activa al confirmar
+  user.dosFactores.secreto = secret.base32;
+  user.dosFactores.habilitado = false; // se activa al confirmar
   await user.save();
 
   const otpauthUrl = secret.otpauth_url ?? '';
@@ -196,18 +196,18 @@ export async function setup2FA(
 
 /** Confirma y activa 2FA validando el primer código TOTP. */
 export async function enable2FA(userId: string, totp: string): Promise<void> {
-  const user = await User.findById(userId).select('+twoFactor.secret');
-  if (!user || !user.twoFactor.secret) {
+  const user = await User.findById(userId).select('+dosFactores.secreto');
+  if (!user || !user.dosFactores.secreto) {
     throw AppError.badRequest('Primero debes iniciar la configuración de 2FA');
   }
   const valid = speakeasy.totp.verify({
-    secret: user.twoFactor.secret,
+    secret: user.dosFactores.secreto,
     encoding: 'base32',
     token: totp,
     window: 1,
   });
   if (!valid) throw AppError.unauthorized('Código 2FA inválido');
 
-  user.twoFactor.enabled = true;
+  user.dosFactores.habilitado = true;
   await user.save();
 }

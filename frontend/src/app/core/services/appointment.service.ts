@@ -29,7 +29,7 @@ export class AppointmentService {
     /** Solo lo envía Recepción/Admin al agendar por un tercero. */
     pacienteId?: string;
     fechaHora: string;
-    appointmentTypeId?: string;
+    tipoCitaId?: string;
     modalidad?: AppointmentModality;
     motivo?: string;
   }): Observable<Appointment> {

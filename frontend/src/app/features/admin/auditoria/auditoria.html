@@ -43,11 +43,11 @@
         <tbody>
           @for (e of p.eventos; track e._id) {
             <tr>
-              <td>{{ e.createdAt | date: 'dd/MM/yy HH:mm:ss' }}</td>
-              <td>{{ e.userEmail || '—' }}</td>
-              <td>{{ e.role || '—' }}</td>
-              <td><span class="metodo" [attr.data-m]="e.method">{{ e.method }}</span> {{ e.path }}</td>
-              <td><span class="status" [class.ok]="e.statusCode < 400" [class.err]="e.statusCode >= 400">{{ e.statusCode }}</span></td>
+              <td>{{ e.creadoEn | date: 'dd/MM/yy HH:mm:ss' }}</td>
+              <td>{{ e.emailUsuario || '—' }}</td>
+              <td>{{ e.rol || '—' }}</td>
+              <td><span class="metodo" [attr.data-m]="e.metodo">{{ e.metodo }}</span> {{ e.ruta }}</td>
+              <td><span class="status" [class.ok]="e.codigoEstado < 400" [class.err]="e.codigoEstado >= 400">{{ e.codigoEstado }}</span></td>
             </tr>
           }
         </tbody>

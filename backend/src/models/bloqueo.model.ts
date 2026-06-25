@@ -10,8 +10,8 @@ export interface IBloqueo extends Document {
   desde: Date;
   hasta: Date;
   motivo?: string;
-  createdAt: Date;
-  updatedAt: Date;
+  creadoEn: Date;
+  actualizadoEn: Date;
 }
 
 const bloqueoSchema = new Schema<IBloqueo>(
@@ -21,7 +21,7 @@ const bloqueoSchema = new Schema<IBloqueo>(
     hasta: { type: Date, required: true },
     motivo: { type: String, trim: true },
   },
-  { timestamps: true },
+  { collection: 'bloqueos', timestamps: { createdAt: 'creadoEn', updatedAt: 'actualizadoEn' } },
 );
 
 bloqueoSchema.index({ medicoId: 1, desde: 1, hasta: 1 });

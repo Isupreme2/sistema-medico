@@ -24,7 +24,7 @@ export interface SafetyResult {
 
 export interface EmitirPayload {
   pacienteId: string;
-  recordId?: string;
+  historialId?: string;
   medicamentos: Medicamento[];
   indicaciones?: string;
   confirmar?: boolean;

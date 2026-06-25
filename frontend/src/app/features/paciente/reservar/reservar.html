@@ -6,8 +6,8 @@
     <span>Médico</span>
     <select [value]="medicoId()" (change)="onMedicoChange($any($event.target).value)">
       @for (m of medicos(); track m._id) {
-        <option [value]="m.userId._id">
-          {{ m.userId.nombre }} {{ m.userId.apellido }} — {{ m.especialidad }}
+        <option [value]="m.usuarioId._id">
+          {{ m.usuarioId.nombre }} {{ m.usuarioId.apellido }} — {{ m.especialidad }}
         </option>
       }
     </select>

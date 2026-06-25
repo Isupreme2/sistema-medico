@@ -4,14 +4,14 @@ import { RegisterInput } from '../auth/auth.validation';
 import * as authService from '../auth/auth.service';
 
 /** Campos públicos de un paciente que necesita Recepción para seleccionarlo/agendar. */
-const PATIENT_FIELDS = 'nombre apellido email telefono alergias createdAt';
+const PATIENT_FIELDS = 'nombre apellido email telefono alergias creadoEn';
 
 /**
  * Busca pacientes por nombre, apellido o email. Pensado para que Recepción
  * encuentre al paciente al agendar o facturar. Limitado a 50 resultados.
  */
 export async function search(q?: string) {
-  const filter: Record<string, unknown> = { role: UserRole.PACIENTE, isActive: true };
+  const filter: Record<string, unknown> = { rol: UserRole.PACIENTE, activo: true };
 
   const term = q?.trim();
   if (term) {
@@ -21,7 +21,7 @@ export async function search(q?: string) {
     filter.$or = [{ nombre: rx }, { apellido: rx }, { email: rx }];
   }
 
-  return User.find(filter).select(PATIENT_FIELDS).sort({ createdAt: -1 }).limit(50);
+  return User.find(filter).select(PATIENT_FIELDS).sort({ creadoEn: -1 }).limit(50);
 }
 
 /**

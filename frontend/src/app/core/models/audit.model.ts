@@ -1,13 +1,13 @@
 export interface AuditEvent {
   _id: string;
-  userEmail?: string;
-  role?: string;
-  action: string;
-  method: string;
-  path: string;
-  statusCode: number;
+  emailUsuario?: string;
+  rol?: string;
+  accion: string;
+  metodo: string;
+  ruta: string;
+  codigoEstado: number;
   ip?: string;
-  createdAt: string;
+  creadoEn: string;
 }
 
 export interface AuditPage {

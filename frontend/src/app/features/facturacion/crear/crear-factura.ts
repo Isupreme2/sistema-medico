@@ -72,10 +72,10 @@ export class CrearFactura {
     const v = this.form.getRawValue();
     this.service
       .crear({
-        appointmentId: this.appointmentId,
+        citaId: this.appointmentId,
         impuestoPct: v.impuestoPct ?? 18,
         notas: v.notas || undefined,
-        items: v.items.map((it) => ({
+        conceptos: v.items.map((it) => ({
           descripcion: it.descripcion!,
           cantidad: Number(it.cantidad),
           precioUnitario: Number(it.precioUnitario),

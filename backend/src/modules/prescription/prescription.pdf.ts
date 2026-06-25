@@ -19,7 +19,7 @@ export async function generarPdfReceta(receta: IPrescription, res: Response): Pr
   const medico = receta.medicoId as unknown as PersonaPop & { _id: unknown };
   const paciente = receta.pacienteId as unknown as PersonaPop;
 
-  const profile = await MedicoProfile.findOne({ userId: medico._id });
+  const profile = await MedicoProfile.findOne({ usuarioId: medico._id });
   const verifyUrl = `${env.PUBLIC_URL}${env.API_PREFIX}/prescriptions/verify/${receta.codigo}`;
   const qrDataUrl = await QRCode.toDataURL(verifyUrl, { margin: 1, width: 120 });
   const qrBuffer = Buffer.from(qrDataUrl.split(',')[1], 'base64');

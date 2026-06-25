@@ -7,31 +7,35 @@ import mongoose, { Schema, Document, Model } from 'mongoose';
  */
 export interface IAuditLog extends Document {
   _id: mongoose.Types.ObjectId;
-  userId?: mongoose.Types.ObjectId;
-  userEmail?: string;
-  role?: string;
-  action: string; // método + ruta, ej: "POST /appointments"
-  method: string;
-  path: string;
-  statusCode: number;
+  usuarioId?: mongoose.Types.ObjectId;
+  emailUsuario?: string;
+  rol?: string;
+  accion: string; // método + ruta, ej: "POST /appointments"
+  metodo: string;
+  ruta: string;
+  codigoEstado: number;
   ip?: string;
-  createdAt: Date;
+  creadoEn: Date;
 }
 
 const auditLogSchema = new Schema<IAuditLog>(
   {
-    userId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
-    userEmail: { type: String },
-    role: { type: String },
-    action: { type: String, required: true },
-    method: { type: String, required: true },
-    path: { type: String, required: true },
-    statusCode: { type: Number, required: true },
+    usuarioId: { type: Schema.Types.ObjectId, ref: 'User', index: true },
+    emailUsuario: { type: String },
+    rol: { type: String },
+    accion: { type: String, required: true },
+    metodo: { type: String, required: true },
+    ruta: { type: String, required: true },
+    codigoEstado: { type: Number, required: true },
     ip: { type: String },
   },
-  { timestamps: { createdAt: true, updatedAt: false } },
+  {
+    collection: 'auditoria',
+    timestamps: { createdAt: 'creadoEn', updatedAt: false },
+  },
 );
 
-auditLogSchema.index({ createdAt: -1 });
+auditLogSchema.index({ creadoEn: -1 });
 
 export const AuditLog: Model<IAuditLog> = mongoose.model<IAuditLog>('AuditLog', auditLogSchema);
+

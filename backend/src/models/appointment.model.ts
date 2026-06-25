@@ -16,25 +16,25 @@ export interface IAppointment extends Document {
   _id: mongoose.Types.ObjectId;
   medicoId: mongoose.Types.ObjectId;
   pacienteId: mongoose.Types.ObjectId;
-  appointmentTypeId?: mongoose.Types.ObjectId;
+  tipoCitaId?: mongoose.Types.ObjectId;
   fechaHora: Date; // inicio del slot
   duracionMin: number;
   estado: AppointmentStatus;
   modalidad: AppointmentModality;
   /** Nombre de sala de video (solo en teleconsulta); impredecible. */
-  videoRoom?: string;
+  salaVideo?: string;
   motivo?: string;
   /** Evita reenviar el recordatorio por email de una misma cita. */
   recordatorioEnviado: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  creadoEn: Date;
+  actualizadoEn: Date;
 }
 
 const appointmentSchema = new Schema<IAppointment>(
   {
     medicoId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     pacienteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    appointmentTypeId: { type: Schema.Types.ObjectId, ref: 'AppointmentType' },
+    tipoCitaId: { type: Schema.Types.ObjectId, ref: 'AppointmentType' },
     fechaHora: { type: Date, required: true },
     duracionMin: { type: Number, required: true, default: 30 },
     estado: {
@@ -48,11 +48,11 @@ const appointmentSchema = new Schema<IAppointment>(
       enum: Object.values(AppointmentModality),
       default: AppointmentModality.PRESENCIAL,
     },
-    videoRoom: { type: String },
+    salaVideo: { type: String },
     motivo: { type: String, trim: true, maxlength: 500 },
     recordatorioEnviado: { type: Boolean, default: false },
   },
-  { timestamps: true },
+  { collection: 'citas', timestamps: { createdAt: 'creadoEn', updatedAt: 'actualizadoEn' } },
 );
 
 /**

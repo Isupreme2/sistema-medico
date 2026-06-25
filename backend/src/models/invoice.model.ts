@@ -17,9 +17,9 @@ export interface IInvoice extends Document {
   numero: string; // FAC-AAAA-XXXXXX
   pacienteId: mongoose.Types.ObjectId;
   medicoId?: mongoose.Types.ObjectId;
-  appointmentId?: mongoose.Types.ObjectId;
+  citaId?: mongoose.Types.ObjectId;
   emitidaPor: mongoose.Types.ObjectId;
-  items: IInvoiceItem[];
+  conceptos: IInvoiceItem[];
   subtotal: number;
   impuestoPct: number;
   impuesto: number;
@@ -28,8 +28,8 @@ export interface IInvoice extends Document {
   notas?: string;
   emitidaEn: Date;
   pagadaEn?: Date;
-  createdAt: Date;
-  updatedAt: Date;
+  creadoEn: Date;
+  actualizadoEn: Date;
 }
 
 const itemSchema = new Schema<IInvoiceItem>(
@@ -46,9 +46,9 @@ const invoiceSchema = new Schema<IInvoice>(
     numero: { type: String, required: true, unique: true, index: true },
     pacienteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     medicoId: { type: Schema.Types.ObjectId, ref: 'User' },
-    appointmentId: { type: Schema.Types.ObjectId, ref: 'Appointment' },
+    citaId: { type: Schema.Types.ObjectId, ref: 'Appointment' },
     emitidaPor: { type: Schema.Types.ObjectId, ref: 'User', required: true },
-    items: { type: [itemSchema], required: true },
+    conceptos: { type: [itemSchema], required: true },
     subtotal: { type: Number, required: true },
     impuestoPct: { type: Number, default: 18 },
     impuesto: { type: Number, required: true },
@@ -63,7 +63,7 @@ const invoiceSchema = new Schema<IInvoice>(
     emitidaEn: { type: Date, default: Date.now },
     pagadaEn: { type: Date },
   },
-  { timestamps: true },
+  { collection: 'facturas', timestamps: { createdAt: 'creadoEn', updatedAt: 'actualizadoEn' } },
 );
 
 export const Invoice: Model<IInvoice> = mongoose.model<IInvoice>('Invoice', invoiceSchema);

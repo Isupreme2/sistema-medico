@@ -73,7 +73,7 @@ export class Consulta {
     this.recordService
       .create({
         pacienteId: this.pacienteId,
-        appointmentId: this.citaId,
+        citaId: this.citaId,
         motivo: v.motivo || undefined,
         diagnostico: v.diagnostico,
         cie10: v.cie10 || undefined,

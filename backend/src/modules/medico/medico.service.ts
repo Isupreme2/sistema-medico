@@ -30,7 +30,7 @@ export async function createMedico(input: CreateMedicoInput) {
   const existing = await User.findOne({ email: input.email.toLowerCase() });
   if (existing) throw AppError.conflict('Ya existe una cuenta con ese email');
 
-  const passwordHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
+  const claveHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
   const session = await mongoose.startSession();
 
   try {
@@ -41,8 +41,8 @@ export async function createMedico(input: CreateMedicoInput) {
         [
           {
             email: input.email.toLowerCase(),
-            passwordHash,
-            role: UserRole.MEDICO,
+            claveHash,
+            rol: UserRole.MEDICO,
             nombre: input.nombre,
             apellido: input.apellido,
             telefono: input.telefono,
@@ -54,7 +54,7 @@ export async function createMedico(input: CreateMedicoInput) {
       await MedicoProfile.create(
         [
           {
-            userId: user._id,
+            usuarioId: user._id,
             especialidad: input.especialidad,
             numeroColegiatura: input.numeroColegiatura,
             duracionSlotMin: input.duracionSlotMin ?? 30,
@@ -76,14 +76,14 @@ export async function createMedico(input: CreateMedicoInput) {
 export async function listMedicos(soloActivos = false) {
   const filter = soloActivos ? { activo: true } : {};
   return MedicoProfile.find(filter)
-    .populate('userId', 'nombre apellido email telefono isActive')
-    .sort({ createdAt: -1 });
+    .populate('usuarioId', 'nombre apellido email telefono activo')
+    .sort({ creadoEn: -1 });
 }
 
 export async function getMedicoByUserId(medicoUserId: string) {
-  const profile = await MedicoProfile.findOne({ userId: medicoUserId }).populate(
-    'userId',
-    'nombre apellido email telefono isActive',
+  const profile = await MedicoProfile.findOne({ usuarioId: medicoUserId }).populate(
+    'usuarioId',
+    'nombre apellido email telefono activo',
   );
   if (!profile) throw AppError.notFound('Médico no encontrado');
   return profile;
@@ -95,7 +95,7 @@ export async function updateHorario(
   requester: AccessTokenPayload,
 ) {
   assertAdminOrOwner(requester, medicoUserId);
-  const profile = await MedicoProfile.findOne({ userId: medicoUserId });
+  const profile = await MedicoProfile.findOne({ usuarioId: medicoUserId });
   if (!profile) throw AppError.notFound('Médico no encontrado');
 
   profile.horarios = input.horarios;
@@ -110,7 +110,7 @@ export async function updateProfile(
   requester: AccessTokenPayload,
 ) {
   assertAdminOrOwner(requester, medicoUserId);
-  const profile = await MedicoProfile.findOne({ userId: medicoUserId });
+  const profile = await MedicoProfile.findOne({ usuarioId: medicoUserId });
   if (!profile) throw AppError.notFound('Médico no encontrado');
 
   if (input.especialidad !== undefined) profile.especialidad = input.especialidad;

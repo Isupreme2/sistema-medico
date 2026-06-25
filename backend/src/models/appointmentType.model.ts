@@ -11,8 +11,8 @@ export interface IAppointmentType extends Document {
   color: string;
   descripcion?: string;
   activo: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  creadoEn: Date;
+  actualizadoEn: Date;
 }
 
 const appointmentTypeSchema = new Schema<IAppointmentType>(
@@ -23,7 +23,7 @@ const appointmentTypeSchema = new Schema<IAppointmentType>(
     descripcion: { type: String, trim: true },
     activo: { type: Boolean, default: true },
   },
-  { timestamps: true },
+  { collection: 'tiposcita', timestamps: { createdAt: 'creadoEn', updatedAt: 'actualizadoEn' } },
 );
 
 export const AppointmentType: Model<IAppointmentType> = mongoose.model<IAppointmentType>(

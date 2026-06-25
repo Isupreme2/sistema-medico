@@ -29,7 +29,7 @@ export class AuthService {
 
   readonly user = this._user.asReadonly();
   readonly isAuthenticated = computed(() => this._user() !== null);
-  readonly role = computed<UserRole | null>(() => this._user()?.role ?? null);
+  readonly role = computed<UserRole | null>(() => this._user()?.rol ?? null);
 
   get accessToken(): string | null {
     return this._accessToken();

@@ -4,7 +4,7 @@ export interface UserBasic {
   apellido: string;
   email: string;
   telefono?: string;
-  isActive: boolean;
+  activo: boolean;
 }
 
 export interface Horario {
@@ -15,14 +15,14 @@ export interface Horario {
 
 export interface MedicoProfile {
   _id: string;
-  userId: UserBasic;
+  usuarioId: UserBasic;
   especialidad: string;
   numeroColegiatura: string;
   duracionSlotMin: number;
   horarios: Horario[];
   activo: boolean;
-  createdAt: string;
-  updatedAt: string;
+  creadoEn: string;
+  actualizadoEn: string;
 }
 
 export interface Bloqueo {

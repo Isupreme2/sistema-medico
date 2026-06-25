@@ -83,7 +83,7 @@ export function generarPdfFactura(factura: IInvoice, res: Response): void {
 
   let y = tableTop + 22;
   doc.font('Helvetica').fillColor('#334155').fontSize(10);
-  for (const it of factura.items) {
+  for (const it of factura.conceptos) {
     const importe = it.cantidad * it.precioUnitario;
     doc.text(it.descripcion, colX.desc, y, { width: 270 });
     doc.text(String(it.cantidad), colX.cant, y);

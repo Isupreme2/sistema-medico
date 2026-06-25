@@ -9,15 +9,15 @@ export interface IHorario {
 
 export interface IMedicoProfile extends Document {
   _id: mongoose.Types.ObjectId;
-  userId: mongoose.Types.ObjectId;
+  usuarioId: mongoose.Types.ObjectId;
   especialidad: string;
   numeroColegiatura: string;
   /** Duración por defecto de un slot, en minutos (base para generar disponibilidad). */
   duracionSlotMin: number;
   horarios: IHorario[];
   activo: boolean;
-  createdAt: Date;
-  updatedAt: Date;
+  creadoEn: Date;
+  actualizadoEn: Date;
 }
 
 const horarioSchema = new Schema<IHorario>(
@@ -39,7 +39,7 @@ const horarioSchema = new Schema<IHorario>(
 
 const medicoProfileSchema = new Schema<IMedicoProfile>(
   {
-    userId: {
+    usuarioId: {
       type: Schema.Types.ObjectId,
       ref: 'User',
       required: true,
@@ -52,7 +52,7 @@ const medicoProfileSchema = new Schema<IMedicoProfile>(
     horarios: { type: [horarioSchema], default: [] },
     activo: { type: Boolean, default: true },
   },
-  { timestamps: true },
+  { collection: 'perfilesmedicos', timestamps: { createdAt: 'creadoEn', updatedAt: 'actualizadoEn' } },
 );
 
 export const MedicoProfile: Model<IMedicoProfile> = mongoose.model<IMedicoProfile>(

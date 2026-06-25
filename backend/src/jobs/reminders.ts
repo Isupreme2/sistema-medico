@@ -63,11 +63,11 @@ export async function runRemindersOnce(): Promise<number> {
     });
 
     await notify({
-      userId: paciente._id.toString(),
+      usuarioId: paciente._id.toString(),
       tipo: NotificationType.RECORDATORIO,
       titulo,
       mensaje,
-      link: '/paciente/mis-citas',
+      enlace: '/paciente/mis-citas',
     });
 
     cita.recordatorioEnviado = true;

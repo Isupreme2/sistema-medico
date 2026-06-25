@@ -39,7 +39,7 @@ function calcularHash(data: {
  */
 export async function emitir(medicoId: string, input: EmitirInput) {
   const paciente = await User.findById(input.pacienteId);
-  if (!paciente || paciente.role !== UserRole.PACIENTE) {
+  if (!paciente || paciente.rol !== UserRole.PACIENTE) {
     throw AppError.notFound('Paciente no encontrado');
   }
 
@@ -65,7 +65,7 @@ export async function emitir(medicoId: string, input: EmitirInput) {
     codigo,
     medicoId,
     pacienteId: input.pacienteId,
-    recordId: input.recordId,
+    historialId: input.historialId,
     medicamentos: input.medicamentos,
     indicaciones: input.indicaciones,
     emitidaEn,
@@ -78,11 +78,11 @@ export async function emitir(medicoId: string, input: EmitirInput) {
   ]);
 
   await notify({
-    userId: input.pacienteId,
+    usuarioId: input.pacienteId,
     tipo: NotificationType.RECETA_EMITIDA,
     titulo: 'Nueva receta digital',
     mensaje: `Se emitió tu receta ${codigo}. Ya puedes descargarla en PDF.`,
-    link: '/paciente/mis-recetas',
+    enlace: '/paciente/mis-recetas',
   });
 
   return { receta: populated, safety };

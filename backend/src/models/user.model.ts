@@ -5,30 +5,30 @@ import { UserRole, ALL_ROLES } from '../constants/roles';
 export interface IUser extends Document {
   _id: mongoose.Types.ObjectId;
   email: string;
-  passwordHash: string;
-  role: UserRole;
+  claveHash: string;
+  rol: UserRole;
   nombre: string;
   apellido: string;
   telefono?: string;
   /** Alergias del paciente (a fármacos). Base de la alerta al recetar. */
   alergias: string[];
-  isActive: boolean;
+  activo: boolean;
 
   /** Se incrementa para invalidar todos los refresh tokens del usuario. */
-  tokenVersion: number;
+  versionToken: number;
 
   /** 2FA (TOTP) — scaffolding listo para activarse en el flujo de login. */
-  twoFactor: {
-    enabled: boolean;
-    secret?: string; // base32; nunca se expone en las respuestas
+  dosFactores: {
+    habilitado: boolean;
+    secreto?: string; // base32; nunca se expone en las respuestas
   };
 
   /** Seguridad: bloqueo temporal tras varios intentos fallidos. */
-  failedLoginAttempts: number;
-  lockUntil?: Date;
+  intentosFallidos: number;
+  bloqueadoHasta?: Date;
 
-  createdAt: Date;
-  updatedAt: Date;
+  creadoEn: Date;
+  actualizadoEn: Date;
 
   comparePassword(candidate: string): Promise<boolean>;
   isLocked(): boolean;
@@ -44,8 +44,8 @@ const userSchema = new Schema<IUser>(
       trim: true,
       index: true,
     },
-    passwordHash: { type: String, required: true, select: false },
-    role: {
+    claveHash: { type: String, required: true, select: false },
+    rol: {
       type: String,
       enum: ALL_ROLES,
       required: true,
@@ -56,25 +56,26 @@ const userSchema = new Schema<IUser>(
     apellido: { type: String, required: true, trim: true },
     telefono: { type: String, trim: true },
     alergias: { type: [String], default: [] },
-    isActive: { type: Boolean, default: true },
+    activo: { type: Boolean, default: true },
 
-    tokenVersion: { type: Number, default: 0 },
+    versionToken: { type: Number, default: 0 },
 
-    twoFactor: {
-      enabled: { type: Boolean, default: false },
-      secret: { type: String, select: false },
+    dosFactores: {
+      habilitado: { type: Boolean, default: false },
+      secreto: { type: String, select: false },
     },
 
-    failedLoginAttempts: { type: Number, default: 0 },
-    lockUntil: { type: Date },
+    intentosFallidos: { type: Number, default: 0 },
+    bloqueadoHasta: { type: Date },
   },
   {
-    timestamps: true,
+    collection: 'usuarios',
+    timestamps: { createdAt: 'creadoEn', updatedAt: 'actualizadoEn' },
     toJSON: {
       transform(_doc, ret: Record<string, unknown>) {
-        delete ret.passwordHash;
-        if (ret.twoFactor && typeof ret.twoFactor === 'object') {
-          delete (ret.twoFactor as Record<string, unknown>).secret;
+        delete ret.claveHash;
+        if (ret.dosFactores && typeof ret.dosFactores === 'object') {
+          delete (ret.dosFactores as Record<string, unknown>).secreto;
         }
         delete ret.__v;
         return ret;
@@ -84,11 +85,11 @@ const userSchema = new Schema<IUser>(
 );
 
 userSchema.methods.comparePassword = function (candidate: string): Promise<boolean> {
-  return bcrypt.compare(candidate, this.passwordHash);
+  return bcrypt.compare(candidate, this.claveHash);
 };
 
 userSchema.methods.isLocked = function (): boolean {
-  return !!this.lockUntil && this.lockUntil.getTime() > Date.now();
+  return !!this.bloqueadoHasta && this.bloqueadoHasta.getTime() > Date.now();
 };
 
 export const User: Model<IUser> = mongoose.model<IUser>('User', userSchema);

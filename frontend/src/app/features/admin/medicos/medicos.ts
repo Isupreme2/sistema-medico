@@ -73,7 +73,7 @@ export class AdminMedicos {
     this.medicoService.create(this.form.getRawValue()).subscribe({
       next: (m) => {
         this.saving.set(false);
-        this.ok.set(`Médico ${m.userId.nombre} ${m.userId.apellido} creado`);
+        this.ok.set(`Médico ${m.usuarioId.nombre} ${m.usuarioId.apellido} creado`);
         this.form.reset({ duracionSlotMin: 30 });
         this.showForm.set(false);
         this.load();

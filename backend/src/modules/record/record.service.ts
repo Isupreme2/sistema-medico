@@ -10,7 +10,7 @@ import { NotificationType } from '../../models/notification.model';
 /** El médico crea una consulta clínica para un paciente. */
 export async function createRecord(medicoId: string, input: CreateRecordInput) {
   const paciente = await User.findById(input.pacienteId);
-  if (!paciente || paciente.role !== UserRole.PACIENTE) {
+  if (!paciente || paciente.rol !== UserRole.PACIENTE) {
     throw AppError.notFound('Paciente no encontrado');
   }
 
@@ -25,11 +25,11 @@ export async function createRecord(medicoId: string, input: CreateRecordInput) {
   ]);
 
   await notify({
-    userId: input.pacienteId,
+    usuarioId: input.pacienteId,
     tipo: NotificationType.CONSULTA_REGISTRADA,
     titulo: 'Nueva consulta en tu historial',
     mensaje: 'Tu médico registró una nueva consulta clínica. Ya puedes revisarla.',
-    link: '/paciente/historial',
+    enlace: '/paciente/historial',
   });
 
   return populated;

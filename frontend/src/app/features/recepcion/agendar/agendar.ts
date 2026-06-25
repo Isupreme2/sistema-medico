@@ -70,8 +70,8 @@ function hoyLocal(): string {
             Médico
             <select class="input" [ngModel]="medicoId()" (ngModelChange)="onMedicoChange($event)">
               @for (m of medicos(); track m._id) {
-                <option [value]="m.userId._id">
-                  Dr(a). {{ m.userId.nombre }} {{ m.userId.apellido }} — {{ m.especialidad }}
+                <option [value]="m.usuarioId._id">
+                  Dr(a). {{ m.usuarioId.nombre }} {{ m.usuarioId.apellido }} — {{ m.especialidad }}
                 </option>
               }
             </select>
@@ -163,7 +163,7 @@ export class RecepcionAgendar {
   constructor() {
     this.medicoService.list(true).subscribe((m) => {
       this.medicos.set(m);
-      if (m.length) this.onMedicoChange(m[0].userId._id);
+      if (m.length) this.onMedicoChange(m[0].usuarioId._id);
     });
 
     this.search$

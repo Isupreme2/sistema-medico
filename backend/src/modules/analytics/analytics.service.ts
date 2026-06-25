@@ -37,7 +37,7 @@ export async function overview() {
       { $sort: { count: -1 } },
       { $limit: 5 },
       {
-        $lookup: { from: 'users', localField: '_id', foreignField: '_id', as: 'medico' },
+        $lookup: { from: 'usuarios', localField: '_id', foreignField: '_id', as: 'medico' },
       },
       { $unwind: '$medico' },
       {
@@ -48,8 +48,8 @@ export async function overview() {
         },
       },
     ]),
-    User.countDocuments({ role: UserRole.PACIENTE }),
-    User.countDocuments({ role: UserRole.MEDICO }),
+    User.countDocuments({ rol: UserRole.PACIENTE }),
+    User.countDocuments({ rol: UserRole.MEDICO }),
   ]);
 
   const citasPorEstado = toMap(citasPorEstadoRows);

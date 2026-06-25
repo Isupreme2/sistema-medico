@@ -16,7 +16,7 @@ export interface IMedicalRecord extends Document {
   _id: mongoose.Types.ObjectId;
   pacienteId: mongoose.Types.ObjectId;
   medicoId: mongoose.Types.ObjectId;
-  appointmentId?: mongoose.Types.ObjectId;
+  citaId?: mongoose.Types.ObjectId;
   fecha: Date;
   motivo?: string;
   diagnostico: string;
@@ -24,8 +24,8 @@ export interface IMedicalRecord extends Document {
   notas?: string;
   tratamiento?: string;
   signosVitales?: ISignosVitales;
-  createdAt: Date;
-  updatedAt: Date;
+  creadoEn: Date;
+  actualizadoEn: Date;
 }
 
 const signosVitalesSchema = new Schema<ISignosVitales>(
@@ -46,7 +46,7 @@ const medicalRecordSchema = new Schema<IMedicalRecord>(
   {
     pacienteId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
     medicoId: { type: Schema.Types.ObjectId, ref: 'User', required: true, index: true },
-    appointmentId: { type: Schema.Types.ObjectId, ref: 'Appointment' },
+    citaId: { type: Schema.Types.ObjectId, ref: 'Appointment' },
     fecha: { type: Date, default: Date.now },
     motivo: { type: String, trim: true, maxlength: 500 },
     diagnostico: { type: String, required: true, trim: true, maxlength: 2000 },
@@ -55,7 +55,7 @@ const medicalRecordSchema = new Schema<IMedicalRecord>(
     tratamiento: { type: String, trim: true, maxlength: 5000 },
     signosVitales: { type: signosVitalesSchema },
   },
-  { timestamps: true },
+  { collection: 'historiales', timestamps: { createdAt: 'creadoEn', updatedAt: 'actualizadoEn' } },
 );
 
 // Para listar el historial de un paciente ordenado por fecha

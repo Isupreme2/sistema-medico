@@ -47,11 +47,11 @@ async function upsertUser(u: (typeof DEMO_USERS)[number]): Promise<IUser> {
     logger.info(`= ya existe: ${u.email} (${u.role})`);
     return existente;
   }
-  const passwordHash = await bcrypt.hash(u.password, 12);
+  const claveHash = await bcrypt.hash(u.password, 12);
   const creado = await User.create({
     email: u.email,
-    passwordHash,
-    role: u.role,
+    claveHash,
+    rol: u.role,
     nombre: u.nombre,
     apellido: u.apellido,
     alergias: (u as { alergias?: string[] }).alergias ?? [],
@@ -79,9 +79,9 @@ async function seed(): Promise<void> {
     { diaSemana, horaInicio: '15:00', horaFin: '18:00' },
   ]);
   await MedicoProfile.findOneAndUpdate(
-    { userId: medico._id },
+    { usuarioId: medico._id },
     {
-      userId: medico._id,
+      usuarioId: medico._id,
       especialidad: 'Medicina General',
       numeroColegiatura: 'CMP-12345',
       duracionSlotMin: 30,
@@ -135,13 +135,13 @@ async function seed(): Promise<void> {
       medicoId: medico._id, pacienteId: juan._id, fechaHora: diaA(3, 11, 30),
       duracionMin: 30, estado: AppointmentStatus.RESERVADA,
       modalidad: AppointmentModality.TELECONSULTA, motivo: '[demo] Teleconsulta seguimiento',
-      videoRoom: `EHR-${crypto.randomBytes(12).toString('hex')}`,
+      salaVideo: `EHR-${crypto.randomBytes(12).toString('hex')}`,
     });
     logger.info('+ 5 citas de demo creadas (varios estados y modalidades)');
 
     // Consulta clínica para la cita atendida
     const record = await MedicalRecord.create({
-      pacienteId: juan._id, medicoId: medico._id, appointmentId: citaAtendida._id,
+      pacienteId: juan._id, medicoId: medico._id, citaId: citaAtendida._id,
       fecha: diaA(-7, 10, 15), motivo: 'Dolor abdominal',
       diagnostico: 'Gastritis aguda', cie10: 'K29.1',
       notas: 'Paciente refiere dolor epigástrico de 3 días.',
@@ -161,7 +161,7 @@ async function seed(): Promise<void> {
     const codigo = 'RX-DEMO-0001';
     const emitidaEn = diaA(-7, 10, 20);
     await Prescription.create({
-      codigo, medicoId: medico._id, pacienteId: juan._id, recordId: record._id,
+      codigo, medicoId: medico._id, pacienteId: juan._id, historialId: record._id,
       medicamentos, indicaciones: 'Tomar con alimentos.', emitidaEn,
       hash: hashReceta(codigo, juan._id.toString(), medicamentos, emitidaEn),
     });
@@ -175,7 +175,7 @@ async function seed(): Promise<void> {
     const t1 = calcularTotales(items1, 18);
     await Invoice.create({
       numero: 'FAC-DEMO-0001', pacienteId: juan._id, medicoId: medico._id,
-      appointmentId: citaAtendida._id, emitidaPor: medico._id, items: items1,
+      citaId: citaAtendida._id, emitidaPor: medico._id, conceptos: items1,
       ...t1, impuestoPct: 18, estado: InvoiceStatus.PENDIENTE, emitidaEn: diaA(-7, 10, 30),
     });
 
@@ -183,7 +183,7 @@ async function seed(): Promise<void> {
     const t2 = calcularTotales(items2, 18);
     await Invoice.create({
       numero: 'FAC-DEMO-0002', pacienteId: maria._id, medicoId: medico._id,
-      emitidaPor: admin._id, items: items2, ...t2, impuestoPct: 18,
+      emitidaPor: admin._id, conceptos: items2, ...t2, impuestoPct: 18,
       estado: InvoiceStatus.PAGADA, emitidaEn: diaA(-4, 12, 0), pagadaEn: diaA(-4, 12, 5),
     });
     logger.info('+ 2 facturas de demo creadas (1 pendiente, 1 pagada)');

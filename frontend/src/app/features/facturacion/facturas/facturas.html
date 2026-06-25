@@ -29,7 +29,7 @@
         </div>
 
         <ul class="items">
-          @for (it of f.items; track $index) {
+          @for (it of f.conceptos; track $index) {
             <li>
               <span>{{ it.cantidad }} × {{ it.descripcion }}</span>
               <span>S/ {{ (it.cantidad * it.precioUnitario).toFixed(2) }}</span>

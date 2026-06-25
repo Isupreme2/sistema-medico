@@ -13,16 +13,16 @@ export function auditTrail(req: Request, res: Response, next: NextFunction): voi
   if (!MUTATING.has(req.method)) return next();
 
   res.on('finish', () => {
-    const path = req.originalUrl.split('?')[0];
+    const ruta = req.originalUrl.split('?')[0];
     const user = req.user;
     AuditLog.create({
-      userId: user?.sub,
-      userEmail: user?.email,
-      role: user?.role,
-      action: `${req.method} ${path}`,
-      method: req.method,
-      path,
-      statusCode: res.statusCode,
+      usuarioId: user?.sub,
+      emailUsuario: user?.email,
+      rol: user?.role,
+      accion: `${req.method} ${ruta}`,
+      metodo: req.method,
+      ruta,
+      codigoEstado: res.statusCode,
       ip: req.ip,
     }).catch((err) => logger.error('No se pudo escribir el audit log:', err));
   });

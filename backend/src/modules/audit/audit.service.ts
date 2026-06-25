@@ -1,8 +1,8 @@
 import { AuditLog } from '../../models/auditLog.model';
 
 export interface AuditFilters {
-  method?: string;
-  role?: string;
+  metodo?: string;
+  rol?: string;
   page?: number;
   limit?: number;
 }
@@ -13,12 +13,12 @@ export async function listAudit(filters: AuditFilters) {
   const limit = Math.min(100, Math.max(1, filters.limit ?? 25));
 
   const query: Record<string, unknown> = {};
-  if (filters.method) query.method = filters.method.toUpperCase();
-  if (filters.role) query.role = filters.role;
+  if (filters.metodo) query.metodo = filters.metodo.toUpperCase();
+  if (filters.rol) query.rol = filters.rol;
 
   const [eventos, total] = await Promise.all([
     AuditLog.find(query)
-      .sort({ createdAt: -1 })
+      .sort({ creadoEn: -1 })
       .skip((page - 1) * limit)
       .limit(limit),
     AuditLog.countDocuments(query),

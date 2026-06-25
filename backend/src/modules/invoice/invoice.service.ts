@@ -22,8 +22,8 @@ export async function crear(creator: AccessTokenPayload, input: CreateInvoiceInp
   let pacienteId: string;
   let medicoId: string | undefined;
 
-  if (input.appointmentId) {
-    const cita = await Appointment.findById(input.appointmentId);
+  if (input.citaId) {
+    const cita = await Appointment.findById(input.citaId);
     if (!cita) throw AppError.notFound('Cita no encontrada');
 
     const esGestor =
@@ -42,7 +42,7 @@ export async function crear(creator: AccessTokenPayload, input: CreateInvoiceInp
     }
     // Evitar facturar dos veces la misma cita (salvo que la previa esté anulada).
     const yaFacturada = await Invoice.findOne({
-      appointmentId: input.appointmentId,
+      citaId: input.citaId,
       estado: { $ne: InvoiceStatus.ANULADA },
     });
     if (yaFacturada) {
@@ -57,21 +57,21 @@ export async function crear(creator: AccessTokenPayload, input: CreateInvoiceInp
       throw AppError.forbidden('Solo Recepción o Admin pueden facturar sin una cita');
     }
     const paciente = await User.findById(input.pacienteId);
-    if (!paciente || paciente.role !== UserRole.PACIENTE) {
+    if (!paciente || paciente.rol !== UserRole.PACIENTE) {
       throw AppError.notFound('Paciente no encontrado');
     }
     pacienteId = input.pacienteId!;
   }
 
-  const { subtotal, impuesto, total } = calcularTotales(input.items, input.impuestoPct);
+  const { subtotal, impuesto, total } = calcularTotales(input.conceptos, input.impuestoPct);
 
   const factura = await Invoice.create({
     numero: generarNumero(),
     pacienteId,
     medicoId,
-    appointmentId: input.appointmentId,
+    citaId: input.citaId,
     emitidaPor: creator.sub,
-    items: input.items,
+    conceptos: input.conceptos,
     subtotal,
     impuestoPct: input.impuestoPct,
     impuesto,
@@ -80,11 +80,11 @@ export async function crear(creator: AccessTokenPayload, input: CreateInvoiceInp
   });
 
   await notify({
-    userId: pacienteId,
+    usuarioId: pacienteId,
     tipo: NotificationType.SISTEMA,
     titulo: 'Nueva factura emitida',
     mensaje: `Se emitió la factura ${factura.numero} por S/ ${total.toFixed(2)}.`,
-    link: '/paciente/mis-facturas',
+    enlace: '/paciente/mis-facturas',
   });
 
   return factura.populate([
@@ -141,11 +141,11 @@ export async function marcarPagada(id: string) {
   await factura.save();
 
   await notify({
-    userId: factura.pacienteId.toString(),
+    usuarioId: factura.pacienteId.toString(),
     tipo: NotificationType.SISTEMA,
     titulo: 'Pago registrado',
     mensaje: `Tu factura ${factura.numero} fue marcada como pagada. ¡Gracias!`,
-    link: '/paciente/mis-facturas',
+    enlace: '/paciente/mis-facturas',
   });
   return factura;
 }
