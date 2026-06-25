@@ -95,6 +95,15 @@ export class AdminMedicos {
     this.ok.set(null);
   }
 
+  /** Activa o desactiva un médico (afecta su visibilidad al reservar). */
+  toggleActivo(m: MedicoProfile): void {
+    this.medicoService.setActivo(m.usuarioId._id, !m.activo).subscribe({
+      next: () => this.load(),
+      error: (err: HttpErrorResponse) =>
+        this.error.set(err.error?.message ?? 'No se pudo actualizar el estado'),
+    });
+  }
+
   submit(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();

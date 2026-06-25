@@ -108,6 +108,9 @@
               <span class="badge" [class.badge-off]="!m.activo">
                 {{ m.activo ? 'Activo' : 'Inactivo' }}
               </span>
+              <button class="link-btn" (click)="toggleActivo(m)">
+                {{ m.activo ? 'Desactivar' : 'Activar' }}
+              </button>
             </td>
           </tr>
         }

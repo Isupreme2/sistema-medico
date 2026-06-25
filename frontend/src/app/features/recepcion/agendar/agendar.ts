@@ -6,8 +6,9 @@ import { Subject, of } from 'rxjs';
 import { debounceTime, switchMap, catchError } from 'rxjs/operators';
 import { MedicoService } from '../../../core/services/medico.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
+import { AppointmentTypeService } from '../../../core/services/appointment-type.service';
 import { PatientService } from '../../../core/services/patient.service';
-import { MedicoProfile } from '../../../core/models/medico.model';
+import { MedicoProfile, AppointmentType } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
 import { PatientLite } from '../../../core/models/user.model';
 
@@ -87,6 +88,17 @@ function hoyLocal(): string {
               <option value="teleconsulta">Teleconsulta 🎥</option>
             </select>
           </label>
+          @if (tipos().length) {
+            <label>
+              Tipo de consulta
+              <select class="input" [(ngModel)]="tipoCitaSel">
+                <option value="">General (duración estándar)</option>
+                @for (t of tipos(); track t._id) {
+                  <option [value]="t._id">{{ t.nombre }} · {{ t.duracionMin }} min</option>
+                }
+              </select>
+            </label>
+          }
         </div>
       </div>
 
@@ -141,12 +153,15 @@ function hoyLocal(): string {
 export class RecepcionAgendar {
   private medicoService = inject(MedicoService);
   private appointments = inject(AppointmentService);
+  private appointmentTypes = inject(AppointmentTypeService);
   private patients = inject(PatientService);
 
   readonly medicos = signal<MedicoProfile[]>([]);
+  readonly tipos = signal<AppointmentType[]>([]);
   readonly medicoId = signal('');
   readonly fecha = signal(hoyLocal());
   modalidadSel: AppointmentModality = 'presencial';
+  tipoCitaSel = '';
   readonly slots = signal<Slot[]>([]);
   readonly loading = signal(false);
 
@@ -165,6 +180,8 @@ export class RecepcionAgendar {
       this.medicos.set(m);
       if (m.length) this.onMedicoChange(m[0].usuarioId._id);
     });
+
+    this.appointmentTypes.list(true).subscribe((t) => this.tipos.set(t));
 
     this.search$
       .pipe(
@@ -231,6 +248,7 @@ export class RecepcionAgendar {
         pacienteId: p._id,
         fechaHora: slot.fechaHora,
         modalidad: this.modalidadSel,
+        tipoCitaId: this.tipoCitaSel || undefined,
       })
       .subscribe({
         next: () => {

@@ -23,6 +23,17 @@
       <option value="teleconsulta">🎥 Teleconsulta (video)</option>
     </select>
   </label>
+  @if (tipos().length) {
+    <label class="field">
+      <span>Tipo de consulta</span>
+      <select [value]="tipoCitaId()" (change)="tipoCitaId.set($any($event.target).value)">
+        <option value="">General (duración estándar)</option>
+        @for (t of tipos(); track t._id) {
+          <option [value]="t._id">{{ t.nombre }} · {{ t.duracionMin }} min</option>
+        }
+      </select>
+    </label>
+  }
   <span class="realtime">🟢 En vivo</span>
 </div>
 

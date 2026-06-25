@@ -17,6 +17,7 @@
           <strong>{{ c.pacienteId.nombre }} {{ c.pacienteId.apellido }}</strong>
           <small>
             @if (c.modalidad === 'teleconsulta') { 🎥 Teleconsulta } @else { 🏥 Presencial }
+            @if (c.tipoCitaId) { · {{ c.tipoCitaId.nombre }} }
             @if (c.motivo) { · {{ c.motivo }} }
           </small>
         </div>

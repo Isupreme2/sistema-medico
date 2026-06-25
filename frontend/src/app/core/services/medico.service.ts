@@ -34,6 +34,13 @@ export class MedicoService {
       .pipe(map((r) => r.data.medico));
   }
 
+  /** Activa o desactiva un médico (Admin). El userId es el del usuario médico. */
+  setActivo(userId: string, activo: boolean): Observable<MedicoProfile> {
+    return this.http
+      .patch<ApiResponse<{ medico: MedicoProfile }>>(`${this.api}/${userId}`, { activo })
+      .pipe(map((r) => r.data.medico));
+  }
+
   updateHorario(
     userId: string,
     horarios: Horario[],

@@ -10,9 +10,10 @@ import { Subscription } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MedicoService } from '../../../core/services/medico.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
+import { AppointmentTypeService } from '../../../core/services/appointment-type.service';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { SocketService } from '../../../core/services/socket.service';
-import { MedicoProfile } from '../../../core/models/medico.model';
+import { MedicoProfile, AppointmentType } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
 import { PaymentGateway } from '../../../shared/payment-gateway/payment-gateway';
 
@@ -36,11 +37,14 @@ function hoyLocal(): string {
 export class Reservar {
   private medicoService = inject(MedicoService);
   private appointmentService = inject(AppointmentService);
+  private appointmentTypeService = inject(AppointmentTypeService);
   private invoiceService = inject(InvoiceService);
   private socket = inject(SocketService);
   private destroyRef = inject(DestroyRef);
 
   readonly medicos = signal<MedicoProfile[]>([]);
+  readonly tipos = signal<AppointmentType[]>([]);
+  readonly tipoCitaId = signal<string>('');
   readonly medicoId = signal<string>('');
   readonly fecha = signal<string>(hoyLocal());
   readonly modalidad = signal<AppointmentModality>('presencial');
@@ -68,6 +72,11 @@ export class Reservar {
           this.onMedicoChange(m[0].usuarioId._id);
         }
       });
+
+    this.appointmentTypeService
+      .list(true)
+      .pipe(takeUntilDestroyed())
+      .subscribe((t) => this.tipos.set(t));
   }
 
   onMedicoChange(id: string): void {
@@ -115,6 +124,7 @@ export class Reservar {
         medicoId: this.medicoId(),
         fechaHora: slot.fechaHora,
         modalidad: this.modalidad(),
+        tipoCitaId: this.tipoCitaId() || undefined,
       })
       .subscribe({
         next: (cita) => {
