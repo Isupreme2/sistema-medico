@@ -46,6 +46,9 @@ export class Dashboard {
           { icon: '📊', title: 'Panel analítico', desc: 'Métricas, ausentismo e ingresos', status: 'listo', link: '/admin/analitica' },
           { icon: '👨‍⚕️', title: 'Gestión de médicos', desc: 'Crear y administrar médicos', status: 'listo', link: '/admin/medicos' },
           { icon: '🏷️', title: 'Tipos de cita', desc: 'Catálogo de tipos y duraciones', status: 'listo', link: '/admin/tipos-cita' },
+          { icon: '🗓️', title: 'Agendar cita', desc: 'Reserva citas a nombre de pacientes', status: 'listo', link: '/recepcion/agendar' },
+          { icon: '📋', title: 'Citas', desc: 'Todas las citas de la clínica', status: 'listo', link: '/recepcion/citas' },
+          { icon: '🧑‍🤝‍🧑', title: 'Pacientes', desc: 'Busca y registra pacientes', status: 'listo', link: '/recepcion/pacientes' },
           { icon: '🧾', title: 'Facturación', desc: 'Comprobantes y cobros', status: 'listo', link: '/admin/facturacion' },
           { icon: '🛡️', title: 'Auditoría', desc: 'Bitácora de acciones del sistema', status: 'listo', link: '/admin/auditoria' },
         ];

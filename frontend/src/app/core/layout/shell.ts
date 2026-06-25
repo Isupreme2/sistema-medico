@@ -51,6 +51,9 @@ export class Shell implements OnInit {
           { label: 'Analítica', path: '/admin/analitica' },
           { label: 'Médicos', path: '/admin/medicos' },
           { label: 'Tipos de cita', path: '/admin/tipos-cita' },
+          { label: 'Agendar cita', path: '/recepcion/agendar' },
+          { label: 'Citas', path: '/recepcion/citas' },
+          { label: 'Pacientes', path: '/recepcion/pacientes' },
           { label: 'Facturación', path: '/admin/facturacion' },
           { label: 'Auditoría', path: '/admin/auditoria' },
         ];

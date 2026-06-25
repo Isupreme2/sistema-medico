@@ -3,15 +3,50 @@
   <p class="lead">Paciente: <strong>{{ nombrePaciente }}</strong></p>
 }
 
+<!-- Modo sin cita (walk-in): elegir paciente antes de facturar -->
+@if (sinCita && !emitida()) {
+  <div class="card paciente-picker">
+    @if (paciente(); as p) {
+      <p class="lead seleccionado">
+        Paciente: <strong>{{ p.nombre }} {{ p.apellido }}</strong>
+        <small>{{ p.email }}</small>
+        <button type="button" class="btn ghost sm" (click)="limpiarPaciente()">Cambiar</button>
+      </p>
+    } @else {
+      <label class="field">
+        <span>Paciente</span>
+        <input
+          type="search"
+          placeholder="Buscar paciente por nombre o email…"
+          [ngModel]="q()"
+          (ngModelChange)="onSearch($event)"
+        />
+      </label>
+      @if (pacientes().length) {
+        <ul class="resultados">
+          @for (p of pacientes(); track p._id) {
+            <li>
+              <span>{{ p.nombre }} {{ p.apellido }} <small>{{ p.email }}</small></span>
+              <button type="button" class="btn primary sm" (click)="seleccionar(p)">Elegir</button>
+            </li>
+          }
+        </ul>
+      } @else {
+        <p class="muted">Escribe para buscar. ¿No existe? Regístralo en “Pacientes”.</p>
+      }
+    }
+  </div>
+}
+
 @if (emitida(); as f) {
   <div class="card ok-box">
     <p>✅ Factura <strong>{{ f.numero }}</strong> emitida por <strong>S/ {{ f.total.toFixed(2) }}</strong>.</p>
     <div class="acciones">
-      <a class="btn primary" routerLink="/medico/facturas">Ver facturas</a>
-      <a class="btn ghost" routerLink="/medico/agenda">Volver a la agenda</a>
+      <a class="btn primary" [routerLink]="facturasLink">Ver facturas</a>
+      <a class="btn ghost" [routerLink]="volverLink">Volver</a>
     </div>
   </div>
-} @else {
+} @else if (!sinCita || paciente()) {
   <form class="card form" [formGroup]="form" (ngSubmit)="emitir()">
     <div formArrayName="items" class="items">
       @for (item of items.controls; track $index) {

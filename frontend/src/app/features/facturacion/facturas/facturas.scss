@@ -12,6 +12,19 @@ h1 {
 .muted {
   color: #94a3b8;
 }
+.nueva {
+  display: inline-block;
+  margin: 0 0 1.25rem;
+  padding: 0.55rem 1.1rem;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  &:hover {
+    opacity: 0.9;
+  }
+}
 
 .card {
   background: #fff;

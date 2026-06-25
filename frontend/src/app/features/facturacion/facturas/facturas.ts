@@ -1,5 +1,6 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { RouterLink } from '@angular/router';
 import { InvoiceService } from '../../../core/services/invoice.service';
 import { AuthService } from '../../../core/services/auth.service';
 import { UserRole } from '../../../core/models/user.model';
@@ -7,7 +8,7 @@ import { Invoice } from '../../../core/models/invoice.model';
 
 @Component({
   selector: 'app-facturas',
-  imports: [DatePipe],
+  imports: [DatePipe, RouterLink],
   templateUrl: './facturas.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './facturas.scss',

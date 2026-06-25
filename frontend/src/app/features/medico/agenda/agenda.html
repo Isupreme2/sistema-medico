@@ -41,12 +41,14 @@
             [queryParams]="{ nombre: c.pacienteId.nombre + ' ' + c.pacienteId.apellido }"
             >Recetar</a
           >
-          <a
-            class="btn-sm primary"
-            [routerLink]="['/facturar', c._id]"
-            [queryParams]="{ nombre: c.pacienteId.nombre + ' ' + c.pacienteId.apellido }"
-            >Facturar</a
-          >
+          @if (c.estado !== 'cancelada' && c.estado !== 'no_asistio') {
+            <a
+              class="btn-sm primary"
+              [routerLink]="['/facturar', c._id]"
+              [queryParams]="{ nombre: c.pacienteId.nombre + ' ' + c.pacienteId.apellido }"
+              >Facturar</a
+            >
+          }
           <a class="btn-sm ghost" [routerLink]="['/medico/historial', c.pacienteId._id]">Historial</a>
         </div>
       </div>

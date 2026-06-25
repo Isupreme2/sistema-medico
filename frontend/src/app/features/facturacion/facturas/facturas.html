@@ -3,6 +3,10 @@
   {{ esPaciente ? 'Tus comprobantes y su estado de pago.' : 'Comprobantes emitidos.' }}
 </p>
 
+@if (esAdmin || esRecepcion) {
+  <a class="nueva" routerLink="/facturar">+ Nueva factura (sin cita)</a>
+}
+
 @if (loading()) {
   <p class="muted">Cargando…</p>
 } @else if (facturas().length === 0) {

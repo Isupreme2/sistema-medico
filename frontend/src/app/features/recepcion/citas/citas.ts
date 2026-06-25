@@ -42,7 +42,9 @@ import { Appointment } from '../../../core/models/appointment.model';
                   @if (c.estado === 'reservada') {
                     <button class="btn-sm danger" (click)="cancelar(c)">Cancelar</button>
                   }
-                  <a class="btn-sm" [routerLink]="['/facturar', c._id]">Facturar</a>
+                  @if (c.estado !== 'cancelada' && c.estado !== 'no_asistio') {
+                    <a class="btn-sm" [routerLink]="['/facturar', c._id]">Facturar</a>
+                  }
                 </td>
               </tr>
             }

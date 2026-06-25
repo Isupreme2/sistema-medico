@@ -114,6 +114,13 @@ export const routes: Routes = [
           import('./features/facturacion/facturas/facturas').then((m) => m.Facturas),
       },
       {
+        // Factura directa a un paciente, sin cita previa (walk-in). Solo gestores.
+        path: 'facturar',
+        canActivate: [roleGuard(UserRole.ADMIN, UserRole.RECEPCIONISTA)],
+        loadComponent: () =>
+          import('./features/facturacion/crear/crear-factura').then((m) => m.CrearFactura),
+      },
+      {
         path: 'facturar/:appointmentId',
         canActivate: [roleGuard(UserRole.MEDICO, UserRole.ADMIN, UserRole.RECEPCIONISTA)],
         loadComponent: () =>
