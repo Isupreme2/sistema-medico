@@ -41,6 +41,8 @@ export interface RegisterRequest {
   nombre: string;
   apellido: string;
   telefono?: string;
+  tipoDocumento: 'DNI' | 'CE' | 'PAS';
+  numeroDocumento: string;
 }
 
 /** Envoltura estándar de respuestas del backend. */

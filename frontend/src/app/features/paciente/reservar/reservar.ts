@@ -13,6 +13,10 @@ import { AppointmentService } from '../../../core/services/appointment.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { MedicoProfile } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
+import { PaymentGateway } from '../../../shared/payment-gateway/payment-gateway';
+
+/** Tarifa de consulta para la demo de pago (S/). */
+const TARIFA_CONSULTA = 80;
 
 /** Fecha de hoy en formato YYYY-MM-DD según la zona horaria LOCAL (no UTC). */
 function hoyLocal(): string {
@@ -23,7 +27,7 @@ function hoyLocal(): string {
 
 @Component({
   selector: 'app-reservar',
-  imports: [],
+  imports: [PaymentGateway],
   templateUrl: './reservar.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './reservar.scss',
@@ -42,6 +46,13 @@ export class Reservar {
   readonly loading = signal(false);
   readonly msg = signal<string | null>(null);
   readonly error = signal<string | null>(null);
+
+  // --- Pago (demo de pasarela) ---
+  readonly tarifa = TARIFA_CONSULTA;
+  /** Última cita reservada pendiente de pago (hora legible). */
+  readonly reservada = signal<{ hora: string } | null>(null);
+  readonly pagoAbierto = signal(false);
+  readonly pagado = signal(false);
 
   private socketSub?: Subscription;
 
@@ -107,6 +118,8 @@ export class Reservar {
         next: () => {
           const via = this.modalidad() === 'teleconsulta' ? ' (teleconsulta 🎥)' : '';
           this.msg.set(`Cita reservada para las ${slot.hora}${via} 🎉`);
+          this.reservada.set({ hora: slot.hora });
+          this.pagado.set(false);
           this.cargarDisponibilidad();
         },
         error: (err: HttpErrorResponse) => {
@@ -115,6 +128,19 @@ export class Reservar {
           this.cargarDisponibilidad();
         },
       });
+  }
+
+  abrirPago(): void {
+    this.pagoAbierto.set(true);
+  }
+
+  cerrarPago(): void {
+    this.pagoAbierto.set(false);
+  }
+
+  onPagado(): void {
+    this.pagoAbierto.set(false);
+    this.pagado.set(true);
   }
 
   readonly hayDisponibles = () => this.slots().some((s) => s.disponible);

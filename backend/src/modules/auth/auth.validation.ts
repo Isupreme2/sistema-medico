@@ -9,13 +9,24 @@ const passwordSchema = z
   .regex(/[0-9]/, 'Debe incluir al menos un número');
 
 export const registerSchema = z.object({
-  body: z.object({
-    email: z.string().email('Email inválido'),
-    password: passwordSchema,
-    nombre: z.string().min(1, 'El nombre es obligatorio').max(80),
-    apellido: z.string().min(1, 'El apellido es obligatorio').max(80),
-    telefono: z.string().max(30).optional(),
-  }),
+  body: z
+    .object({
+      email: z.string().email('Email inválido'),
+      password: passwordSchema,
+      nombre: z.string().min(1, 'El nombre es obligatorio').max(80),
+      apellido: z.string().min(1, 'El apellido es obligatorio').max(80),
+      telefono: z.string().max(30).optional(),
+      tipoDocumento: z.enum(['DNI', 'CE', 'PAS']).default('DNI'),
+      numeroDocumento: z
+        .string()
+        .trim()
+        .min(6, 'Número de documento inválido')
+        .max(20, 'Número de documento inválido'),
+    })
+    .refine((b) => b.tipoDocumento !== 'DNI' || /^\d{8}$/.test(b.numeroDocumento), {
+      message: 'El DNI debe tener exactamente 8 dígitos',
+      path: ['numeroDocumento'],
+    }),
 });
 
 export const loginSchema = z.object({

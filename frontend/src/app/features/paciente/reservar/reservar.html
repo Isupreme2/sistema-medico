@@ -33,6 +33,24 @@
   <div class="alert err">{{ error() }}</div>
 }
 
+@if (reservada(); as r) {
+  <div class="pago-panel card">
+    <div class="pago-info">
+      <strong>Cita reservada para las {{ r.hora }}</strong>
+      @if (pagado()) {
+        <span class="pagado-badge">✓ Pago realizado</span>
+      } @else {
+        <p class="muted">Completa el pago de tu consulta para confirmarla.</p>
+      }
+    </div>
+    @if (!pagado()) {
+      <button class="btn-pagar" type="button" (click)="abrirPago()">
+        Pagar consulta · S/ {{ tarifa.toFixed(2) }}
+      </button>
+    }
+  </div>
+}
+
 @if (loading()) {
   <p class="muted">Cargando disponibilidad…</p>
 } @else if (medicos().length === 0) {
@@ -59,4 +77,13 @@
     <span class="muestra libre"></span> Disponible
     <span class="muestra ocupada"></span> Ocupado
   </p>
+}
+
+@if (pagoAbierto()) {
+  <app-payment-gateway
+    [monto]="tarifa"
+    concepto="Consulta médica"
+    (pagado)="onPagado()"
+    (cerrado)="cerrarPago()"
+  />
 }

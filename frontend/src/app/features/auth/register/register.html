@@ -1,7 +1,7 @@
 <div class="auth-wrapper">
   <div class="auth-card">
     <div class="brand">
-      <span class="logo">🩺</span>
+      <span class="mark"><span class="mark__inner"></span></span>
       <h1>Crear cuenta</h1>
       <p class="subtitle">Regístrate como paciente</p>
     </div>
@@ -35,6 +35,24 @@
         <span>Teléfono (opcional)</span>
         <input type="text" formControlName="telefono" placeholder="999888777" />
       </label>
+
+      <div class="field-row">
+        <label class="field doc-tipo">
+          <span>Documento</span>
+          <select formControlName="tipoDocumento">
+            <option value="DNI">DNI</option>
+            <option value="CE">C. Extranjería</option>
+            <option value="PAS">Pasaporte</option>
+          </select>
+        </label>
+        <label class="field doc-num">
+          <span>N° de documento</span>
+          <input type="text" formControlName="numeroDocumento" placeholder="Ej. 70123456" inputmode="numeric" />
+          @if (form.controls.numeroDocumento.touched && form.controls.numeroDocumento.invalid) {
+            <small class="err">Ingresa tu número de documento</small>
+          }
+        </label>
+      </div>
 
       <label class="field">
         <span>Contraseña</span>

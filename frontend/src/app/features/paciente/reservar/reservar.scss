@@ -18,6 +18,49 @@ h1 {
   padding: 1.25rem;
 }
 
+.pago-panel {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1rem;
+  border: 1px solid color-mix(in oklch, var(--brand) 25%, transparent);
+
+  .pago-info strong {
+    display: block;
+    color: var(--slate-900);
+  }
+  .muted {
+    margin: 0.2rem 0 0;
+    color: var(--slate-500);
+    font-size: 0.88rem;
+  }
+  .pagado-badge {
+    display: inline-block;
+    margin-top: 0.3rem;
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #047857;
+    background: #dcfce7;
+    padding: 0.15rem 0.6rem;
+    border-radius: 999px;
+  }
+  .btn-pagar {
+    border: none;
+    background: var(--brand);
+    color: #fff;
+    font-weight: 700;
+    padding: 0.7rem 1.3rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    transition: background 0.15s;
+    &:hover {
+      background: var(--brand-dark);
+    }
+  }
+}
+
 .controls {
   display: flex;
   flex-wrap: wrap;

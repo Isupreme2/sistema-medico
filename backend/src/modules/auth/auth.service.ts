@@ -45,6 +45,11 @@ export async function register(input: RegisterInput): Promise<IUser> {
     throw AppError.conflict('Ya existe una cuenta con ese email');
   }
 
+  const docExiste = await User.findOne({ numeroDocumento: input.numeroDocumento });
+  if (docExiste) {
+    throw AppError.conflict('Ya existe una cuenta con ese número de documento');
+  }
+
   const claveHash = await bcrypt.hash(input.password, BCRYPT_ROUNDS);
 
   const user = await User.create({
@@ -54,6 +59,8 @@ export async function register(input: RegisterInput): Promise<IUser> {
     nombre: input.nombre,
     apellido: input.apellido,
     telefono: input.telefono,
+    tipoDocumento: input.tipoDocumento,
+    numeroDocumento: input.numeroDocumento,
   });
 
   return user;

@@ -10,6 +10,9 @@ export interface IUser extends Document {
   nombre: string;
   apellido: string;
   telefono?: string;
+  /** Documento de identidad (obligatorio en el registro de pacientes). */
+  tipoDocumento?: 'DNI' | 'CE' | 'PAS';
+  numeroDocumento?: string;
   /** Alergias del paciente (a fármacos). Base de la alerta al recetar. */
   alergias: string[];
   activo: boolean;
@@ -55,6 +58,8 @@ const userSchema = new Schema<IUser>(
     nombre: { type: String, required: true, trim: true },
     apellido: { type: String, required: true, trim: true },
     telefono: { type: String, trim: true },
+    tipoDocumento: { type: String, enum: ['DNI', 'CE', 'PAS'], default: 'DNI' },
+    numeroDocumento: { type: String, trim: true },
     alergias: { type: [String], default: [] },
     activo: { type: Boolean, default: true },
 
