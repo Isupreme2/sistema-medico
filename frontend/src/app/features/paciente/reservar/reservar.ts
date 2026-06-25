@@ -140,12 +140,12 @@ export class Reservar {
     this.pagoAbierto.set(false);
   }
 
-  onPagado(): void {
+  onPagado(metodo: string): void {
     this.pagoAbierto.set(false);
     const r = this.reservada();
     if (!r) return;
     // El cobro simulado se confirmó → registramos la factura pagada en el sistema.
-    this.invoiceService.pagarCita(r.citaId).subscribe({
+    this.invoiceService.pagarCita(r.citaId, metodo).subscribe({
       next: () => {
         this.pagado.set(true);
         this.msg.set('Pago registrado. Tu factura está en “Mis facturas”. 🧾');

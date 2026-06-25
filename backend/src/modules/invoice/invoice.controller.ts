@@ -24,7 +24,8 @@ export const pdf = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const pagarCita = asyncHandler(async (req: Request, res: Response) => {
-  const factura = await service.pagarCita(req.user!, req.params.citaId);
+  const metodoPago = (req.body as { metodoPago?: string })?.metodoPago;
+  const factura = await service.pagarCita(req.user!, req.params.citaId, metodoPago);
   res.status(201).json({ status: 'success', data: { factura } });
 });
 

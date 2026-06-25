@@ -1,6 +1,6 @@
 import { Response } from 'express';
 import PDFDocument from 'pdfkit';
-import { IInvoice } from '../../models/invoice.model';
+import { IInvoice, InvoiceStatus } from '../../models/invoice.model';
 import { env } from '../../config/env';
 
 interface PersonaPop {
@@ -31,6 +31,9 @@ export function generarPdfFactura(factura: IInvoice, res: Response): void {
 
   const azul = '#2563eb';
   const gris = '#64748b';
+  const verde = '#16a34a';
+  const pagada = factura.estado === InvoiceStatus.PAGADA;
+  const metodo = factura.metodoPago ?? 'No especificado';
 
   // --- Encabezado ---
   doc.fillColor(azul).fontSize(20).text(env.APP_NAME);
@@ -46,6 +49,12 @@ export function generarPdfFactura(factura: IInvoice, res: Response): void {
     .fontSize(10)
     .text(`Estado: ${ESTADO_LABEL[factura.estado] ?? factura.estado}`, { align: 'right' });
   doc.text(`Fecha: ${factura.emitidaEn.toLocaleDateString('es-PE')}`, { align: 'right' });
+  if (pagada) {
+    doc.text(`Forma de pago: ${metodo}`, { align: 'right' });
+    if (factura.pagadaEn) {
+      doc.text(`Pagada: ${factura.pagadaEn.toLocaleDateString('es-PE')}`, { align: 'right' });
+    }
+  }
 
   doc.moveDown(1);
   doc.strokeColor('#e2e8f0').moveTo(50, doc.y).lineTo(545, doc.y).stroke();
@@ -100,6 +109,7 @@ export function generarPdfFactura(factura: IInvoice, res: Response): void {
     ['Subtotal', soles(factura.subtotal)],
     [`IGV (${factura.impuestoPct}%)`, soles(factura.impuesto)],
   ];
+  const totalesY = y;
   doc.font('Helvetica').fillColor(gris).fontSize(10);
   for (const [label, val] of totales) {
     doc.text(label, 380, y);
@@ -109,6 +119,26 @@ export function generarPdfFactura(factura: IInvoice, res: Response): void {
   doc.font('Helvetica-Bold').fillColor(azul).fontSize(13);
   doc.text('TOTAL', 380, y);
   doc.text(soles(factura.total), colX.importe, y);
+
+  // --- Sello PAGADO (badge a la izquierda de los totales) ---
+  if (pagada) {
+    const sx = 70;
+    const sy = totalesY - 6;
+    doc.save();
+    doc.rotate(-8, { origin: [sx + 75, sy + 26] });
+    doc.lineWidth(2.5).strokeColor(verde).roundedRect(sx, sy, 150, 52, 8).stroke();
+    doc
+      .fillColor(verde)
+      .font('Helvetica-Bold')
+      .fontSize(22)
+      .text('PAGADO', sx, sy + 7, { width: 150, align: 'center' });
+    doc
+      .font('Helvetica')
+      .fontSize(8)
+      .fillColor(verde)
+      .text(metodo, sx, sy + 34, { width: 150, align: 'center' });
+    doc.restore();
+  }
 
   // --- Notas ---
   if (factura.notas) {

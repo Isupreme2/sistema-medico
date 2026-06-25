@@ -83,7 +83,7 @@
   <app-payment-gateway
     [monto]="tarifa"
     concepto="Consulta médica"
-    (pagado)="onPagado()"
+    (pagado)="onPagado($event)"
     (cerrado)="cerrarPago()"
   />
 }

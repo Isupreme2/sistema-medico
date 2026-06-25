@@ -26,6 +26,8 @@ export interface IInvoice extends Document {
   total: number;
   estado: InvoiceStatus;
   notas?: string;
+  /** Forma de pago registrada al pagar (ej. "Tarjeta •••• 4242"). */
+  metodoPago?: string;
   emitidaEn: Date;
   pagadaEn?: Date;
   creadoEn: Date;
@@ -60,6 +62,7 @@ const invoiceSchema = new Schema<IInvoice>(
       index: true,
     },
     notas: { type: String, trim: true, maxlength: 1000 },
+    metodoPago: { type: String, trim: true, maxlength: 60 },
     emitidaEn: { type: Date, default: Date.now },
     pagadaEn: { type: Date },
   },

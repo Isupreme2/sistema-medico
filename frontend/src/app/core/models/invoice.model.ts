@@ -21,6 +21,7 @@ export interface Invoice {
   total: number;
   estado: InvoiceStatus;
   notas?: string;
+  metodoPago?: string;
   emitidaEn: string;
   pagadaEn?: string;
 }

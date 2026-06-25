@@ -101,7 +101,11 @@ export async function crear(creator: AccessTokenPayload, input: CreateInvoiceInp
  * Crea —o reutiliza— la factura de la cita y la deja PAGADA. Es idempotente:
  * pagar dos veces no genera facturas duplicadas. La tarifa la define el servidor.
  */
-export async function pagarCita(requester: AccessTokenPayload, citaId: string) {
+export async function pagarCita(
+  requester: AccessTokenPayload,
+  citaId: string,
+  metodoPago?: string,
+) {
   const cita = await Appointment.findById(citaId);
   if (!cita) throw AppError.notFound('Cita no encontrada');
   if (cita.pacienteId.toString() !== requester.sub) {
@@ -114,11 +118,14 @@ export async function pagarCita(requester: AccessTokenPayload, citaId: string) {
     throw AppError.unprocessable('No se puede pagar una cita cancelada o no atendida');
   }
 
+  const formaPago = (metodoPago ?? 'Tarjeta').toString().slice(0, 60);
+
   // Reutiliza una factura existente no anulada; si no, la crea.
   let factura = await Invoice.findOne({ citaId, estado: { $ne: InvoiceStatus.ANULADA } });
   if (factura) {
     if (factura.estado !== InvoiceStatus.PAGADA) {
       factura.estado = InvoiceStatus.PAGADA;
+      factura.metodoPago = formaPago;
       factura.pagadaEn = new Date();
       await factura.save();
     }
@@ -140,6 +147,7 @@ export async function pagarCita(requester: AccessTokenPayload, citaId: string) {
       impuesto,
       total,
       estado: InvoiceStatus.PAGADA,
+      metodoPago: formaPago,
       emitidaEn: new Date(),
       pagadaEn: new Date(),
     });
@@ -203,6 +211,7 @@ export async function marcarPagada(id: string) {
     throw AppError.conflict('No se puede pagar una factura anulada');
   }
   factura.estado = InvoiceStatus.PAGADA;
+  if (!factura.metodoPago) factura.metodoPago = 'Pago en caja';
   factura.pagadaEn = new Date();
   await factura.save();
 

@@ -33,7 +33,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
             <div class="pg-check">✓</div>
             <h3>Pago aprobado</h3>
             <p>Se procesó S/ {{ monto().toFixed(2) }} por {{ concepto() }}.</p>
-            <button class="pg-btn" type="button" (click)="pagado.emit()">Listo</button>
+            <button class="pg-btn" type="button" (click)="confirmar()">Listo</button>
           </div>
         } @else {
           <div class="pg-amount">
@@ -262,7 +262,8 @@ export class PaymentGateway {
   readonly monto = input<number>(0);
   readonly concepto = input<string>('Consulta médica');
 
-  readonly pagado = output<void>();
+  /** Emite el método de pago (ej. "Visa •••• 4242") al confirmar. */
+  readonly pagado = output<string>();
   readonly cerrado = output<void>();
 
   readonly estado = signal<'form' | 'procesando' | 'ok'>('form');
@@ -321,5 +322,18 @@ export class PaymentGateway {
     // Simulación de procesamiento de la pasarela.
     this.estado.set('procesando');
     setTimeout(() => this.estado.set('ok'), 1700);
+  }
+
+  /** Confirma el pago aprobado y emite el método (marca + últimos 4 dígitos). */
+  confirmar(): void {
+    const num = this.form.controls.numero.value.replace(/\D/g, '');
+    this.pagado.emit(`${this.marcaTarjeta(num)} •••• ${num.slice(-4)}`);
+  }
+
+  private marcaTarjeta(num: string): string {
+    if (num.startsWith('4')) return 'Visa';
+    if (/^5[1-5]/.test(num)) return 'Mastercard';
+    if (/^3[47]/.test(num)) return 'Amex';
+    return 'Tarjeta';
   }
 }

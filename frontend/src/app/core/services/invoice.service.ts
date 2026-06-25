@@ -23,9 +23,9 @@ export class InvoiceService {
   }
 
   /** Pago en línea de la consulta por el paciente: genera la factura pagada de la cita. */
-  pagarCita(citaId: string): Observable<Invoice> {
+  pagarCita(citaId: string, metodoPago?: string): Observable<Invoice> {
     return this.http
-      .post<ApiResponse<{ factura: Invoice }>>(`${this.api}/pagar-cita/${citaId}`, {})
+      .post<ApiResponse<{ factura: Invoice }>>(`${this.api}/pagar-cita/${citaId}`, { metodoPago })
       .pipe(map((r) => r.data.factura));
   }
 
