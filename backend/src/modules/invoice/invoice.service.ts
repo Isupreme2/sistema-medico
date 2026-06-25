@@ -11,6 +11,9 @@ import { CreateInvoiceInput } from './invoice.validation';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
 
+/** Tarifa de una consulta (S/). La fija el servidor, nunca el cliente. */
+const TARIFA_CONSULTA = 80;
+
 function generarNumero(): string {
   const year = new Date().getFullYear();
   const rand = crypto.randomBytes(4).toString('hex').toUpperCase().slice(0, 6);
@@ -84,6 +87,69 @@ export async function crear(creator: AccessTokenPayload, input: CreateInvoiceInp
     tipo: NotificationType.SISTEMA,
     titulo: 'Nueva factura emitida',
     mensaje: `Se emitió la factura ${factura.numero} por S/ ${total.toFixed(2)}.`,
+    enlace: '/paciente/mis-facturas',
+  });
+
+  return factura.populate([
+    { path: 'pacienteId', select: 'nombre apellido' },
+    { path: 'medicoId', select: 'nombre apellido' },
+  ]);
+}
+
+/**
+ * Pago en línea de una consulta por el propio paciente (pasarela simulada).
+ * Crea —o reutiliza— la factura de la cita y la deja PAGADA. Es idempotente:
+ * pagar dos veces no genera facturas duplicadas. La tarifa la define el servidor.
+ */
+export async function pagarCita(requester: AccessTokenPayload, citaId: string) {
+  const cita = await Appointment.findById(citaId);
+  if (!cita) throw AppError.notFound('Cita no encontrada');
+  if (cita.pacienteId.toString() !== requester.sub) {
+    throw AppError.forbidden('Solo puedes pagar tus propias citas');
+  }
+  if (
+    cita.estado === AppointmentStatus.CANCELADA ||
+    cita.estado === AppointmentStatus.NO_ASISTIO
+  ) {
+    throw AppError.unprocessable('No se puede pagar una cita cancelada o no atendida');
+  }
+
+  // Reutiliza una factura existente no anulada; si no, la crea.
+  let factura = await Invoice.findOne({ citaId, estado: { $ne: InvoiceStatus.ANULADA } });
+  if (factura) {
+    if (factura.estado !== InvoiceStatus.PAGADA) {
+      factura.estado = InvoiceStatus.PAGADA;
+      factura.pagadaEn = new Date();
+      await factura.save();
+    }
+  } else {
+    const conceptos = [
+      { descripcion: 'Consulta médica', cantidad: 1, precioUnitario: TARIFA_CONSULTA },
+    ];
+    // Servicios de salud exonerados de IGV en Perú → impuesto 0.
+    const { subtotal, impuesto, total } = calcularTotales(conceptos, 0);
+    factura = await Invoice.create({
+      numero: generarNumero(),
+      pacienteId: cita.pacienteId,
+      medicoId: cita.medicoId,
+      citaId: cita._id,
+      emitidaPor: requester.sub,
+      conceptos,
+      subtotal,
+      impuestoPct: 0,
+      impuesto,
+      total,
+      estado: InvoiceStatus.PAGADA,
+      emitidaEn: new Date(),
+      pagadaEn: new Date(),
+    });
+  }
+
+  await notify({
+    usuarioId: cita.pacienteId.toString(),
+    tipo: NotificationType.SISTEMA,
+    titulo: 'Pago confirmado',
+    mensaje: `Tu consulta fue pagada. Factura ${factura.numero} disponible en "Mis facturas".`,
     enlace: '/paciente/mis-facturas',
   });
 

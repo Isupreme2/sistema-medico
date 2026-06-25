@@ -10,6 +10,7 @@ import { Subscription } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MedicoService } from '../../../core/services/medico.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
+import { InvoiceService } from '../../../core/services/invoice.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { MedicoProfile } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
@@ -35,6 +36,7 @@ function hoyLocal(): string {
 export class Reservar {
   private medicoService = inject(MedicoService);
   private appointmentService = inject(AppointmentService);
+  private invoiceService = inject(InvoiceService);
   private socket = inject(SocketService);
   private destroyRef = inject(DestroyRef);
 
@@ -49,8 +51,8 @@ export class Reservar {
 
   // --- Pago (demo de pasarela) ---
   readonly tarifa = TARIFA_CONSULTA;
-  /** Última cita reservada pendiente de pago (hora legible). */
-  readonly reservada = signal<{ hora: string } | null>(null);
+  /** Última cita reservada pendiente de pago. */
+  readonly reservada = signal<{ hora: string; citaId: string } | null>(null);
   readonly pagoAbierto = signal(false);
   readonly pagado = signal(false);
 
@@ -115,10 +117,10 @@ export class Reservar {
         modalidad: this.modalidad(),
       })
       .subscribe({
-        next: () => {
+        next: (cita) => {
           const via = this.modalidad() === 'teleconsulta' ? ' (teleconsulta 🎥)' : '';
           this.msg.set(`Cita reservada para las ${slot.hora}${via} 🎉`);
-          this.reservada.set({ hora: slot.hora });
+          this.reservada.set({ hora: slot.hora, citaId: cita._id });
           this.pagado.set(false);
           this.cargarDisponibilidad();
         },
@@ -140,7 +142,18 @@ export class Reservar {
 
   onPagado(): void {
     this.pagoAbierto.set(false);
-    this.pagado.set(true);
+    const r = this.reservada();
+    if (!r) return;
+    // El cobro simulado se confirmó → registramos la factura pagada en el sistema.
+    this.invoiceService.pagarCita(r.citaId).subscribe({
+      next: () => {
+        this.pagado.set(true);
+        this.msg.set('Pago registrado. Tu factura está en “Mis facturas”. 🧾');
+      },
+      error: (err: HttpErrorResponse) => {
+        this.error.set(err.error?.message ?? 'El pago no se pudo registrar.');
+      },
+    });
   }
 
   readonly hayDisponibles = () => this.slots().some((s) => s.disponible);

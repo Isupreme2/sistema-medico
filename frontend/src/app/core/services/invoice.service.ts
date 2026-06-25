@@ -22,6 +22,13 @@ export class InvoiceService {
       .pipe(map((r) => r.data.factura));
   }
 
+  /** Pago en línea de la consulta por el paciente: genera la factura pagada de la cita. */
+  pagarCita(citaId: string): Observable<Invoice> {
+    return this.http
+      .post<ApiResponse<{ factura: Invoice }>>(`${this.api}/pagar-cita/${citaId}`, {})
+      .pipe(map((r) => r.data.factura));
+  }
+
   marcarPagada(id: string): Observable<Invoice> {
     return this.http
       .patch<ApiResponse<{ factura: Invoice }>>(`${this.api}/${id}/pay`, {})

@@ -23,6 +23,11 @@ export const pdf = asyncHandler(async (req: Request, res: Response) => {
   generarPdfFactura(factura, res);
 });
 
+export const pagarCita = asyncHandler(async (req: Request, res: Response) => {
+  const factura = await service.pagarCita(req.user!, req.params.citaId);
+  res.status(201).json({ status: 'success', data: { factura } });
+});
+
 export const marcarPagada = asyncHandler(async (req: Request, res: Response) => {
   const factura = await service.marcarPagada(req.params.id);
   res.json({ status: 'success', data: { factura } });

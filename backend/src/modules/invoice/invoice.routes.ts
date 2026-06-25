@@ -36,6 +36,23 @@ router.post(
 
 /**
  * @openapi
+ * /invoices/pagar-cita/{citaId}:
+ *   post:
+ *     tags: [Facturación]
+ *     summary: Pago en línea de una consulta por el paciente (pasarela simulada). Crea la factura pagada.
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       201: { description: Factura pagada generada }
+ */
+router.post(
+  '/pagar-cita/:citaId',
+  authenticate,
+  authorize(UserRole.PACIENTE),
+  ctrl.pagarCita,
+);
+
+/**
+ * @openapi
  * /invoices/{id}:
  *   get:
  *     tags: [Facturación]
