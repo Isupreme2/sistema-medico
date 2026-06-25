@@ -26,6 +26,47 @@
   padding: 1.25rem;
 }
 
+/* Combobox de especialidad con buscador */
+.combo {
+  position: relative;
+
+  .combo-list {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    z-index: 20;
+    margin: 0.25rem 0 0;
+    padding: 0.3rem;
+    list-style: none;
+    max-height: 14rem;
+    overflow-y: auto;
+    background: #fff;
+    border: 1px solid var(--slate-200);
+    border-radius: 0.75rem;
+    box-shadow: 0 12px 28px -10px rgba(15, 23, 42, 0.25);
+
+    li button {
+      display: block;
+      width: 100%;
+      text-align: left;
+      border: none;
+      background: none;
+      padding: 0.5rem 0.65rem;
+      border-radius: 0.5rem;
+      font: inherit;
+      font-size: 0.9rem;
+      color: var(--slate-700);
+      cursor: pointer;
+
+      &:hover {
+        background: var(--brand-soft);
+        color: var(--brand);
+      }
+    }
+  }
+}
+
 .btn-primary {
   border: none;
   background: #2563eb;

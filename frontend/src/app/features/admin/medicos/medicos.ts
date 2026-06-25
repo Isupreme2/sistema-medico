@@ -1,7 +1,8 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MedicoService } from '../../../core/services/medico.service';
+import { SpecialtyService } from '../../../core/services/specialty.service';
 import { MedicoProfile } from '../../../core/models/medico.model';
 
 @Component({
@@ -14,6 +15,7 @@ import { MedicoProfile } from '../../../core/models/medico.model';
 export class AdminMedicos {
   private fb = inject(FormBuilder);
   private medicoService = inject(MedicoService);
+  private specialtyService = inject(SpecialtyService);
 
   readonly medicos = signal<MedicoProfile[]>([]);
   readonly loading = signal(true);
@@ -21,6 +23,18 @@ export class AdminMedicos {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly ok = signal<string | null>(null);
+
+  // --- Selector de especialidad con buscador ---
+  readonly especialidades = signal<string[]>([]);
+  readonly espQuery = signal('');
+  readonly espOpen = signal(false);
+  /** Filtra el catálogo por coincidencia mientras se escribe. */
+  readonly espFiltradas = computed(() => {
+    const q = this.espQuery().toLowerCase().trim();
+    const todas = this.especialidades();
+    if (!q) return todas;
+    return todas.filter((e) => e.toLowerCase().includes(q));
+  });
 
   form = this.fb.nonNullable.group({
     nombre: ['', Validators.required],
@@ -42,6 +56,26 @@ export class AdminMedicos {
 
   constructor() {
     this.load();
+    this.specialtyService.list().subscribe((e) => this.especialidades.set(e));
+  }
+
+  /** Escribe en el buscador: filtra y mantiene el valor del formulario sincronizado. */
+  onEspInput(value: string): void {
+    this.espQuery.set(value);
+    this.form.controls.especialidad.setValue(value);
+    this.espOpen.set(true);
+  }
+
+  /** Elige una especialidad del listado filtrado. */
+  elegirEsp(nombre: string): void {
+    this.espQuery.set(nombre);
+    this.form.controls.especialidad.setValue(nombre);
+    this.espOpen.set(false);
+  }
+
+  cerrarEsp(): void {
+    // Pequeño retraso para permitir el click sobre una opción antes de cerrar.
+    setTimeout(() => this.espOpen.set(false), 150);
   }
 
   load(): void {
@@ -75,6 +109,7 @@ export class AdminMedicos {
         this.saving.set(false);
         this.ok.set(`Médico ${m.usuarioId.nombre} ${m.usuarioId.apellido} creado`);
         this.form.reset({ duracionSlotMin: 30 });
+        this.espQuery.set('');
         this.showForm.set(false);
         this.load();
       },

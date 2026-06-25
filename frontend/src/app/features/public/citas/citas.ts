@@ -17,12 +17,12 @@ import { PublicLayout } from '../public-layout';
               Completa el formulario y te confirmaremos la disponibilidad en menos de 24 horas
               hábiles. ¿Prefieres atención inmediata?
             </p>
-            <a class="btn btn--dark" href="https://wa.me/51987654321" target="_blank" rel="noopener">
+            <a class="btn btn--dark" href="https://wa.me/51932101485" target="_blank" rel="noopener">
               Escribir por WhatsApp
             </a>
             <div style="margin-top:2.5rem;padding:1.5rem;background:color-mix(in oklch,var(--brand) 5%,transparent);border:1px solid color-mix(in oklch,var(--brand) 20%,transparent);border-radius:1rem">
               <p style="margin:0 0 .25rem;font-size:.88rem;font-weight:700;color:var(--brand)">Emergencias 24/7</p>
-              <a href="tel:+5104412345" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;color:var(--slate-900);text-decoration:none">(044) 123-456</a>
+              <a href="tel:+51932101485" style="font-family:'Plus Jakarta Sans',sans-serif;font-size:1.5rem;font-weight:800;color:var(--slate-900);text-decoration:none">+51 932 101 485</a>
             </div>
           </div>
 

@@ -45,10 +45,10 @@ import { RouterLink } from '@angular/router';
           <div>
             <h4>Contacto</h4>
             <ul>
-              <li>Av. Centenario 123, Huaraz</li>
-              <li>Ancash, Perú</li>
-              <li>(044) 456-7890</li>
-              <li>citas&#64;clinicacordillera.pe</li>
+              <li>Av. Gamarra</li>
+              <li>Casma – Casma – Ancash</li>
+              <li>Tel: +51 932 101 485</li>
+              <li>WhatsApp: +51 932 101 485</li>
             </ul>
           </div>
         </div>

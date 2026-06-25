@@ -27,7 +27,7 @@ import { PublicLayout } from '../public-layout';
           <div style="border-radius:1.5rem;overflow:hidden;border:1px solid var(--slate-100)">
             <iframe
               title="Mapa Clínica Cordillera"
-              src="https://www.google.com/maps?q=Huaraz,Ancash,Peru&output=embed"
+              src="https://www.google.com/maps?q=Casma,Ancash,Peru&output=embed"
               style="width:100%;height:480px;border:0"
               loading="lazy"
             ></iframe>
@@ -39,11 +39,11 @@ import { PublicLayout } from '../public-layout';
 })
 export class Contacto {
   readonly cards = [
-    { t: 'Ubicación', body: 'Av. Centenario 123<br>Huaraz, Ancash, Perú', icon: '📍' },
-    { t: 'Teléfonos', body: '(044) 456-7890<br>+51 987 654 321', icon: '📞' },
+    { t: 'Ubicación', body: 'Av. Gamarra<br>Casma – Casma – Áncash', icon: '📍' },
+    { t: 'Teléfono', body: '+51 932 101 485', icon: '📞' },
     { t: 'Horarios', body: 'Lun - Sáb: 08:00 - 20:00<br>Emergencias 24/7', icon: '⏰' },
     { t: 'Correo', body: 'citas@clinicacordillera.pe', icon: '✉️' },
-    { t: 'WhatsApp', body: '+51 987 654 321', icon: '💬' },
-    { t: 'Emergencias', body: '(044) 123-456', icon: '🚨' },
+    { t: 'WhatsApp', body: '+51 932 101 485', icon: '💬' },
+    { t: 'Emergencias', body: '+51 932 101 485', icon: '🚨' },
   ];
 }

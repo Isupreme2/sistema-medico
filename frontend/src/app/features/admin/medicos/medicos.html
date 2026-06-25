@@ -31,9 +31,24 @@
         <span>Teléfono (opcional)</span>
         <input formControlName="telefono" />
       </label>
-      <label class="field">
+      <label class="field combo">
         <span>Especialidad</span>
-        <input formControlName="especialidad" />
+        <input
+          type="text"
+          autocomplete="off"
+          placeholder="Busca o escribe la especialidad…"
+          [value]="espQuery()"
+          (input)="onEspInput($any($event.target).value)"
+          (focus)="espOpen.set(true)"
+          (blur)="cerrarEsp()"
+        />
+        @if (espOpen() && espFiltradas().length) {
+          <ul class="combo-list">
+            @for (e of espFiltradas(); track e) {
+              <li><button type="button" (mousedown)="elegirEsp(e)">{{ e }}</button></li>
+            }
+          </ul>
+        }
       </label>
       <label class="field">
         <span>N° Colegiatura</span>

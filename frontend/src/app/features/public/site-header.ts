@@ -24,7 +24,7 @@ import { AuthService } from '../../core/services/auth.service';
         </nav>
 
         <div class="header-actions">
-          <a class="tel" href="tel:+5104412345">Emergencias: (044) 123-456</a>
+          <a class="tel" href="tel:+51932101485">Emergencias: +51 932 101 485</a>
           @if (autenticado()) {
             <a class="link-login" routerLink="/dashboard">Mi panel</a>
           } @else {

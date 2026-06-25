@@ -162,8 +162,8 @@ a {
     padding: 4rem 0 2rem;
     .footer-grid {
       display: grid;
-      grid-template-columns: 1fr;
-      gap: 3rem;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 2.5rem 3rem;
       margin-bottom: 4rem;
     }
     h4 {
@@ -697,9 +697,6 @@ a {
   }
   .site .grid--3 {
     grid-template-columns: repeat(3, 1fr);
-  }
-  .site .footer-grid {
-    grid-template-columns: repeat(4, 1fr);
   }
   .site .header-actions .tel {
     display: block;

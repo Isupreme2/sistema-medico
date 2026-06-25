@@ -1,0 +1,40 @@
+/**
+ * Catálogo base de especialidades médicas (en español). Se usa para sembrar
+ * la colección `especialidades`, que alimenta el selector con buscador al
+ * crear un médico.
+ */
+export const ESPECIALIDADES_SEED: string[] = [
+  'Medicina General',
+  'Medicina Interna',
+  'Medicina Familiar',
+  'Pediatría',
+  'Ginecología y Obstetricia',
+  'Cardiología',
+  'Cardiología Intervencionista',
+  'Dermatología',
+  'Endocrinología',
+  'Gastroenterología',
+  'Geriatría',
+  'Hematología',
+  'Infectología',
+  'Nefrología',
+  'Neumología',
+  'Neurología',
+  'Nutrición',
+  'Oftalmología',
+  'Oncología',
+  'Odontología',
+  'Otorrinolaringología',
+  'Psiquiatría',
+  'Psicología',
+  'Reumatología',
+  'Traumatología y Ortopedia',
+  'Urología',
+  'Cirugía General',
+  'Cirugía Plástica',
+  'Anestesiología',
+  'Radiología',
+  'Patología',
+  'Fisioterapia y Rehabilitación',
+  'Urgencias y Emergencias',
+];

@@ -4,6 +4,8 @@ import { connectDatabase, disconnectDatabase } from '../config/db';
 import { User, IUser } from '../models/user.model';
 import { MedicoProfile } from '../models/medicoProfile.model';
 import { AppointmentType } from '../models/appointmentType.model';
+import { Especialidad } from '../models/especialidad.model';
+import { ESPECIALIDADES_SEED } from '../constants/especialidades';
 import { Appointment, AppointmentStatus, AppointmentModality } from '../models/appointment.model';
 import { MedicalRecord } from '../models/medicalRecord.model';
 import { Prescription } from '../models/prescription.model';
@@ -105,6 +107,18 @@ async function seed(): Promise<void> {
     });
   }
   logger.info('= tipos de cita listos');
+
+  // 3b) Catálogo de especialidades médicas (para el selector al crear médicos)
+  await Especialidad.bulkWrite(
+    ESPECIALIDADES_SEED.map((nombre) => ({
+      updateOne: {
+        filter: { nombre },
+        update: { $setOnInsert: { nombre, activo: true } },
+        upsert: true,
+      },
+    })),
+  );
+  logger.info(`= catálogo de especialidades listo (${ESPECIALIDADES_SEED.length})`);
 
   // 4) Datos clínicos de demo (guardados por la factura ancla FAC-DEMO-0001)
   if (await Invoice.findOne({ numero: 'FAC-DEMO-0001' })) {
