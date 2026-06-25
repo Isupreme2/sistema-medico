@@ -30,6 +30,12 @@
           @if (f.medicoId) {
             <span>🩺 Dr(a). {{ f.medicoId.nombre }} {{ f.medicoId.apellido }}</span>
           }
+          @if (f.estado === 'pagada' && f.metodoPago) {
+            <span class="pago">💳 {{ f.metodoPago }}</span>
+          }
+          @if (f.estado === 'pagada' && f.pagadaEn) {
+            <span>✅ Pagada el {{ f.pagadaEn | date: 'dd/MM/yyyy' }}</span>
+          }
         </div>
 
         <ul class="items">
