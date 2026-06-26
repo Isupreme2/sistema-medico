@@ -46,11 +46,19 @@ export class Facturas {
     this.service.anular(f._id).subscribe({ next: () => this.load() });
   }
 
+  reembolsar(f: Invoice): void {
+    this.service.reembolsar(f._id).subscribe({ next: () => this.load() });
+  }
+
   descargarPdf(f: Invoice): void {
     this.service.descargarPdf(f);
   }
 
   estadoLabel(e: string): string {
-    return { pendiente: 'Pendiente', pagada: 'Pagada', anulada: 'Anulada' }[e] ?? e;
+    return (
+      { pendiente: 'Pendiente', pagada: 'Pagada', anulada: 'Anulada', reembolsada: 'Reembolsada' }[
+        e
+      ] ?? e
+    );
   }
 }

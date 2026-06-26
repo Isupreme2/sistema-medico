@@ -4,6 +4,7 @@ export enum InvoiceStatus {
   PENDIENTE = 'pendiente',
   PAGADA = 'pagada',
   ANULADA = 'anulada',
+  REEMBOLSADA = 'reembolsada',
 }
 
 export interface IInvoiceItem {

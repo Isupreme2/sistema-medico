@@ -104,4 +104,38 @@ router.patch(
  */
 router.patch('/:id/void', authenticate, authorize(UserRole.ADMIN), ctrl.anular);
 
+/**
+ * @openapi
+ * /invoices/{id}/refund:
+ *   patch:
+ *     tags: [Facturación]
+ *     summary: Reembolsar una factura pagada (Admin/Recepción)
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Factura reembolsada }
+ */
+router.patch(
+  '/:id/refund',
+  authenticate,
+  authorize(UserRole.ADMIN, UserRole.RECEPCIONISTA),
+  ctrl.reembolsar,
+);
+
+/**
+ * @openapi
+ * /invoices/reembolsar-cita/{citaId}:
+ *   post:
+ *     tags: [Facturación]
+ *     summary: El paciente solicita el reembolso de una cita no realizada
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       200: { description: Reembolso procesado }
+ */
+router.post(
+  '/reembolsar-cita/:citaId',
+  authenticate,
+  authorize(UserRole.PACIENTE),
+  ctrl.reembolsarPorCita,
+);
+
 export default router;

@@ -1,6 +1,6 @@
 import { PersonaRef } from './appointment.model';
 
-export type InvoiceStatus = 'pendiente' | 'pagada' | 'anulada';
+export type InvoiceStatus = 'pendiente' | 'pagada' | 'anulada' | 'reembolsada';
 
 export interface InvoiceItem {
   descripcion: string;

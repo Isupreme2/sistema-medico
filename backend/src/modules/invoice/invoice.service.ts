@@ -230,9 +230,63 @@ export async function anular(id: string) {
   const factura = await Invoice.findById(id);
   if (!factura) throw AppError.notFound('Factura no encontrada');
   if (factura.estado === InvoiceStatus.PAGADA) {
-    throw AppError.conflict('No se puede anular una factura ya pagada');
+    throw AppError.conflict('No se puede anular una factura ya pagada (usa reembolso)');
   }
   factura.estado = InvoiceStatus.ANULADA;
   await factura.save();
+  return factura;
+}
+
+/** Reembolsa una factura pagada (Admin/Recepción): revierte el cobro. */
+export async function reembolsar(id: string) {
+  const factura = await Invoice.findById(id);
+  if (!factura) throw AppError.notFound('Factura no encontrada');
+  if (factura.estado !== InvoiceStatus.PAGADA) {
+    throw AppError.conflict('Solo se puede reembolsar una factura pagada');
+  }
+  factura.estado = InvoiceStatus.REEMBOLSADA;
+  await factura.save();
+
+  await notify({
+    usuarioId: factura.pacienteId.toString(),
+    tipo: NotificationType.SISTEMA,
+    titulo: 'Reembolso procesado',
+    mensaje: `Se reembolsó la factura ${factura.numero} por S/ ${factura.total.toFixed(2)}.`,
+    enlace: '/paciente/mis-facturas',
+  });
+  return factura;
+}
+
+/**
+ * Reembolso solicitado por el propio paciente cuando su cita no se realizó
+ * (ej. el médico no se presentó). Reembolsa la factura pagada de esa cita.
+ */
+export async function reembolsarPorCita(requester: AccessTokenPayload, citaId: string) {
+  const cita = await Appointment.findById(citaId);
+  if (!cita) throw AppError.notFound('Cita no encontrada');
+  if (cita.pacienteId.toString() !== requester.sub) {
+    throw AppError.forbidden('Solo puedes solicitar el reembolso de tus propias citas');
+  }
+  if (
+    cita.estado !== AppointmentStatus.VENCIDA &&
+    cita.estado !== AppointmentStatus.CANCELADA
+  ) {
+    throw AppError.unprocessable(
+      'Solo puedes pedir reembolso de una cita no realizada o cancelada',
+    );
+  }
+  const factura = await Invoice.findOne({ citaId, estado: InvoiceStatus.PAGADA });
+  if (!factura) throw AppError.unprocessable('No hay un pago por reembolsar en esta cita');
+
+  factura.estado = InvoiceStatus.REEMBOLSADA;
+  await factura.save();
+
+  await notify({
+    usuarioId: cita.pacienteId.toString(),
+    tipo: NotificationType.SISTEMA,
+    titulo: 'Reembolso procesado',
+    mensaje: `Se reembolsó tu pago de la factura ${factura.numero}. Lamentamos el inconveniente.`,
+    enlace: '/paciente/mis-facturas',
+  });
   return factura;
 }

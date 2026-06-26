@@ -41,6 +41,20 @@ export class InvoiceService {
       .pipe(map((r) => r.data.factura));
   }
 
+  /** Reembolsa una factura pagada (Admin/Recepción). */
+  reembolsar(id: string): Observable<Invoice> {
+    return this.http
+      .patch<ApiResponse<{ factura: Invoice }>>(`${this.api}/${id}/refund`, {})
+      .pipe(map((r) => r.data.factura));
+  }
+
+  /** El paciente solicita el reembolso de una cita no realizada. */
+  reembolsarPorCita(citaId: string): Observable<Invoice> {
+    return this.http
+      .post<ApiResponse<{ factura: Invoice }>>(`${this.api}/reembolsar-cita/${citaId}`, {})
+      .pipe(map((r) => r.data.factura));
+  }
+
   /** Descarga el PDF de la factura (token vía interceptor) y dispara la descarga. */
   descargarPdf(factura: Invoice): void {
     this.http.get(`${this.api}/${factura._id}/pdf`, { responseType: 'blob' }).subscribe((blob) => {

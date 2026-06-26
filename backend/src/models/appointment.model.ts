@@ -5,6 +5,8 @@ export enum AppointmentStatus {
   ATENDIDA = 'atendida',
   CANCELADA = 'cancelada',
   NO_ASISTIO = 'no_asistio',
+  /** Pasó la hora (+ margen) sin que se atendiera ni cerrara: no se realizó. */
+  VENCIDA = 'vencida',
 }
 
 export enum AppointmentModality {

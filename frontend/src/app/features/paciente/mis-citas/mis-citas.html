@@ -4,6 +4,9 @@
 @if (error()) {
   <div class="card" style="border-color:#dc2626;color:#b91c1c;">{{ error() }}</div>
 }
+@if (msg()) {
+  <div class="card" style="border-color:#16a34a;color:#047857;">{{ msg() }}</div>
+}
 
 @if (loading()) {
   <p class="muted">Cargando…</p>
@@ -32,7 +35,13 @@
             @if (c.modalidad === 'teleconsulta') {
               <a class="btn-sm primary" [routerLink]="['/teleconsulta', c._id]">🎥 Videollamada</a>
             }
+            <button class="btn-sm" (click)="reprogramar(c)">Reprogramar</button>
             <button class="btn-sm danger" (click)="cancelar(c)">Cancelar</button>
+          }
+          @if (c.estado === 'vencida') {
+            <button class="btn-sm danger" (click)="solicitarReembolso(c)">
+              El médico no se presentó · Solicitar reembolso
+            </button>
           }
         </div>
       </div>

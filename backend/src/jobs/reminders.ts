@@ -81,6 +81,45 @@ export async function runRemindersOnce(): Promise<number> {
   return enviados;
 }
 
+/** Margen tras el fin de la cita antes de darla por no realizada (minutos). */
+const EXPIRY_GRACE_MIN = 60;
+
+/**
+ * Cierra las citas que quedaron en estado 'reservada' después de su hora
+ * (+ margen) sin atenderse: las marca 'vencida' y avisa al paciente. Cubre el
+ * caso en que el médico no se presenta y nadie cerró la cita.
+ */
+export async function runExpiryOnce(): Promise<number> {
+  const ahora = Date.now();
+  const citas = await Appointment.find({
+    estado: AppointmentStatus.RESERVADA,
+    fechaHora: { $lt: new Date(ahora) },
+  }).populate('medicoId', 'nombre apellido');
+
+  let cerradas = 0;
+  for (const cita of citas) {
+    const finConMargen =
+      cita.fechaHora.getTime() + cita.duracionMin * 60_000 + EXPIRY_GRACE_MIN * 60_000;
+    if (ahora <= finConMargen) continue;
+
+    cita.estado = AppointmentStatus.VENCIDA;
+    await cita.save();
+    cerradas += 1;
+
+    const cuando = fmtFecha.format(cita.fechaHora);
+    await notify({
+      usuarioId: cita.pacienteId.toString(),
+      tipo: NotificationType.SISTEMA,
+      titulo: 'Cita no realizada',
+      mensaje: `Tu cita del ${cuando} no se registró como atendida. Si ya la pagaste, puedes solicitar el reembolso desde "Mis citas".`,
+      enlace: '/paciente/mis-citas',
+    });
+  }
+
+  if (cerradas > 0) logger.info(`🗓️ Citas marcadas como vencidas: ${cerradas}`);
+  return cerradas;
+}
+
 let task: ScheduledTask | null = null;
 
 /** Programa el job de recordatorios según REMINDER_CRON. */
@@ -96,6 +135,7 @@ export function startReminderJob(): void {
 
   task = cron.schedule(env.REMINDER_CRON, () => {
     runRemindersOnce().catch((err) => logger.error('Fallo en el job de recordatorios:', err));
+    runExpiryOnce().catch((err) => logger.error('Fallo al cerrar citas vencidas:', err));
   });
 
   logger.info(

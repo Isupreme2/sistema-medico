@@ -6,6 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ActivatedRoute } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MedicoService } from '../../../core/services/medico.service';
@@ -40,6 +41,7 @@ export class Reservar {
   private appointmentTypeService = inject(AppointmentTypeService);
   private invoiceService = inject(InvoiceService);
   private socket = inject(SocketService);
+  private route = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
 
   readonly medicos = signal<MedicoProfile[]>([]);
@@ -69,7 +71,10 @@ export class Reservar {
       .subscribe((m) => {
         this.medicos.set(m);
         if (m.length && !this.medicoId()) {
-          this.onMedicoChange(m[0].usuarioId._id);
+          // Si venimos de "Reprogramar", preseleccionamos ese médico.
+          const preseleccion = this.route.snapshot.queryParamMap.get('medico');
+          const existe = preseleccion && m.some((x) => x.usuarioId._id === preseleccion);
+          this.onMedicoChange(existe ? preseleccion! : m[0].usuarioId._id);
         }
       });
 

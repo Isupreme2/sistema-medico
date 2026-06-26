@@ -38,3 +38,13 @@ export const anular = asyncHandler(async (req: Request, res: Response) => {
   const factura = await service.anular(req.params.id);
   res.json({ status: 'success', data: { factura } });
 });
+
+export const reembolsar = asyncHandler(async (req: Request, res: Response) => {
+  const factura = await service.reembolsar(req.params.id);
+  res.json({ status: 'success', data: { factura } });
+});
+
+export const reembolsarPorCita = asyncHandler(async (req: Request, res: Response) => {
+  const factura = await service.reembolsarPorCita(req.user!, req.params.citaId);
+  res.json({ status: 'success', data: { factura } });
+});

@@ -12,6 +12,7 @@ const ESTADO_LABEL: Record<string, string> = {
   pendiente: 'PENDIENTE',
   pagada: 'PAGADA',
   anulada: 'ANULADA',
+  reembolsada: 'REEMBOLSADA',
 };
 
 const soles = (n: number) => `S/ ${n.toFixed(2)}`;

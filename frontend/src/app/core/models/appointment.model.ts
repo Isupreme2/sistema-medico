@@ -11,7 +11,12 @@ export interface Availability {
   slots: Slot[];
 }
 
-export type AppointmentStatus = 'reservada' | 'atendida' | 'cancelada' | 'no_asistio';
+export type AppointmentStatus =
+  | 'reservada'
+  | 'atendida'
+  | 'cancelada'
+  | 'no_asistio'
+  | 'vencida';
 export type AppointmentModality = 'presencial' | 'teleconsulta';
 
 export interface PersonaRef {

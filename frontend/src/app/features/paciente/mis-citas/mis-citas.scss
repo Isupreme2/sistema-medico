@@ -98,6 +98,10 @@ h1 {
     background: #fef9c3;
     color: #ca8a04;
   }
+  &[data-estado='vencida'] {
+    background: #e2e8f0;
+    color: #475569;
+  }
 }
 
 .link-btn {

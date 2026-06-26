@@ -123,6 +123,10 @@ h1 {
     background: #fee2e2;
     color: #dc2626;
   }
+  &[data-estado='reembolsada'] {
+    background: #ede9fe;
+    color: #7c3aed;
+  }
 }
 
 .acciones {

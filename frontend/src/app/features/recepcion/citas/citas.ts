@@ -68,6 +68,7 @@ import { Appointment } from '../../../core/models/appointment.model';
       .badge[data-estado='atendida'] { background: #dcfce7; color: #166534; }
       .badge[data-estado='cancelada'] { background: #fee2e2; color: #991b1b; }
       .badge[data-estado='no_asistio'] { background: #fef3c7; color: #92400e; }
+      .badge[data-estado='vencida'] { background: #e2e8f0; color: #475569; }
       .err { color: #b91c1c; }
     `,
   ],
@@ -104,9 +105,13 @@ export class RecepcionCitas {
 
   estadoLabel(e: string): string {
     return (
-      { reservada: 'Reservada', atendida: 'Atendida', cancelada: 'Cancelada', no_asistio: 'No asistió' }[
-        e
-      ] ?? e
+      {
+        reservada: 'Reservada',
+        atendida: 'Atendida',
+        cancelada: 'Cancelada',
+        no_asistio: 'No asistió',
+        vencida: 'No realizada',
+      }[e] ?? e
     );
   }
 }

@@ -38,9 +38,13 @@ export class MedicoAgenda {
 
   estadoLabel(e: string): string {
     return (
-      { reservada: 'Reservada', atendida: 'Atendida', cancelada: 'Cancelada', no_asistio: 'No asistió' }[
-        e
-      ] ?? e
+      {
+        reservada: 'Reservada',
+        atendida: 'Atendida',
+        cancelada: 'Cancelada',
+        no_asistio: 'No asistió',
+        vencida: 'No realizada',
+      }[e] ?? e
     );
   }
 }

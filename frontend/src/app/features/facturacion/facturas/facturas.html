@@ -61,6 +61,9 @@
           @if (esAdmin && f.estado === 'pendiente') {
             <button class="btn-sm danger" (click)="anular(f)">Anular</button>
           }
+          @if ((esAdmin || esRecepcion) && f.estado === 'pagada') {
+            <button class="btn-sm danger" (click)="reembolsar(f)">Reembolsar</button>
+          }
         </div>
       </div>
     }
