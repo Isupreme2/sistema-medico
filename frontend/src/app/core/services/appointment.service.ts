@@ -38,6 +38,20 @@ export class AppointmentService {
       .pipe(map((r) => r.data.cita));
   }
 
+  /** Reserva del paciente con pago obligatorio: crea la cita y su factura pagada. */
+  reservarYPagar(payload: {
+    medicoId: string;
+    fechaHora: string;
+    tipoCitaId?: string;
+    modalidad?: AppointmentModality;
+    motivo?: string;
+    metodoPago: string;
+  }): Observable<Appointment> {
+    return this.http
+      .post<ApiResponse<{ cita: Appointment }>>(`${this.api}/reservar-y-pagar`, payload)
+      .pipe(map((r) => r.data.cita));
+  }
+
   list(filtros?: { desde?: string; hasta?: string }): Observable<Appointment[]> {
     const params = new URLSearchParams();
     if (filtros?.desde) params.set('desde', filtros.desde);

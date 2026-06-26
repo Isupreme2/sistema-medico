@@ -19,6 +19,17 @@ export const reservar = asyncHandler(async (req: Request, res: Response) => {
   res.status(201).json({ status: 'success', data: { cita } });
 });
 
+export const reservarYPagar = asyncHandler(async (req: Request, res: Response) => {
+  const metodoPago = (req.body as { metodoPago?: string }).metodoPago;
+  const { cita, factura } = await service.reservarYPagar(req.user!, req.body, metodoPago);
+  emitSlotChange({
+    medicoId: cita.medicoId._id.toString(),
+    fechaHora: cita.fechaHora.toISOString(),
+    estado: cita.estado,
+  });
+  res.status(201).json({ status: 'success', data: { cita, factura } });
+});
+
 export const listar = asyncHandler(async (req: Request, res: Response) => {
   const citas = await service.listAppointments(req.user!, {
     desde: req.query.desde as string | undefined,

@@ -12,7 +12,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { MedicoService } from '../../../core/services/medico.service';
 import { AppointmentService } from '../../../core/services/appointment.service';
 import { AppointmentTypeService } from '../../../core/services/appointment-type.service';
-import { InvoiceService } from '../../../core/services/invoice.service';
 import { SocketService } from '../../../core/services/socket.service';
 import { MedicoProfile, AppointmentType } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
@@ -39,7 +38,6 @@ export class Reservar {
   private medicoService = inject(MedicoService);
   private appointmentService = inject(AppointmentService);
   private appointmentTypeService = inject(AppointmentTypeService);
-  private invoiceService = inject(InvoiceService);
   private socket = inject(SocketService);
   private route = inject(ActivatedRoute);
   private destroyRef = inject(DestroyRef);
@@ -55,12 +53,11 @@ export class Reservar {
   readonly msg = signal<string | null>(null);
   readonly error = signal<string | null>(null);
 
-  // --- Pago (demo de pasarela) ---
+  // --- Pago para confirmar (la cita se crea solo si el pago tiene éxito) ---
   readonly tarifa = TARIFA_CONSULTA;
-  /** Última cita reservada pendiente de pago. */
-  readonly reservada = signal<{ hora: string; citaId: string } | null>(null);
+  /** Slot elegido pendiente de pago (aún no se ha creado la cita). */
+  readonly slotPendiente = signal<Slot | null>(null);
   readonly pagoAbierto = signal(false);
-  readonly pagado = signal(false);
 
   private socketSub?: Subscription;
 
@@ -120,55 +117,50 @@ export class Reservar {
       .subscribe(() => this.cargarDisponibilidad());
   }
 
+  /** Elegir un horario abre el pago: la cita se confirma solo si el pago entra. */
   reservar(slot: Slot): void {
     if (!slot.disponible) return;
     this.msg.set(null);
     this.error.set(null);
-    this.appointmentService
-      .reservar({
-        medicoId: this.medicoId(),
-        fechaHora: slot.fechaHora,
-        modalidad: this.modalidad(),
-        tipoCitaId: this.tipoCitaId() || undefined,
-      })
-      .subscribe({
-        next: (cita) => {
-          const via = this.modalidad() === 'teleconsulta' ? ' (teleconsulta 🎥)' : '';
-          this.msg.set(`Cita reservada para las ${slot.hora}${via} 🎉`);
-          this.reservada.set({ hora: slot.hora, citaId: cita._id });
-          this.pagado.set(false);
-          this.cargarDisponibilidad();
-        },
-        error: (err: HttpErrorResponse) => {
-          // 409 = alguien tomó el slot mientras tanto
-          this.error.set(err.error?.message ?? 'No se pudo reservar');
-          this.cargarDisponibilidad();
-        },
-      });
-  }
-
-  abrirPago(): void {
+    this.slotPendiente.set(slot);
     this.pagoAbierto.set(true);
   }
 
   cerrarPago(): void {
+    // Cancelar el pago = no se reserva nada (el horario sigue libre).
     this.pagoAbierto.set(false);
+    this.slotPendiente.set(null);
   }
 
+  /** Pago confirmado → se crea la cita Y su factura pagada de forma atómica. */
   onPagado(metodo: string): void {
     this.pagoAbierto.set(false);
-    const r = this.reservada();
-    if (!r) return;
-    // El cobro simulado se confirmó → registramos la factura pagada en el sistema.
-    this.invoiceService.pagarCita(r.citaId, metodo).subscribe({
-      next: () => {
-        this.pagado.set(true);
-        this.msg.set('Pago registrado. Tu factura está en “Mis facturas”. 🧾');
-      },
-      error: (err: HttpErrorResponse) => {
-        this.error.set(err.error?.message ?? 'El pago no se pudo registrar.');
-      },
-    });
+    const slot = this.slotPendiente();
+    if (!slot) return;
+    this.appointmentService
+      .reservarYPagar({
+        medicoId: this.medicoId(),
+        fechaHora: slot.fechaHora,
+        modalidad: this.modalidad(),
+        tipoCitaId: this.tipoCitaId() || undefined,
+        metodoPago: metodo,
+      })
+      .subscribe({
+        next: () => {
+          const via = this.modalidad() === 'teleconsulta' ? ' (teleconsulta 🎥)' : '';
+          this.msg.set(
+            `Cita reservada y pagada para las ${slot.hora}${via} 🎉 Tu factura está en “Mis facturas”.`,
+          );
+          this.slotPendiente.set(null);
+          this.cargarDisponibilidad();
+        },
+        error: (err: HttpErrorResponse) => {
+          // 409 = alguien tomó el slot mientras pagabas (no se cobró nada real).
+          this.error.set(err.error?.message ?? 'No se pudo reservar ese horario, elige otro.');
+          this.slotPendiente.set(null);
+          this.cargarDisponibilidad();
+        },
+      });
   }
 
   readonly hayDisponibles = () => this.slots().some((s) => s.disponible);

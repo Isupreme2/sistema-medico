@@ -17,6 +17,8 @@ export const createAppointmentSchema = z.object({
       .enum([AppointmentModality.PRESENCIAL, AppointmentModality.TELECONSULTA])
       .default(AppointmentModality.PRESENCIAL),
     motivo: z.string().max(500).optional(),
+    /** Solo en el flujo de paciente con pago (reservar-y-pagar). */
+    metodoPago: z.string().max(60).optional(),
   }),
 });
 

@@ -28,6 +28,7 @@ import {
 } from '../../utils/slots';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
+import { pagarCita } from '../invoice/invoice.service';
 
 /** Minutos antes/después de la cita en que la sala de teleconsulta está activa. */
 const VIDEO_ANTES_MIN = 10;
@@ -204,6 +205,21 @@ export async function reservar(requester: AccessTokenPayload, input: CreateAppoi
     }
     throw err;
   }
+}
+
+/**
+ * Reserva con pago obligatorio (flujo del paciente). Crea la cita y, acto
+ * seguido, su factura pagada. Si el horario se tomó (409), no se crea nada,
+ * por lo que tampoco se genera factura.
+ */
+export async function reservarYPagar(
+  requester: AccessTokenPayload,
+  input: CreateAppointmentInput,
+  metodoPago?: string,
+) {
+  const cita = await reservar(requester, input);
+  const factura = await pagarCita(requester, cita._id.toString(), metodoPago);
+  return { cita, factura };
 }
 
 /** Lista citas filtradas por el rol del solicitante. */

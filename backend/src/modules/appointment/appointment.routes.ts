@@ -53,12 +53,32 @@ router.get('/disponibilidad/:id', authenticate, ctrl.disponibilidad);
  *       422: { description: Fuera del horario de atención }
  */
 router.get('/', authenticate, ctrl.listar);
+// Reserva sin pago: solo personal (Recepción/Admin); el cobro va por caja/factura.
 router.post(
   '/',
   authenticate,
-  authorize(UserRole.PACIENTE, UserRole.RECEPCIONISTA, UserRole.ADMIN),
+  authorize(UserRole.RECEPCIONISTA, UserRole.ADMIN),
   validate(createAppointmentSchema),
   ctrl.reservar,
+);
+
+/**
+ * @openapi
+ * /appointments/reservar-y-pagar:
+ *   post:
+ *     tags: [Citas]
+ *     summary: Reserva del paciente con pago obligatorio (crea cita + factura pagada)
+ *     security: [{ bearerAuth: [] }]
+ *     responses:
+ *       201: { description: Cita reservada y pagada }
+ *       409: { description: Slot ya tomado }
+ */
+router.post(
+  '/reservar-y-pagar',
+  authenticate,
+  authorize(UserRole.PACIENTE),
+  validate(createAppointmentSchema),
+  ctrl.reservarYPagar,
 );
 
 /**

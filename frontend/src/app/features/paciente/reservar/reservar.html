@@ -1,5 +1,8 @@
 <h1>Reservar cita</h1>
-<p class="lead">Elige un médico y un día; los horarios ocupados aparecen bloqueados.</p>
+<p class="lead">
+  Elige médico, día y horario. Al elegir un horario se abrirá el pago: tu cita se
+  confirma solo cuando el pago se completa.
+</p>
 
 <div class="controls card">
   <label class="field">
@@ -44,24 +47,6 @@
   <div class="alert err">{{ error() }}</div>
 }
 
-@if (reservada(); as r) {
-  <div class="pago-panel card">
-    <div class="pago-info">
-      <strong>Cita reservada para las {{ r.hora }}</strong>
-      @if (pagado()) {
-        <span class="pagado-badge">✓ Pago realizado</span>
-      } @else {
-        <p class="muted">Completa el pago de tu consulta para confirmarla.</p>
-      }
-    </div>
-    @if (!pagado()) {
-      <button class="btn-pagar" type="button" (click)="abrirPago()">
-        Pagar consulta · S/ {{ tarifa.toFixed(2) }}
-      </button>
-    }
-  </div>
-}
-
 @if (loading()) {
   <p class="muted">Cargando disponibilidad…</p>
 } @else if (medicos().length === 0) {
@@ -78,7 +63,7 @@
         [class.ocupado]="!slot.disponible"
         [disabled]="!slot.disponible"
         (click)="reservar(slot)"
-        [title]="slot.disponible ? 'Reservar ' + slot.hora : 'Ocupado'"
+        [title]="slot.disponible ? 'Reservar y pagar ' + slot.hora : 'Ocupado'"
       >
         {{ slot.hora }}
       </button>
