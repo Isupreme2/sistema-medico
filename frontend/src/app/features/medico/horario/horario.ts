@@ -6,6 +6,12 @@ import { AuthService } from '../../../core/services/auth.service';
 import { MedicoService } from '../../../core/services/medico.service';
 import { Bloqueo, DIAS_SEMANA, Horario } from '../../../core/models/medico.model';
 
+/** Convierte "HH:mm" a minutos del día. */
+function toMin(hhmm: string): number {
+  const [h, m] = hhmm.split(':').map(Number);
+  return h * 60 + m;
+}
+
 @Component({
   selector: 'app-medico-horario',
   imports: [ReactiveFormsModule, DatePipe],
@@ -76,8 +82,23 @@ export class MedicoHorario {
   addFranja(): void {
     if (this.franjaForm.invalid) return;
     const { diaSemana, horaInicio, horaFin } = this.franjaForm.getRawValue();
-    if (horaInicio >= horaFin) {
+    const ini = toMin(horaInicio);
+    const fin = toMin(horaFin);
+    const dur = this.duracionSlotMin();
+
+    if (ini >= fin) {
       this.error.set('La hora de inicio debe ser anterior a la de fin');
+      return;
+    }
+    if ((fin - ini) % dur !== 0) {
+      this.error.set(`La franja debe ser múltiplo de ${dur} min (la duración de cada cita).`);
+      return;
+    }
+    const solapa = this.horarios().some(
+      (h) => h.diaSemana === diaSemana && toMin(h.horaInicio) < fin && ini < toMin(h.horaFin),
+    );
+    if (solapa) {
+      this.error.set('Esa franja se solapa o repite otra del mismo día.');
       return;
     }
     this.error.set(null);
@@ -89,6 +110,15 @@ export class MedicoHorario {
   }
 
   guardarHorario(): void {
+    // Si cambió la duración del slot, revalida que todas las franjas sigan alineadas.
+    const dur = this.duracionSlotMin();
+    const mala = this.horarios().find((h) => (toMin(h.horaFin) - toMin(h.horaInicio)) % dur !== 0);
+    if (mala) {
+      this.error.set(
+        `La franja ${mala.horaInicio}–${mala.horaFin} no es múltiplo de ${dur} min. Ajusta la franja o la duración.`,
+      );
+      return;
+    }
     this.savingHorario.set(true);
     this.msg.set(null);
     this.error.set(null);

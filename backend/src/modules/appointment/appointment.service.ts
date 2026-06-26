@@ -19,7 +19,7 @@ import {
   UpdateStatusInput,
   PreConsultaInput,
 } from './appointment.validation';
-import { buildDate, computeSlots, dentroDeFranja } from '../../utils/slots';
+import { buildDate, computeSlots, dentroDeFranja, toMinutes } from '../../utils/slots';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
 
@@ -126,6 +126,17 @@ export async function reservar(requester: AccessTokenPayload, input: CreateAppoi
   const minutos = fechaHora.getHours() * 60 + fechaHora.getMinutes();
   if (!dentroDeFranja(diaSemana, minutos, duracionMin, profile.horarios)) {
     throw AppError.unprocessable('Ese horario no está dentro de la atención del médico');
+  }
+  // El inicio debe caer en la grilla de turnos del médico (evita reservas
+  // fuera de los horarios ofrecidos, p. ej. vía API con una hora arbitraria).
+  const enGrilla = profile.horarios.some(
+    (h) =>
+      h.diaSemana === diaSemana &&
+      minutos >= toMinutes(h.horaInicio) &&
+      (minutos - toMinutes(h.horaInicio)) % profile.duracionSlotMin === 0,
+  );
+  if (!enGrilla) {
+    throw AppError.unprocessable('Ese horario no es un inicio de turno válido');
   }
 
   // Bloqueos

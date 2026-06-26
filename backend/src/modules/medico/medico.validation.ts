@@ -2,6 +2,11 @@ import { z } from 'zod';
 
 const horaRegex = /^([01]\d|2[0-3]):[0-5]\d$/;
 
+const toMin = (s: string): number => {
+  const [h, m] = s.split(':').map(Number);
+  return h * 60 + m;
+};
+
 const horarioItem = z
   .object({
     diaSemana: z.coerce.number().int().min(0).max(6),
@@ -9,7 +14,7 @@ const horarioItem = z
     horaFin: z.string().regex(horaRegex, 'Hora inválida (HH:mm)'),
   })
   .refine((h) => h.horaInicio < h.horaFin, {
-    message: 'horaInicio debe ser anterior a horaFin',
+    message: 'La hora de inicio debe ser anterior a la de fin',
     path: ['horaFin'],
   });
 
@@ -32,10 +37,41 @@ export const createMedicoSchema = z.object({
 });
 
 export const updateHorarioSchema = z.object({
-  body: z.object({
-    duracionSlotMin: z.coerce.number().int().min(5).max(240).optional(),
-    horarios: z.array(horarioItem).max(50),
-  }),
+  body: z
+    .object({
+      duracionSlotMin: z.coerce.number().int().min(5).max(240).optional(),
+      horarios: z.array(horarioItem).max(50),
+    })
+    .superRefine((b, ctx) => {
+      // 1) Cada franja debe ser múltiplo de la duración del slot (sin minutos muertos).
+      if (b.duracionSlotMin) {
+        b.horarios.forEach((h, i) => {
+          const dur = toMin(h.horaFin) - toMin(h.horaInicio);
+          if (dur % b.duracionSlotMin! !== 0) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `La franja ${h.horaInicio}–${h.horaFin} debe ser múltiplo de ${b.duracionSlotMin} min (la duración de cada cita)`,
+              path: ['horarios', i, 'horaFin'],
+            });
+          }
+        });
+      }
+      // 2) No se permiten franjas solapadas o duplicadas el mismo día.
+      for (let i = 0; i < b.horarios.length; i++) {
+        for (let j = i + 1; j < b.horarios.length; j++) {
+          const a = b.horarios[i];
+          const c = b.horarios[j];
+          if (a.diaSemana !== c.diaSemana) continue;
+          if (toMin(a.horaInicio) < toMin(c.horaFin) && toMin(c.horaInicio) < toMin(a.horaFin)) {
+            ctx.addIssue({
+              code: z.ZodIssueCode.custom,
+              message: `Tienes franjas solapadas o repetidas el mismo día (${a.horaInicio}–${a.horaFin} y ${c.horaInicio}–${c.horaFin})`,
+              path: ['horarios', j],
+            });
+          }
+        }
+      }
+    }),
 });
 
 export const updateProfileSchema = z.object({
