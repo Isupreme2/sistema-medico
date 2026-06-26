@@ -13,10 +13,10 @@
     </div>
     <div class="nav-user">
       <app-notification-bell />
-      <div class="user-meta">
+      <a class="user-meta" routerLink="/perfil" title="Mi perfil">
         <span class="name">{{ user()?.nombre }} {{ user()?.apellido }}</span>
         <span class="role-badge">{{ roleLabel() }}</span>
-      </div>
+      </a>
       <button class="btn-logout" (click)="logout()">Salir</button>
     </div>
   </header>

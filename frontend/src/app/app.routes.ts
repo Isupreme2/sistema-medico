@@ -67,6 +67,10 @@ export const routes: Routes = [
           import('./features/dashboard/dashboard').then((m) => m.Dashboard),
       },
       {
+        path: 'perfil',
+        loadComponent: () => import('./features/perfil/perfil').then((m) => m.Perfil),
+      },
+      {
         path: 'admin/medicos',
         canActivate: [roleGuard(UserRole.ADMIN)],
         loadComponent: () =>

@@ -83,6 +83,9 @@
     display: flex;
     flex-direction: column;
     align-items: flex-end;
+    text-decoration: none;
+    color: inherit;
+    cursor: pointer;
     .name {
       font-size: 0.88rem;
       font-weight: 600;

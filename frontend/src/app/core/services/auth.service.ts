@@ -83,6 +83,18 @@ export class AuthService {
       .pipe(tap(() => this.clearSession()));
   }
 
+  /** Inicia la configuración de 2FA: devuelve el QR (data URL) y la otpauth URL. */
+  setup2FA(): Observable<{ otpauthUrl: string; qrDataUrl: string }> {
+    return this.http
+      .post<ApiResponse<{ otpauthUrl: string; qrDataUrl: string }>>(`${this.api}/2fa/setup`, {})
+      .pipe(map((r) => r.data));
+  }
+
+  /** Confirma y activa 2FA con el primer código TOTP. */
+  enable2FA(totp: string): Observable<unknown> {
+    return this.http.post<ApiResponse<unknown>>(`${this.api}/2fa/enable`, { totp });
+  }
+
   hasRole(...roles: UserRole[]): boolean {
     const r = this.role();
     return r !== null && roles.includes(r);
