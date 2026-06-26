@@ -81,7 +81,10 @@ export class MedicoHorario {
 
   addFranja(): void {
     if (this.franjaForm.invalid) return;
-    const { diaSemana, horaInicio, horaFin } = this.franjaForm.getRawValue();
+    const { horaInicio, horaFin } = this.franjaForm.getRawValue();
+    // El <select> puede entregar el día como string; lo normalizamos a número
+    // para que coincida con el catálogo de días y con las franjas guardadas.
+    const diaSemana = Number(this.franjaForm.getRawValue().diaSemana);
     const ini = toMin(horaInicio);
     const fin = toMin(horaFin);
     const dur = this.duracionSlotMin();

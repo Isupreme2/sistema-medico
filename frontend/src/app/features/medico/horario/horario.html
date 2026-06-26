@@ -20,7 +20,7 @@
         <span>Día</span>
         <select formControlName="diaSemana">
           @for (d of dias; track d.valor) {
-            <option [value]="d.valor">{{ d.nombre }}</option>
+            <option [ngValue]="d.valor">{{ d.nombre }}</option>
           }
         </select>
       </label>
