@@ -17,8 +17,8 @@
     @for (c of citas(); track c._id) {
       <div class="card cita" [class.cancelada]="c.estado === 'cancelada'">
         <div class="cita-fecha">
-          <span class="dia">{{ c.fechaHora | date: 'EEE dd/MM' }}</span>
-          <span class="hora">{{ c.fechaHora | date: 'HH:mm' }}</span>
+          <span class="dia">{{ c.fechaHora | date: 'EEE dd/MM' : '-0500' }}</span>
+          <span class="hora">{{ c.fechaHora | date: 'HH:mm' : '-0500' }}</span>
         </div>
         <div class="cita-info">
           <strong>Dr(a). {{ c.medicoId.nombre }} {{ c.medicoId.apellido }}</strong>
@@ -35,8 +35,14 @@
             @if (c.modalidad === 'teleconsulta') {
               <a class="btn-sm primary" [routerLink]="['/teleconsulta', c._id]">🎥 Videollamada</a>
             }
-            <button class="btn-sm" (click)="reprogramar(c)">Reprogramar</button>
-            <button class="btn-sm danger" (click)="cancelar(c)">Cancelar</button>
+            @if (puedeModificar(c)) {
+              <button class="btn-sm" (click)="reprogramar(c)" title="Cancela esta cita y eliges una nueva fecha con el mismo médico">
+                Reprogramar
+              </button>
+              <button class="btn-sm danger" (click)="cancelar(c)">Cancelar</button>
+            } @else {
+              <span class="nota-cambio">Cambios hasta {{ minHoras }} h antes · contacta a recepción</span>
+            }
           }
           @if (c.estado === 'vencida') {
             <button class="btn-sm danger" (click)="solicitarReembolso(c)">

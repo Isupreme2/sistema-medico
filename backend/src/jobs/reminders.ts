@@ -16,6 +16,7 @@ interface PersonaRef {
 const fmtFecha = new Intl.DateTimeFormat('es-PE', {
   dateStyle: 'full',
   timeStyle: 'short',
+  timeZone: 'America/Lima',
 });
 
 /**

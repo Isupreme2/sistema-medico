@@ -33,7 +33,7 @@ import { Appointment } from '../../../core/models/appointment.model';
           <tbody>
             @for (c of citas(); track c._id) {
               <tr>
-                <td>{{ c.fechaHora | date: 'short' }}</td>
+                <td>{{ c.fechaHora | date: 'short' : '-0500' }}</td>
                 <td>{{ c.pacienteId.nombre }} {{ c.pacienteId.apellido }}</td>
                 <td>Dr(a). {{ c.medicoId.nombre }} {{ c.medicoId.apellido }}</td>
                 <td>{{ c.modalidad === 'teleconsulta' ? 'Teleconsulta 🎥' : 'Presencial' }}</td>

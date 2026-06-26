@@ -45,8 +45,24 @@ export class MisCitas {
     });
   }
 
-  /** Reprograma: cancela esta cita y abre la reserva con el mismo médico. */
+  /** Antelación mínima (h) para que el paciente cancele o reprograme. */
+  readonly minHoras = 24;
+
+  /** ¿La cita está suficientemente lejos para permitir cambios del paciente? */
+  puedeModificar(c: Appointment): boolean {
+    const horas = (new Date(c.fechaHora).getTime() - Date.now()) / 3_600_000;
+    return c.estado === 'reservada' && horas >= this.minHoras;
+  }
+
+  /**
+   * Reprograma: cancela esta cita y abre la reserva con el mismo médico para
+   * elegir una nueva fecha. Pide confirmación porque la cita actual se libera.
+   */
   reprogramar(c: Appointment): void {
+    const ok = confirm(
+      'Esto cancelará tu cita actual y te llevará a elegir una nueva fecha con el mismo médico. ¿Continuar?',
+    );
+    if (!ok) return;
     this.error.set(null);
     this.service.cancelar(c._id).subscribe({
       next: () => this.router.navigate(['/paciente/reservar'], { queryParams: { medico: c.medicoId._id } }),

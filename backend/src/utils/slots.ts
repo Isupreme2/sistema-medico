@@ -28,9 +28,22 @@ export const toMinutes = (hhmm: string): number => {
 export const toHHmm = (min: number): string =>
   `${String(Math.floor(min / 60)).padStart(2, '0')}:${String(min % 60).padStart(2, '0')}`;
 
-/** Construye un Date a partir de "YYYY-MM-DD" + "HH:mm" (hora local). */
+/** Zona horaria fija de la clínica (Perú, UTC-5, sin horario de verano). */
+export const CLINIC_OFFSET = '-05:00';
+
+/**
+ * Construye el instante UTC correcto para una hora de pared de la clínica.
+ * Así "10:00" siempre significa 10:00 en Perú, sin importar dónde corra el
+ * servidor (Render usa UTC) ni desde dónde se mire.
+ */
 export const buildDate = (fecha: string, hhmm: string): Date =>
-  new Date(`${fecha}T${hhmm}:00`);
+  new Date(`${fecha}T${hhmm}:00${CLINIC_OFFSET}`);
+
+/** Día de la semana (0-6) y minutos del día, EN HORA DE LA CLÍNICA, de un instante. */
+export const enHoraClinica = (d: Date): { diaSemana: number; minutos: number } => {
+  const lima = new Date(d.getTime() - 5 * 60 * 60 * 1000);
+  return { diaSemana: lima.getUTCDay(), minutos: lima.getUTCHours() * 60 + lima.getUTCMinutes() };
+};
 
 /** ¿El intervalo [t, t+dur) solapa con algún bloqueo? */
 export const enBloqueo = (t: number, durMin: number, bloqueos: BloqueoLite[]): boolean =>

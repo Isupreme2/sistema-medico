@@ -9,7 +9,7 @@
   <div class="card info">
     <div>
       <strong>{{ v.contraparte }}</strong>
-      <small>{{ v.inicio | date: 'EEEE dd/MM, HH:mm' }}</small>
+      <small>{{ v.inicio | date: 'EEEE dd/MM, HH:mm' : '-0500' }}</small>
     </div>
     <span class="pill" [class.ok]="v.canJoin" [class.no]="!v.canJoin">
       {{ v.canJoin ? 'Sala disponible' : 'Sala no disponible' }}

@@ -19,7 +19,13 @@ import {
   UpdateStatusInput,
   PreConsultaInput,
 } from './appointment.validation';
-import { buildDate, computeSlots, dentroDeFranja, toMinutes } from '../../utils/slots';
+import {
+  buildDate,
+  computeSlots,
+  dentroDeFranja,
+  enHoraClinica,
+  toMinutes,
+} from '../../utils/slots';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
 
@@ -27,7 +33,18 @@ import { NotificationType } from '../../models/notification.model';
 const VIDEO_ANTES_MIN = 10;
 const VIDEO_DESPUES_MIN = 30;
 
-const fmtCita = new Intl.DateTimeFormat('es-PE', { dateStyle: 'medium', timeStyle: 'short' });
+/**
+ * Antelación mínima (horas) con que el PACIENTE puede cancelar o reprogramar.
+ * Evita liberar un horario tan cerca de la cita que ya no se pueda reutilizar.
+ * Recepción/médico/admin no tienen este tope.
+ */
+const CANCEL_MIN_HORAS = 24;
+
+const fmtCita = new Intl.DateTimeFormat('es-PE', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'America/Lima',
+});
 
 interface PersonaPop {
   _id: { toString(): string };
@@ -47,7 +64,7 @@ export async function getAvailability(medicoId: string, fecha: string) {
   const profile = await MedicoProfile.findOne({ usuarioId: medicoId });
   if (!profile) throw AppError.notFound('Médico no encontrado');
 
-  const diaSemana = buildDate(fecha, '00:00').getDay();
+  const diaSemana = enHoraClinica(buildDate(fecha, '00:00')).diaSemana;
   const franjas = profile.horarios.filter((h) => h.diaSemana === diaSemana);
   const dur = profile.duracionSlotMin;
 
@@ -122,8 +139,7 @@ export async function reservar(requester: AccessTokenPayload, input: CreateAppoi
   }
 
   // Validación de que el slot cae dentro de una franja de atención
-  const diaSemana = fechaHora.getDay();
-  const minutos = fechaHora.getHours() * 60 + fechaHora.getMinutes();
+  const { diaSemana, minutos } = enHoraClinica(fechaHora);
   if (!dentroDeFranja(diaSemana, minutos, duracionMin, profile.horarios)) {
     throw AppError.unprocessable('Ese horario no está dentro de la atención del médico');
   }
@@ -241,6 +257,14 @@ export async function cancelar(id: string, requester: AccessTokenPayload) {
   const cita = await getOwnedAppointment(id, requester);
   if (cita.estado !== AppointmentStatus.RESERVADA) {
     throw AppError.conflict('Solo se pueden cancelar citas reservadas');
+  }
+  if (requester.role === UserRole.PACIENTE) {
+    const horasAntes = (cita.fechaHora.getTime() - Date.now()) / 3_600_000;
+    if (horasAntes < CANCEL_MIN_HORAS) {
+      throw AppError.unprocessable(
+        `Solo puedes cancelar o reprogramar hasta ${CANCEL_MIN_HORAS} h antes de la cita. Para cambios de último momento, contacta a recepción.`,
+      );
+    }
   }
   cita.estado = AppointmentStatus.CANCELADA;
   await cita.save();

@@ -10,8 +10,8 @@
     @for (c of citas(); track c._id) {
       <div class="card cita" [class.cancelada]="c.estado === 'cancelada'">
         <div class="cita-fecha">
-          <span class="dia">{{ c.fechaHora | date: 'EEE dd/MM' }}</span>
-          <span class="hora">{{ c.fechaHora | date: 'HH:mm' }}</span>
+          <span class="dia">{{ c.fechaHora | date: 'EEE dd/MM' : '-0500' }}</span>
+          <span class="hora">{{ c.fechaHora | date: 'HH:mm' : '-0500' }}</span>
         </div>
         <div class="cita-info">
           <strong>{{ c.pacienteId.nombre }} {{ c.pacienteId.apellido }}</strong>

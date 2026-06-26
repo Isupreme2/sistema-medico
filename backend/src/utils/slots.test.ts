@@ -22,11 +22,10 @@ describe('helpers de tiempo', () => {
     expect(toHHmm(toMinutes('14:45'))).toBe('14:45');
   });
 
-  it('buildDate combina fecha y hora locales', () => {
+  it('buildDate usa la zona horaria de la clínica (UTC-5)', () => {
+    // 09:00 en Perú = 14:00 UTC, sin importar la zona del servidor de tests.
     const d = buildDate('2026-06-22', '09:00');
-    expect(d.getFullYear()).toBe(2026);
-    expect(d.getHours()).toBe(9);
-    expect(d.getMinutes()).toBe(0);
+    expect(d.toISOString()).toBe('2026-06-22T14:00:00.000Z');
   });
 });
 
