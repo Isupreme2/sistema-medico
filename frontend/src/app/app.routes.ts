@@ -83,6 +83,14 @@ export const routes: Routes = [
           import('./features/admin/tipos-cita/tipos-cita').then((m) => m.AdminTiposCita),
       },
       {
+        path: 'admin/recepcionistas',
+        canActivate: [roleGuard(UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/admin/recepcionistas/recepcionistas').then(
+            (m) => m.AdminRecepcionistas,
+          ),
+      },
+      {
         path: 'admin/analitica',
         canActivate: [roleGuard(UserRole.ADMIN)],
         loadComponent: () =>
@@ -155,12 +163,6 @@ export const routes: Routes = [
           import('./features/medico/recetar/recetar').then((m) => m.Recetar),
       },
       {
-        path: 'medico/facturas',
-        canActivate: [roleGuard(UserRole.MEDICO)],
-        loadComponent: () =>
-          import('./features/facturacion/facturas/facturas').then((m) => m.Facturas),
-      },
-      {
         // Factura directa a un paciente, sin cita previa (walk-in). Solo gestores.
         path: 'facturar',
         canActivate: [roleGuard(UserRole.ADMIN, UserRole.RECEPCIONISTA)],
@@ -169,7 +171,7 @@ export const routes: Routes = [
       },
       {
         path: 'facturar/:appointmentId',
-        canActivate: [roleGuard(UserRole.MEDICO, UserRole.ADMIN, UserRole.RECEPCIONISTA)],
+        canActivate: [roleGuard(UserRole.ADMIN, UserRole.RECEPCIONISTA)],
         loadComponent: () =>
           import('./features/facturacion/crear/crear-factura').then((m) => m.CrearFactura),
       },

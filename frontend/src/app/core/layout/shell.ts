@@ -50,6 +50,7 @@ export class Shell implements OnInit {
           ...base,
           { label: 'Analítica', path: '/admin/analitica' },
           { label: 'Médicos', path: '/admin/medicos' },
+          { label: 'Recepcionistas', path: '/admin/recepcionistas' },
           { label: 'Tipos de cita', path: '/admin/tipos-cita' },
           { label: 'Agendar cita', path: '/recepcion/agendar' },
           { label: 'Citas', path: '/recepcion/citas' },
@@ -70,7 +71,6 @@ export class Shell implements OnInit {
           ...base,
           { label: 'Mi agenda', path: '/medico/agenda' },
           { label: 'Mi horario', path: '/medico/horario' },
-          { label: 'Facturación', path: '/medico/facturas' },
         ];
       case UserRole.PACIENTE:
         return [

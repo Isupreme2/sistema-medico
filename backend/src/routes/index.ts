@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import authRoutes from '../modules/auth/auth.routes';
 import medicoRoutes from '../modules/medico/medico.routes';
+import staffRoutes from '../modules/staff/staff.routes';
 import specialtyRoutes from '../modules/specialty/specialty.routes';
 import appointmentTypeRoutes from '../modules/appointmentType/appointmentType.routes';
 import appointmentRoutes from '../modules/appointment/appointment.routes';
@@ -33,6 +34,7 @@ router.get('/health', (_req, res) => {
 
 router.use('/auth', authRoutes);
 router.use('/medicos', medicoRoutes);
+router.use('/staff', staffRoutes);
 router.use('/especialidades', specialtyRoutes);
 router.use('/appointment-types', appointmentTypeRoutes);
 router.use('/appointments', appointmentRoutes);

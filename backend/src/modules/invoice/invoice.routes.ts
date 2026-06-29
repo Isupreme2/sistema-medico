@@ -29,7 +29,7 @@ router.get('/', authenticate, ctrl.listar);
 router.post(
   '/',
   authenticate,
-  authorize(UserRole.MEDICO, UserRole.ADMIN, UserRole.RECEPCIONISTA),
+  authorize(UserRole.ADMIN, UserRole.RECEPCIONISTA),
   validate(createInvoiceSchema),
   ctrl.crear,
 );

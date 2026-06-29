@@ -45,6 +45,7 @@ export class Dashboard {
         return [
           { icon: '📊', title: 'Panel analítico', desc: 'Métricas, ausentismo e ingresos', status: 'listo', link: '/admin/analitica' },
           { icon: '👨‍⚕️', title: 'Gestión de médicos', desc: 'Crear y administrar médicos', status: 'listo', link: '/admin/medicos' },
+          { icon: '🧑‍💼', title: 'Cuentas de recepción', desc: 'Crea y administra Registradores', status: 'listo', link: '/admin/recepcionistas' },
           { icon: '🏷️', title: 'Tipos de cita', desc: 'Catálogo de tipos y duraciones', status: 'listo', link: '/admin/tipos-cita' },
           { icon: '🗓️', title: 'Agendar cita', desc: 'Reserva citas a nombre de pacientes', status: 'listo', link: '/recepcion/agendar' },
           { icon: '📋', title: 'Citas', desc: 'Todas las citas de la clínica', status: 'listo', link: '/recepcion/citas' },
@@ -64,7 +65,6 @@ export class Dashboard {
           { icon: '🗓️', title: 'Mi agenda', desc: 'Citas con pacientes y su estado', status: 'listo', link: '/medico/agenda' },
           { icon: '⏰', title: 'Mi horario', desc: 'Configura tu horario y bloqueos', status: 'listo', link: '/medico/horario' },
           { icon: '💊', title: 'Recetas digitales', desc: 'Emite recetas desde tu agenda', status: 'listo', link: '/medico/agenda' },
-          { icon: '🧾', title: 'Facturación', desc: 'Factura tus consultas', status: 'listo', link: '/medico/facturas' },
         ];
       case UserRole.PACIENTE:
         return [
