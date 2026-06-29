@@ -77,6 +77,12 @@ export const routes: Routes = [
           import('./features/admin/medicos/medicos').then((m) => m.AdminMedicos),
       },
       {
+        path: 'admin/medicos/:id/horario',
+        canActivate: [roleGuard(UserRole.ADMIN)],
+        loadComponent: () =>
+          import('./features/medico/horario/horario').then((m) => m.MedicoHorario),
+      },
+      {
         path: 'admin/tipos-cita',
         canActivate: [roleGuard(UserRole.ADMIN)],
         loadComponent: () =>

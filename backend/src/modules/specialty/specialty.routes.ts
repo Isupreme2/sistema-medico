@@ -6,6 +6,17 @@ const router = Router();
 
 /**
  * @openapi
+ * /especialidades/publicas:
+ *   get:
+ *     tags: [Especialidades]
+ *     summary: Especialidades ofertadas al público (con al menos un médico activo)
+ *     responses:
+ *       200: { description: Listado público de especialidades con médico }
+ */
+router.get('/publicas', ctrl.listSpecialtiesPublicas);
+
+/**
+ * @openapi
  * /especialidades:
  *   get:
  *     tags: [Especialidades]

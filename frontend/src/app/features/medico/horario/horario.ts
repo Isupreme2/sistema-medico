@@ -1,9 +1,11 @@
 import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
+import { ActivatedRoute } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../../core/services/auth.service';
 import { MedicoService } from '../../../core/services/medico.service';
+import { UserRole } from '../../../core/models/user.model';
 import { Bloqueo, DIAS_SEMANA, Horario } from '../../../core/models/medico.model';
 
 /** Convierte "HH:mm" a minutos del día. */
@@ -22,10 +24,16 @@ function toMin(hhmm: string): number {
 export class MedicoHorario {
   private fb = inject(FormBuilder);
   private auth = inject(AuthService);
+  private route = inject(ActivatedRoute);
   private medicoService = inject(MedicoService);
 
   readonly dias = DIAS_SEMANA;
-  private myId = this.auth.user()?._id ?? '';
+
+  /** El Admin edita el horario de un médico (id en la ruta); el médico solo ve el suyo. */
+  readonly esAdmin = this.auth.role() === UserRole.ADMIN;
+  private targetId =
+    this.route.snapshot.paramMap.get('id') ?? this.auth.user()?._id ?? '';
+  readonly nombreMedico = signal<string>('');
 
   readonly loading = signal(true);
   readonly horarios = signal<Horario[]>([]);
@@ -66,15 +74,16 @@ export class MedicoHorario {
 
   load(): void {
     this.loading.set(true);
-    this.medicoService.get(this.myId).subscribe({
+    this.medicoService.get(this.targetId).subscribe({
       next: (m) => {
         this.horarios.set(m.horarios);
         this.duracionSlotMin.set(m.duracionSlotMin);
+        this.nombreMedico.set(`${m.usuarioId.nombre} ${m.usuarioId.apellido}`);
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
     });
-    this.medicoService.listBloqueos(this.myId).subscribe({
+    this.medicoService.listBloqueos(this.targetId).subscribe({
       next: (b) => this.bloqueos.set(b),
     });
   }
@@ -126,7 +135,7 @@ export class MedicoHorario {
     this.msg.set(null);
     this.error.set(null);
     this.medicoService
-      .updateHorario(this.myId, this.horarios(), this.duracionSlotMin())
+      .updateHorario(this.targetId, this.horarios(), this.duracionSlotMin())
       .subscribe({
         next: () => {
           this.savingHorario.set(false);
@@ -145,11 +154,11 @@ export class MedicoHorario {
       return;
     }
     const { desde, hasta, motivo } = this.bloqueoForm.getRawValue();
-    this.medicoService.createBloqueo(this.myId, desde, hasta, motivo || undefined).subscribe({
+    this.medicoService.createBloqueo(this.targetId, desde, hasta, motivo || undefined).subscribe({
       next: () => {
         this.bloqueoForm.reset();
         this.medicoService
-          .listBloqueos(this.myId)
+          .listBloqueos(this.targetId)
           .subscribe({ next: (b) => this.bloqueos.set(b) });
       },
       error: (err: HttpErrorResponse) =>
@@ -158,7 +167,7 @@ export class MedicoHorario {
   }
 
   removeBloqueo(id: string): void {
-    this.medicoService.deleteBloqueo(this.myId, id).subscribe({
+    this.medicoService.deleteBloqueo(this.targetId, id).subscribe({
       next: () => this.bloqueos.update((list) => list.filter((b) => b._id !== id)),
     });
   }

@@ -63,7 +63,7 @@ export class Dashboard {
       case UserRole.MEDICO:
         return [
           { icon: '🗓️', title: 'Mi agenda', desc: 'Citas con pacientes y su estado', status: 'listo', link: '/medico/agenda' },
-          { icon: '⏰', title: 'Mi horario', desc: 'Configura tu horario y bloqueos', status: 'listo', link: '/medico/horario' },
+          { icon: '⏰', title: 'Mi horario', desc: 'Consulta tu horario (lo define la Dirección)', status: 'listo', link: '/medico/horario' },
           { icon: '💊', title: 'Recetas digitales', desc: 'Emite recetas desde tu agenda', status: 'listo', link: '/medico/agenda' },
         ];
       case UserRole.PACIENTE:

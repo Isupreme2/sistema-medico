@@ -1,4 +1,5 @@
 import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
+import { RouterLink } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MedicoService } from '../../../core/services/medico.service';
@@ -7,7 +8,7 @@ import { MedicoProfile } from '../../../core/models/medico.model';
 
 @Component({
   selector: 'app-admin-medicos',
-  imports: [ReactiveFormsModule],
+  imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './medicos.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './medicos.scss',

@@ -1,6 +1,7 @@
-import { Component, ChangeDetectionStrategy } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PublicLayout } from '../public-layout';
+import { SpecialtyService } from '../../../core/services/specialty.service';
 
 interface Spec {
   name: string;
@@ -49,36 +50,38 @@ interface Spec {
       </section>
 
       <!-- Especialidades -->
-      <section class="section section--white">
-        <div class="container">
-          <div class="flex wrap" style="justify-content:space-between;align-items:flex-end;gap:1.5rem;margin-bottom:4rem">
-            <div style="max-width:36rem">
-              <h2 class="h-sec">Nuestras Especialidades</h2>
-              <p class="muted">
-                Ofrecemos un enfoque integral para el diagnóstico y tratamiento de diversas
-                patologías con expertos en cada área.
-              </p>
-            </div>
-            <a class="text-brand" style="font-weight:700;text-decoration:none" routerLink="/especialidades">
-              Ver todas las áreas →
-            </a>
-          </div>
-
-          <div class="grid grid--3">
-            @for (s of specialties; track s.name) {
-              <div class="card card--soft">
-                <div class="icon-tile">
-                  <span class="dot" [style.background]="s.soft" style="width:1.5rem;height:1.5rem;display:grid;place-items:center">
-                    <span class="dot" [style.background]="s.dot"></span>
-                  </span>
-                </div>
-                <h3>{{ s.name }}</h3>
-                <p>{{ s.text }}</p>
+      @if (specialties().length) {
+        <section class="section section--white">
+          <div class="container">
+            <div class="flex wrap" style="justify-content:space-between;align-items:flex-end;gap:1.5rem;margin-bottom:4rem">
+              <div style="max-width:36rem">
+                <h2 class="h-sec">Nuestras Especialidades</h2>
+                <p class="muted">
+                  Ofrecemos un enfoque integral para el diagnóstico y tratamiento de diversas
+                  patologías con expertos en cada área.
+                </p>
               </div>
-            }
+              <a class="text-brand" style="font-weight:700;text-decoration:none" routerLink="/especialidades">
+                Ver todas las áreas →
+              </a>
+            </div>
+
+            <div class="grid grid--3">
+              @for (s of specialties(); track s.name) {
+                <div class="card card--soft">
+                  <div class="icon-tile">
+                    <span class="dot" [style.background]="s.soft" style="width:1.5rem;height:1.5rem;display:grid;place-items:center">
+                      <span class="dot" [style.background]="s.dot"></span>
+                    </span>
+                  </div>
+                  <h3>{{ s.name }}</h3>
+                  <p>{{ s.text }}</p>
+                </div>
+              }
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      }
 
       <!-- Contacto -->
       <section class="section">
@@ -129,11 +132,32 @@ interface Spec {
   ],
 })
 export class Home {
-  readonly specialties: Spec[] = [
+  private specialtyService = inject(SpecialtyService);
+
+  /** Especialidades con médico activo (para no destacar áreas sin profesional). */
+  private readonly ofertadas = signal<string[]>([]);
+
+  private readonly destacadas: Spec[] = [
     { name: 'Cardiología', dot: '#ef4444', soft: 'rgba(239,68,68,.2)', text: 'Cuidado preventivo y tratamiento avanzado para la salud de tu corazón con tecnología no invasiva.' },
     { name: 'Pediatría', dot: '#3b82f6', soft: 'rgba(59,130,246,.2)', text: 'Atención especializada para el crecimiento y bienestar de los más pequeños con un trato dulce y profesional.' },
     { name: 'Fisioterapia', dot: '#14b8a6', soft: 'rgba(20,184,166,.2)', text: 'Recuperación funcional y rehabilitación física con programas personalizados para deportistas y pacientes crónicos.' },
   ];
+
+  /** Solo las destacadas que tengan un médico activo asignado. */
+  readonly specialties = computed<Spec[]>(() => {
+    const oferta = this.ofertadas().map((o) => o.toLowerCase());
+    return this.destacadas.filter((s) => {
+      const n = s.name.toLowerCase();
+      return oferta.some((o) => o.includes(n) || n.includes(o));
+    });
+  });
+
+  constructor() {
+    this.specialtyService.conMedicos().subscribe({
+      next: (nombres) => this.ofertadas.set(nombres),
+      error: () => this.ofertadas.set([]),
+    });
+  }
 
   readonly contacto = [
     { t: 'Ubicación', v: 'Av. Gamarra<br>Casma – Casma – Áncash', icon: '📍' },

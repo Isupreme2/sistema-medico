@@ -68,7 +68,7 @@ router.get('/:id', authenticate, ctrl.getMedico);
  * /medicos/{id}:
  *   patch:
  *     tags: [Médicos]
- *     summary: Actualizar perfil del médico (Admin o el propio médico)
+ *     summary: Actualizar credenciales del médico — especialidad, colegiatura, estado (solo la Dirección / Admin)
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200: { description: Perfil actualizado }
@@ -76,7 +76,7 @@ router.get('/:id', authenticate, ctrl.getMedico);
 router.patch(
   '/:id',
   authenticate,
-  authorize(UserRole.ADMIN, UserRole.MEDICO),
+  authorize(UserRole.ADMIN),
   validate(updateProfileSchema),
   ctrl.updateProfile,
 );
@@ -86,7 +86,7 @@ router.patch(
  * /medicos/{id}/horario:
  *   put:
  *     tags: [Médicos]
- *     summary: Definir horarios de atención y duración de slot (Admin o el propio médico)
+ *     summary: Definir horarios de atención y duración de slot (solo la Dirección / Admin)
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200: { description: Horario actualizado }
@@ -94,7 +94,7 @@ router.patch(
 router.put(
   '/:id/horario',
   authenticate,
-  authorize(UserRole.ADMIN, UserRole.MEDICO),
+  authorize(UserRole.ADMIN),
   validate(updateHorarioSchema),
   ctrl.updateHorario,
 );
@@ -110,7 +110,7 @@ router.put(
  *       200: { description: Bloqueos }
  *   post:
  *     tags: [Médicos]
- *     summary: Crear bloqueo (vacaciones, feriado, etc.) — Admin o el propio médico
+ *     summary: Crear bloqueo (vacaciones, feriado, etc.) — solo la Dirección / Admin
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       201: { description: Bloqueo creado }
@@ -119,7 +119,7 @@ router.get('/:id/bloqueos', authenticate, ctrl.listBloqueos);
 router.post(
   '/:id/bloqueos',
   authenticate,
-  authorize(UserRole.ADMIN, UserRole.MEDICO),
+  authorize(UserRole.ADMIN),
   validate(createBloqueoSchema),
   ctrl.createBloqueo,
 );
@@ -129,7 +129,7 @@ router.post(
  * /medicos/{id}/bloqueos/{bloqueoId}:
  *   delete:
  *     tags: [Médicos]
- *     summary: Eliminar un bloqueo (Admin o el propio médico)
+ *     summary: Eliminar un bloqueo (solo la Dirección / Admin)
  *     security: [{ bearerAuth: [] }]
  *     responses:
  *       200: { description: Bloqueo eliminado }
@@ -137,7 +137,7 @@ router.post(
 router.delete(
   '/:id/bloqueos/:bloqueoId',
   authenticate,
-  authorize(UserRole.ADMIN, UserRole.MEDICO),
+  authorize(UserRole.ADMIN),
   ctrl.deleteBloqueo,
 );
 
