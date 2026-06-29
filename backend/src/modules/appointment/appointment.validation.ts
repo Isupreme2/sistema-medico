@@ -22,6 +22,27 @@ export const createAppointmentSchema = z.object({
   }),
 });
 
+/**
+ * Reserva del paciente con pago: el motivo de consulta es OBLIGATORIO
+ * (la clínica necesita saber a qué viene antes de confirmar la cita).
+ */
+export const reservarPagarSchema = z.object({
+  body: z.object({
+    medicoId: objectId,
+    fechaHora: z.coerce.date(),
+    tipoCitaId: objectId.optional(),
+    modalidad: z
+      .enum([AppointmentModality.PRESENCIAL, AppointmentModality.TELECONSULTA])
+      .default(AppointmentModality.PRESENCIAL),
+    motivo: z
+      .string()
+      .trim()
+      .min(1, 'Cuéntanos brevemente el motivo de tu consulta')
+      .max(500, 'El motivo no puede superar 500 caracteres'),
+    metodoPago: z.string().max(60).optional(),
+  }),
+});
+
 export const updateStatusSchema = z.object({
   body: z.object({
     estado: z.enum([AppointmentStatus.ATENDIDA, AppointmentStatus.NO_ASISTIO]),

@@ -37,11 +37,34 @@
       </select>
     </label>
   }
+  <label class="field" style="grid-column:1/-1">
+    <span>Motivo de consulta *</span>
+    <input
+      type="text"
+      maxlength="500"
+      placeholder="Ej. Dolor de cabeza desde hace 3 días"
+      [value]="motivo()"
+      (input)="motivo.set($any($event.target).value)"
+    />
+  </label>
   <span class="realtime">🟢 En vivo</span>
 </div>
 
 @if (msg()) {
   <div class="alert ok">{{ msg() }}</div>
+}
+@if (citaCreadaId(); as citaId) {
+  <div class="preconsulta-cta card">
+    <div>
+      <strong>¿Quieres adelantar tu pre-consulta?</strong>
+      <p>
+        Cuéntale al médico tus síntomas, desde cuándo y tu medicación actual. Es
+        <em>opcional</em>, pero agiliza tu atención. También podrás hacerlo después desde
+        “Mis citas”.
+      </p>
+    </div>
+    <a class="btn-pre" [routerLink]="['/preconsulta', citaId]">Completar pre-consulta</a>
+  </div>
 }
 @if (error()) {
   <div class="alert err">{{ error() }}</div>

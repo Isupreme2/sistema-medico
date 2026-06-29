@@ -6,7 +6,7 @@ import {
   signal,
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { Subscription } from 'rxjs';
 import { HttpErrorResponse } from '@angular/common/http';
 import { MedicoService } from '../../../core/services/medico.service';
@@ -29,7 +29,7 @@ function hoyLocal(): string {
 
 @Component({
   selector: 'app-reservar',
-  imports: [PaymentGateway],
+  imports: [PaymentGateway, RouterLink],
   templateUrl: './reservar.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './reservar.scss',
@@ -48,10 +48,14 @@ export class Reservar {
   readonly medicoId = signal<string>('');
   readonly fecha = signal<string>(hoyLocal());
   readonly modalidad = signal<AppointmentModality>('presencial');
+  /** Motivo de consulta: obligatorio para confirmar la reserva. */
+  readonly motivo = signal<string>('');
   readonly slots = signal<Slot[]>([]);
   readonly loading = signal(false);
   readonly msg = signal<string | null>(null);
   readonly error = signal<string | null>(null);
+  /** Id de la cita recién creada, para ofrecer completar la pre-consulta. */
+  readonly citaCreadaId = signal<string | null>(null);
 
   // --- Pago para confirmar (la cita se crea solo si el pago tiene éxito) ---
   readonly tarifa = TARIFA_CONSULTA;
@@ -122,6 +126,10 @@ export class Reservar {
     if (!slot.disponible) return;
     this.msg.set(null);
     this.error.set(null);
+    if (!this.motivo().trim()) {
+      this.error.set('Cuéntanos el motivo de tu consulta antes de elegir un horario.');
+      return;
+    }
     this.slotPendiente.set(slot);
     this.pagoAbierto.set(true);
   }
@@ -143,14 +151,17 @@ export class Reservar {
         fechaHora: slot.fechaHora,
         modalidad: this.modalidad(),
         tipoCitaId: this.tipoCitaId() || undefined,
+        motivo: this.motivo().trim(),
         metodoPago: metodo,
       })
       .subscribe({
-        next: () => {
+        next: (cita) => {
           const via = this.modalidad() === 'teleconsulta' ? ' (teleconsulta 🎥)' : '';
           this.msg.set(
             `Cita reservada y pagada para las ${slot.hora}${via} 🎉 Tu factura está en “Mis facturas”.`,
           );
+          this.citaCreadaId.set(cita._id);
+          this.motivo.set('');
           this.slotPendiente.set(null);
           this.cargarDisponibilidad();
         },

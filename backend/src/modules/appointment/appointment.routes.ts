@@ -6,6 +6,7 @@ import { validate } from '../../middleware/validate';
 import { UserRole } from '../../constants/roles';
 import {
   createAppointmentSchema,
+  reservarPagarSchema,
   updateStatusSchema,
   preConsultaSchema,
 } from './appointment.validation';
@@ -77,7 +78,7 @@ router.post(
   '/reservar-y-pagar',
   authenticate,
   authorize(UserRole.PACIENTE),
-  validate(createAppointmentSchema),
+  validate(reservarPagarSchema),
   ctrl.reservarYPagar,
 );
 
