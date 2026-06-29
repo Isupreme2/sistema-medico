@@ -1,0 +1,948 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Sistema Médico EHR — Presentación del proyecto</title>
+<style>
+  :root {
+    --azul: #2563eb;
+    --azul-osc: #1e3a8a;
+    --tinta: #0f172a;
+    --gris: #64748b;
+    --gris-cl: #94a3b8;
+    --linea: #e2e8f0;
+    --fondo: #f1f5f9;
+    --verde: #16a34a;
+    --ambar: #ca8a04;
+    --rojo: #dc2626;
+    --morado: #7c3aed;
+  }
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body {
+    margin: 0;
+    font-family: -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    color: var(--tinta);
+    background: var(--fondo);
+    line-height: 1.55;
+  }
+
+  /* Barra de progreso */
+  #progress {
+    position: fixed; top: 0; left: 0; height: 4px; width: 0;
+    background: linear-gradient(90deg, var(--azul), var(--morado));
+    z-index: 999; transition: width .15s;
+  }
+
+  /* Índice lateral */
+  nav.toc {
+    position: fixed; top: 0; left: 0; width: 230px; height: 100vh;
+    background: #0b1220; color: #cbd5e1; padding: 1.5rem 1rem; overflow-y: auto;
+    font-size: .82rem; z-index: 50;
+  }
+  nav.toc h2 { color: #fff; font-size: .95rem; margin: 0 0 1rem; letter-spacing: .02em; }
+  nav.toc a { display: block; color: #94a3b8; text-decoration: none; padding: .35rem .5rem; border-radius: 6px; margin-bottom: .1rem; transition: background .12s, color .12s; }
+  nav.toc a:hover { background: #1e293b; color: #fff; }
+  nav.toc a .n { color: var(--azul); font-weight: 700; margin-right: .4rem; }
+
+  main { margin-left: 230px; }
+
+  section.slide {
+    min-height: 100vh; padding: 4rem 5rem; display: flex; flex-direction: column; justify-content: center;
+    border-bottom: 1px solid var(--linea); position: relative;
+  }
+  section.slide:nth-child(even) { background: #fff; }
+
+  .kicker { color: var(--azul); font-weight: 700; text-transform: uppercase; letter-spacing: .12em; font-size: .78rem; margin-bottom: .6rem; }
+  h1 { font-size: 3rem; line-height: 1.1; margin: 0 0 1rem; }
+  h2.tit { font-size: 2rem; margin: 0 0 1.5rem; color: var(--tinta); }
+  h3 { font-size: 1.15rem; margin: 1.4rem 0 .6rem; color: var(--azul-osc); }
+  p.lead { font-size: 1.15rem; color: var(--gris); max-width: 70ch; }
+
+  .badges { display: flex; flex-wrap: wrap; gap: .5rem; margin: 1.2rem 0; }
+  .badge { background: #dbeafe; color: var(--azul); font-weight: 600; font-size: .82rem; padding: .3rem .8rem; border-radius: 999px; }
+  .badge.g { background: #dcfce7; color: var(--verde); }
+  .badge.m { background: #ede9fe; color: var(--morado); }
+  .badge.a { background: #fef9c3; color: var(--ambar); }
+
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.2rem; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.2rem; }
+  .card {
+    background: var(--fondo); border: 1px solid var(--linea); border-radius: 12px; padding: 1.1rem 1.25rem;
+  }
+  section.slide:nth-child(even) .card { background: #f8fafc; }
+  .card h4 { margin: 0 0 .5rem; font-size: 1rem; color: var(--tinta); }
+  .card p { margin: 0; font-size: .9rem; color: var(--gris); }
+  .card .ico { font-size: 1.6rem; }
+
+  table { width: 100%; border-collapse: collapse; font-size: .88rem; margin: .5rem 0; }
+  th, td { text-align: left; padding: .55rem .7rem; border-bottom: 1px solid var(--linea); vertical-align: top; }
+  th { color: var(--gris); font-size: .76rem; text-transform: uppercase; letter-spacing: .04em; }
+  td code, .mono { font-family: "SF Mono", "Consolas", "Roboto Mono", monospace; }
+  td .v { color: var(--morado); font-weight: 600; font-family: "SF Mono", "Consolas", monospace; font-size: .82rem; }
+
+  pre {
+    background: #0b1220; color: #e2e8f0; border-radius: 10px; padding: 1.1rem 1.3rem; overflow-x: auto;
+    font-family: "SF Mono", "Consolas", "Roboto Mono", monospace; font-size: .85rem; line-height: 1.6; margin: .6rem 0;
+  }
+  pre .c { color: #64748b; }       /* comentario */
+  pre .k { color: #93c5fd; }       /* comando/keyword */
+  pre .s { color: #86efac; }       /* string */
+  pre .f { color: #fbbf24; }       /* flag */
+
+  ul.clean { list-style: none; padding: 0; margin: .5rem 0; }
+  ul.clean li { padding: .35rem 0 .35rem 1.6rem; position: relative; font-size: .92rem; }
+  ul.clean li::before { content: "▸"; color: var(--azul); position: absolute; left: 0; font-weight: 700; }
+
+  .pill { display:inline-block; font-size: .72rem; font-weight:700; padding:.15rem .5rem; border-radius:6px; }
+  .pill.ok { background:#dcfce7; color:var(--verde); }
+
+  .phase { display: grid; grid-template-columns: 90px 1fr; gap: 1rem; padding: .8rem 0; border-bottom: 1px dashed var(--linea); }
+  .phase .num { font-size: 1.6rem; font-weight: 800; color: var(--azul); }
+  .phase .num small { display:block; font-size:.62rem; color:var(--verde); font-weight:700; letter-spacing:.08em; }
+  .phase h4 { margin: 0 0 .2rem; }
+  .phase p { margin: 0; font-size: .88rem; color: var(--gris); }
+
+  .hint { font-size: .8rem; color: var(--gris-cl); margin-top: 1.5rem; }
+  .footer-note { position: absolute; bottom: 1.2rem; right: 5rem; font-size: .75rem; color: var(--gris-cl); }
+
+  .stat-row { display: flex; gap: 2.5rem; flex-wrap: wrap; margin: 1.5rem 0; }
+  .stat .big { font-size: 2.6rem; font-weight: 800; color: var(--azul); line-height: 1; }
+  .stat .lbl { font-size: .82rem; color: var(--gris); }
+
+  @media print {
+    nav.toc, #progress, .hint { display: none; }
+    main { margin-left: 0; }
+    section.slide { min-height: auto; page-break-after: always; padding: 2.5rem; }
+    body { background: #fff; }
+  }
+  @media (max-width: 900px) {
+    nav.toc { display: none; }
+    main { margin-left: 0; }
+    section.slide { padding: 2.5rem 1.5rem; }
+    .grid2, .grid3 { grid-template-columns: 1fr; }
+    h1 { font-size: 2.2rem; }
+  }
+</style>
+</head>
+<body>
+<div id="progress"></div>
+
+<nav class="toc">
+  <h2>🩺 Sistema Médico EHR</h2>
+  <a href="#s1"><span class="n">01</span>Portada</a>
+  <a href="#s2"><span class="n">02</span>El problema y la solución</a>
+  <a href="#s3"><span class="n">03</span>Stack tecnológico</a>
+  <a href="#s4"><span class="n">04</span>Roles y módulos</a>
+  <a href="#sfp"><span class="n">05</span>Flujo del Paciente</a>
+  <a href="#sfr"><span class="n">06</span>Flujo de Recepción</a>
+  <a href="#sfm"><span class="n">07</span>Flujo del Médico</a>
+  <a href="#sfa"><span class="n">08</span>Flujo del Administrador</a>
+  <a href="#sdemo"><span class="n">09</span>Guion de demo en vivo</a>
+  <a href="#s5"><span class="n">10</span>Arquitectura backend</a>
+  <a href="#s6"><span class="n">11</span>Modelo de datos</a>
+  <a href="#s7"><span class="n">12</span>Comandos de creación</a>
+  <a href="#s8"><span class="n">13</span>Dependencias backend</a>
+  <a href="#s9"><span class="n">14</span>Dependencias frontend</a>
+  <a href="#sretos"><span class="n">15</span>Retos técnicos</a>
+  <a href="#scalidad"><span class="n">16</span>Calidad y verificación</a>
+  <a href="#s10"><span class="n">17</span>Roadmap por fases</a>
+  <a href="#s11"><span class="n">18</span>Decisiones de diseño</a>
+  <a href="#s12"><span class="n">19</span>Seguridad</a>
+  <a href="#s13"><span class="n">20</span>API REST</a>
+  <a href="#s14"><span class="n">21</span>Cómo ejecutarlo</a>
+  <a href="#sdeploy"><span class="n">22</span>Despliegue en producción</a>
+  <a href="#sdeployfix"><span class="n">23</span>Problemas de despliegue</a>
+  <a href="#saudit"><span class="n">24</span>Auditoría de calidad</a>
+  <a href="#s15"><span class="n">25</span>Estado y cierre</a>
+</nav>
+
+<main>
+
+  <!-- 01 PORTADA -->
+  <section class="slide" id="s1" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border:none;">
+    <div class="kicker" style="color:#bfdbfe;">Proyecto académico · Ingeniería de Software</div>
+    <h1 style="color:#fff;">Sistema de Gestión de<br>Consultorios Médicos (EHR)</h1>
+    <p class="lead" style="color:#dbeafe;">Plataforma full-stack para agendar citas, gestionar la historia clínica,
+      emitir recetas digitales verificables, teleconsulta por video y administración integral del consultorio.</p>
+    <div class="badges">
+      <span class="badge" style="background:rgba(255,255,255,.15);color:#fff;">Node.js + Express + TypeScript</span>
+      <span class="badge" style="background:rgba(255,255,255,.15);color:#fff;">MongoDB Atlas + Mongoose</span>
+      <span class="badge" style="background:rgba(255,255,255,.15);color:#fff;">Angular 22 (standalone + signals)</span>
+      <span class="badge" style="background:rgba(255,255,255,.15);color:#fff;">Socket.io · PDFKit · Jitsi</span>
+    </div>
+    <p style="color:#bfdbfe;margin-top:2rem;font-size:.95rem;">
+      Autor: <strong style="color:#fff;">Gabriel Alva Tito</strong> (GitHub: Isupreme2)<br>
+      Colaborador: <strong style="color:#fff;">Johan Castillon Ruiz</strong> (GitHub: Johan409IA)
+    </p>
+    <p style="color:#93c5fd;font-size:.9rem;">Repo: github.com/Isupreme2/sistema-medico &nbsp;·&nbsp; Junio 2026</p>
+    <p class="hint" style="color:#93c5fd;">Usa las flechas ← → del teclado para navegar entre secciones · Ctrl+P para exportar a PDF</p>
+  </section>
+
+  <!-- 02 PROBLEMA -->
+  <section class="slide" id="s2">
+    <div class="kicker">Contexto</div>
+    <h2 class="tit">El problema y la solución</h2>
+    <div class="grid2">
+      <div>
+        <h3>Necesidad</h3>
+        <ul class="clean">
+          <li>Agendamiento de citas propenso a <strong>doble-reserva</strong> del mismo horario.</li>
+          <li>Historia clínica dispersa y sin trazabilidad.</li>
+          <li>Recetas en papel, fáciles de falsificar.</li>
+          <li>Ausentismo de pacientes sin recordatorios.</li>
+          <li>Falta de métricas para la gestión del consultorio.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Respuesta del sistema</h3>
+        <ul class="clean">
+          <li>Reserva <strong>atómica</strong> garantizada por la base de datos.</li>
+          <li>Historia clínica con signos vitales y gráficas de evolución.</li>
+          <li>Receta digital con <strong>código QR</strong> y hash de integridad verificable públicamente.</li>
+          <li>Recordatorios por email + notificaciones en tiempo real.</li>
+          <li>Panel analítico, facturación y auditoría automática.</li>
+        </ul>
+      </div>
+    </div>
+    <h3>Cuatro áreas de valor agregado</h3>
+    <div class="grid2">
+      <div class="card"><span class="ico">💊</span><h4>Seguridad clínica</h4><p>Alerta de alergias e interacciones farmacológicas al recetar.</p></div>
+      <div class="card"><span class="ico">⏰</span><h4>Anti-ausentismo</h4><p>Recordatorios automáticos de citas próximas.</p></div>
+      <div class="card"><span class="ico">🎥</span><h4>Teleconsulta</h4><p>Videollamada integrada con sala única por cita.</p></div>
+      <div class="card"><span class="ico">📊</span><h4>Inteligencia operativa</h4><p>Métricas, facturación y bitácora de auditoría.</p></div>
+    </div>
+  </section>
+
+  <!-- 03 STACK -->
+  <section class="slide" id="s3">
+    <div class="kicker">Tecnología</div>
+    <h2 class="tit">Stack tecnológico</h2>
+    <table>
+      <thead><tr><th>Capa</th><th>Tecnología</th><th>Versión</th><th>Rol</th></tr></thead>
+      <tbody>
+        <tr><td>Runtime</td><td>Node.js</td><td class="v">24 / 22</td><td>Local: Node 24 LTS · Producción (Render): Node 22 LTS</td></tr>
+        <tr><td>Backend</td><td>Express + TypeScript</td><td class="v">4.21 / 5.7</td><td>API REST en arquitectura por capas</td></tr>
+        <tr><td>Base de datos</td><td>MongoDB Atlas + Mongoose</td><td class="v">8.9</td><td>Persistencia documental (ODM)</td></tr>
+        <tr><td>Frontend</td><td>Angular</td><td class="v">22.0</td><td>SPA standalone + signals</td></tr>
+        <tr><td>Autenticación</td><td>JWT + 2FA (TOTP)</td><td class="v">—</td><td>Access 15m + refresh httpOnly + RBAC</td></tr>
+        <tr><td>Tiempo real</td><td>Socket.io</td><td class="v">4.8</td><td>Disponibilidad de slots + notificaciones</td></tr>
+        <tr><td>Documentos</td><td>PDFKit + QRCode</td><td class="v">0.15 / 1.5</td><td>Recetas y facturas en PDF</td></tr>
+        <tr><td>Recordatorios</td><td>node-cron + nodemailer</td><td class="v">4.4 / 9.0</td><td>Emails programados (modo log sin SMTP)</td></tr>
+        <tr><td>Teleconsulta</td><td>Jitsi Meet (embebido)</td><td class="v">—</td><td>Video sin servidor de medios propio</td></tr>
+        <tr><td>Gráficas</td><td>Chart.js</td><td class="v">4.5</td><td>Signos vitales y panel analítico</td></tr>
+        <tr><td>Docs API</td><td>Swagger / OpenAPI</td><td class="v">—</td><td>Documentación interactiva en <code>/docs</code></td></tr>
+        <tr><td>Tests</td><td>Vitest</td><td class="v">2.1</td><td>31 pruebas de lógica pura (backend)</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">El stack fue deliberadamente <strong>congelado</strong> (Express + MongoDB + Angular) — sin NestJS ni Postgres — por requisito del encargo.</p>
+  </section>
+
+  <!-- 04 ROLES -->
+  <section class="slide" id="s4">
+    <div class="kicker">Alcance funcional</div>
+    <h2 class="tit">Roles y módulos</h2>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;">
+      <div class="card">
+        <span class="ico">🛡️</span><h4>Director / Admin</h4>
+        <ul class="clean" style="font-size:.82rem;">
+          <li>Gestión de médicos</li>
+          <li><strong>Horarios de los médicos</strong></li>
+          <li><strong>Cuentas de Recepción</strong></li>
+          <li>Catálogo de tipos de cita</li>
+          <li>Panel analítico · Auditoría</li>
+          <li>Facturación (anulación)</li>
+        </ul>
+      </div>
+      <div class="card" style="border-color:#2563eb;">
+        <span class="ico">🗂️</span><h4>Recepción</h4>
+        <ul class="clean" style="font-size:.82rem;">
+          <li>Agenda <strong>por el paciente</strong></li>
+          <li>Registra y busca pacientes</li>
+          <li>Consulta médicos disponibles</li>
+          <li>Emite facturas y cobra</li>
+          <li><em>Sin</em> acceso clínico</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="ico">🩺</span><h4>Médico</h4>
+        <ul class="clean" style="font-size:.82rem;">
+          <li>Agenda de citas</li>
+          <li>Su horario (<em>solo lectura</em>)</li>
+          <li>Consulta + signos vitales</li>
+          <li>Recetas digitales con alertas</li>
+          <li>Teleconsulta</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="ico">👤</span><h4>Paciente</h4>
+        <ul class="clean" style="font-size:.82rem;">
+          <li>Reserva con calendario en vivo</li>
+          <li>Mis citas y pre-consulta</li>
+          <li>Mi historial y signos</li>
+          <li>Mis recetas (PDF + QR)</li>
+          <li>Mis facturas y alergias</li>
+        </ul>
+      </div>
+    </div>
+    <p class="lead" style="margin-top:1.5rem;">Modelo cercano a una clínica real: <strong>Recepción</strong> es el mostrador que agenda a nombre del paciente, lo registra y cobra; el <strong>Director</strong> gobierna el sistema — <strong>define los horarios de cada médico</strong> y <strong>crea las cuentas de Recepción</strong>. El médico no fija su propia agenda ni factura: se concentra en lo clínico. Cada acción se valida en el backend con <strong>RBAC</strong> (control por rol) y comprobación de <strong>propiedad</strong> del recurso; los <em>guards</em> de Angular son solo experiencia de usuario.</p>
+  </section>
+
+  <!-- FLUJO PACIENTE -->
+  <section class="slide" id="sfp">
+    <div class="kicker">Recorrido funcional · 1/4</div>
+    <h2 class="tit">👤 Flujo del Paciente</h2>
+    <p class="lead">Del registro a la receta, así vive el paciente el sistema de extremo a extremo.</p>
+    <div style="columns:2;column-gap:2.5rem;">
+      <div class="phase"><div class="num">1</div><div><h4>Registro e inicio de sesión</h4><p>Se autentica con JWT; la sesión se mantiene con un refresh httpOnly.</p></div></div>
+      <div class="phase"><div class="num">2</div><div><h4>Reserva y paga</h4><p>Elige médico, fecha y modalidad sobre un calendario que se actualiza <strong>en tiempo real</strong>. <strong>Paga para confirmar</strong>: la cita y su factura pagada se crean de forma atómica (si alguien toma el slot antes, no se cobra nada y recibe aviso).</p></div></div>
+      <div class="phase"><div class="num">3</div><div><h4>Pre-consulta (opcional)</h4><p>Completa un formulario previo (motivo, síntomas, dolor 0–10) que <strong>notifica al médico</strong>.</p></div></div>
+      <div class="phase"><div class="num">4</div><div><h4>Recordatorio</h4><p>Recibe email + notificación in-app (campana) antes de su cita.</p></div></div>
+      <div class="phase"><div class="num">5</div><div><h4>Teleconsulta</h4><p>Si la cita es virtual, entra a la videollamada dentro de la ventana horaria.</p></div></div>
+      <div class="phase"><div class="num">6</div><div><h4>Después de la atención</h4><p>Consulta su historial y signos vitales, descarga su <strong>receta en PDF (con QR)</strong> y su <strong>factura</strong>.</p></div></div>
+      <div class="phase"><div class="num">7</div><div><h4>Sus alergias</h4><p>Registra alergias que alimentan la alerta de seguridad al recetar.</p></div></div>
+    </div>
+  </section>
+
+  <!-- FLUJO RECEPCION -->
+  <section class="slide" id="sfr">
+    <div class="kicker">Recorrido funcional · 2/4</div>
+    <h2 class="tit">🗂️ Flujo de Recepción</h2>
+    <p class="lead">El mostrador de la clínica: atiende al paciente, agenda por él y gestiona el cobro — sin acceso a datos clínicos.</p>
+    <div style="columns:2;column-gap:2.5rem;">
+      <div class="phase"><div class="num">1</div><div><h4>Recibe al paciente</h4><p>Lo <strong>busca</strong> por nombre o email; si no existe, lo <strong>registra</strong> en el momento.</p></div></div>
+      <div class="phase"><div class="num">2</div><div><h4>Consulta disponibilidad</h4><p>Revisa los médicos activos y sus horarios libres en el calendario en vivo.</p></div></div>
+      <div class="phase"><div class="num">3</div><div><h4>Agenda por el paciente</h4><p>Reserva la cita <strong>a nombre del paciente</strong> (presencial o teleconsulta); la reserva es atómica igual que la del portal.</p></div></div>
+      <div class="phase"><div class="num">4</div><div><h4>Gestiona la agenda</h4><p>Ve <strong>todas</strong> las citas de la clínica y cancela las que haga falta (libera el slot).</p></div></div>
+      <div class="phase"><div class="num">5</div><div><h4>Cobra</h4><p>Emite la factura con IGV y <strong>registra el pago</strong>; la anulación queda reservada al Director.</p></div></div>
+      <div class="phase"><div class="num">6</div><div><h4>Límite por diseño</h4><p>El backend (RBAC) le <strong>niega</strong> historia clínica, recetas, usuarios, analítica y auditoría: confidencialidad clínica.</p></div></div>
+    </div>
+  </section>
+
+  <!-- FLUJO MEDICO -->
+  <section class="slide" id="sfm">
+    <div class="kicker">Recorrido funcional · 3/4</div>
+    <h2 class="tit">🩺 Flujo del Médico</h2>
+    <p class="lead">Desde la configuración de su agenda hasta la facturación de la consulta.</p>
+    <div style="columns:2;column-gap:2.5rem;">
+      <div class="phase"><div class="num">1</div><div><h4>Consulta su horario</h4><p>Ve sus franjas de atención y bloqueos en <strong>solo lectura</strong>: los define la Dirección. Si necesita un cambio, lo solicita a administración.</p></div></div>
+      <div class="phase"><div class="num">2</div><div><h4>Revisa su agenda</h4><p>Ve sus citas con estado y modalidad; recibe notificación de nuevas reservas y cancelaciones.</p></div></div>
+      <div class="phase"><div class="num">3</div><div><h4>Atiende la consulta</h4><p>Registra diagnóstico, código <strong>CIE-10</strong>, notas, tratamiento y <strong>signos vitales</strong>; marca la cita como atendida.</p></div></div>
+      <div class="phase"><div class="num">4</div><div><h4>Emite la receta</h4><p>Agrega medicamentos; el sistema cruza <strong>alergias e interacciones</strong>. Si hay conflicto, bloquea (422) y exige confirmación. Genera receta con QR y PDF.</p></div></div>
+      <div class="phase"><div class="num">5</div><div><h4>Teleconsulta</h4><p>Entra a la misma sala de video que el paciente para la atención virtual.</p></div></div>
+      <div class="phase"><div class="num">6</div><div><h4>Sin caja</h4><p>El médico <strong>no factura</strong>: el cobro de la consulta lo gestiona <strong>Recepción / Administración</strong>, separando la atención clínica del dinero.</p></div></div>
+    </div>
+  </section>
+
+  <!-- FLUJO ADMIN -->
+  <section class="slide" id="sfa">
+    <div class="kicker">Recorrido funcional · 4/4</div>
+    <h2 class="tit">🛡️ Flujo del Administrador</h2>
+    <p class="lead">Gobierno del consultorio: alta de recursos, inteligencia operativa y control.</p>
+    <div class="grid2">
+      <div>
+        <div class="phase"><div class="num">1</div><div><h4>Da de alta médicos</h4><p>Crea usuario + perfil de forma transaccional (todo o nada).</p></div></div>
+        <div class="phase"><div class="num">2</div><div><h4>Define los horarios</h4><p>Fija las franjas de atención y los bloqueos de <strong>cada médico</strong> (el médico solo los consulta).</p></div></div>
+        <div class="phase"><div class="num">3</div><div><h4>Crea cuentas de Recepción</h4><p>Da de alta a los <strong>Registradores</strong> (personal de mostrador) y define tipos de cita (nombre, duración, color).</p></div></div>
+      </div>
+      <div>
+        <div class="phase"><div class="num">4</div><div><h4>Facturación</h4><p>Ve todas las facturas; marca pagadas o anula. Descarga el PDF.</p></div></div>
+        <div class="phase"><div class="num">5</div><div><h4>Auditoría</h4><p>Revisa la bitácora filtrable (por método y rol) de toda acción que modificó datos, incluida la IP y el estado HTTP.</p></div></div>
+        <div class="card" style="margin-top:1rem;"><h4>🔎 Trazabilidad</h4><p>Cada POST/PATCH/PUT/DELETE queda registrado automáticamente — requisito en un sistema que maneja datos de salud.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GUION DEMO -->
+  <section class="slide" id="sdemo">
+    <div class="kicker">Para la exposición</div>
+    <h2 class="tit">🎬 Guion de demostración en vivo</h2>
+    <p class="lead">Tres "momentos estrella" que evidencian el valor técnico del sistema, en ~5 minutos.</p>
+    <h3>Preparación</h3>
+    <pre><span class="k">cd</span> backend && <span class="k">npm run</span> seed && <span class="k">npm run</span> dev   <span class="c"># datos demo + API</span>
+<span class="k">cd</span> frontend && <span class="k">npm start</span>                       <span class="c"># SPA en :4200</span></pre>
+    <div class="grid3">
+      <div class="card"><span class="ico">🔒</span><h4>1 · Anti doble-reserva</h4><p>Dos pacientes (dos pestañas) intentan el <strong>mismo horario</strong>. El segundo recibe <strong>409</strong> "ese horario acaba de ser reservado" y el calendario se refresca en vivo.</p></div>
+      <div class="card"><span class="ico">💊</span><h4>2 · Alerta de alergias</h4><p>El paciente tiene "penicilina" en sus alergias. El médico intenta recetar amoxicilina → <strong>alerta 422</strong>. Confirma y emite bajo su criterio.</p></div>
+      <div class="card"><span class="ico">🔐</span><h4>3 · Verificación por QR</h4><p>Se descarga la receta en PDF y se escanea el <strong>QR</strong>: el endpoint público responde <code>valido = true</code> e <code>integridadOk = true</code>.</p></div>
+    </div>
+    <h3>Cierre de la demo</h3>
+    <p style="font-size:.92rem;color:var(--gris);">Iniciar sesión como <strong>admin</strong> y mostrar el <strong>panel analítico</strong> (ausentismo, ingresos) y el <strong>visor de auditoría</strong> con las acciones recién ejecutadas durante la demo.</p>
+    <p class="hint">Cuentas: <code>paciente@ehr.dev</code> · <code>maria@ehr.dev</code> · <code>recepcion@ehr.dev</code> · <code>medico@ehr.dev</code> · <code>admin@ehr.dev</code> (contraseñas en la sección "Cómo ejecutarlo").</p>
+  </section>
+
+  <!-- 05 ARQUITECTURA -->
+  <section class="slide" id="s5">
+    <div class="kicker">Ingeniería</div>
+    <h2 class="tit">Arquitectura del backend (en capas)</h2>
+    <pre><span class="c">// Cada petición atraviesa capas con una única responsabilidad</span>
+Route  →  Middleware  →  Controller  →  Service  →  Model (Mongoose)
+            │
+            ├─ authenticate   <span class="c">verifica el JWT</span>
+            ├─ authorize(...)  <span class="c">control por rol (RBAC)</span>
+            └─ validate(zod)   <span class="c">valida y tipa la entrada</span></pre>
+    <div class="grid2">
+      <div>
+        <h3>Principios aplicados</h3>
+        <ul class="clean">
+          <li><strong>La lógica vive solo en los <em>services</em></strong>; los controllers son finos.</li>
+          <li><strong>Lógica pura extraída</strong> (slots, fármacos, facturación) → testeable sin DB.</li>
+          <li><strong>Errores operacionales</strong> tipados (<code>AppError</code>) + manejador global.</li>
+          <li><strong>Fail-fast</strong>: variables de entorno validadas con Zod al arrancar.</li>
+        </ul>
+      </div>
+      <div>
+        <h3>Estructura de carpetas</h3>
+        <pre style="font-size:.78rem;">src/
+ ├─ config/      <span class="c">env, db, swagger</span>
+ ├─ middleware/  <span class="c">auth, validate, audit, error</span>
+ ├─ models/      <span class="c">11 esquemas Mongoose</span>
+ ├─ modules/     <span class="c">auth · medico · appointmentType</span>
+ │               <span class="c">appointment · patient · record</span>
+ │               <span class="c">prescription · notification</span>
+ │               <span class="c">invoice · analytics · audit</span>
+ ├─ jobs/        <span class="c">reminders (node-cron)</span>
+ ├─ realtime/    <span class="c">socket.io</span>
+ └─ utils/       <span class="c">jwt, slots, drugSafety, billing…</span></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- 06 MODELO DE DATOS -->
+  <section class="slide" id="s6">
+    <div class="kicker">Persistencia</div>
+    <h2 class="tit">Modelo de datos · 11 colecciones</h2>
+    <div class="grid2">
+      <table>
+        <thead><tr><th>Colección</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><code>users</code></td><td>Cuentas (admin/médico/paciente), 2FA, alergias</td></tr>
+          <tr><td><code>medicoprofiles</code></td><td>Perfil del médico + horarios semanales</td></tr>
+          <tr><td><code>appointmenttypes</code></td><td>Tipos de cita y duración</td></tr>
+          <tr><td><code>bloqueos</code></td><td>Bloqueos de agenda (vacaciones, almuerzo…)</td></tr>
+          <tr><td><code>appointments</code></td><td>Citas (estado + modalidad + sala video)</td></tr>
+          <tr><td><code>medicalrecords</code></td><td>Consultas clínicas + signos vitales</td></tr>
+        </tbody>
+      </table>
+      <table>
+        <thead><tr><th>Colección</th><th>Propósito</th></tr></thead>
+        <tbody>
+          <tr><td><code>prescriptions</code></td><td>Recetas + hash SHA-256 de integridad</td></tr>
+          <tr><td><code>preconsultas</code></td><td>Formulario previo del paciente (1:1 con cita)</td></tr>
+          <tr><td><code>notifications</code></td><td>Notificaciones in-app por usuario</td></tr>
+          <tr><td><code>invoices</code></td><td>Facturas con IGV y estado de pago</td></tr>
+          <tr><td><code>auditlogs</code></td><td>Bitácora automática de acciones</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <h3>Índice estrella — anti doble-reserva</h3>
+    <pre><span class="c">// Índice único PARCIAL: impide 2 citas "reservada" del mismo médico a la misma hora</span>
+appointmentSchema.index(
+  { medicoId: <span class="s">1</span>, fechaHora: <span class="s">1</span> },
+  { unique: <span class="s">true</span>, partialFilterExpression: { estado: <span class="s">'reservada'</span> } }
+);
+<span class="c">// Al cancelar, el slot se libera solo. La base de datos es el árbitro.</span></pre>
+    <p class="hint">Diagrama entidad-relación disponible en formato DBML (dbdiagram.io).</p>
+  </section>
+
+  <!-- 07 COMANDOS DE CREACION -->
+  <section class="slide" id="s7">
+    <div class="kicker">Reproducibilidad</div>
+    <h2 class="tit">Comandos de creación del proyecto</h2>
+
+    <h3>1 · Scaffold del backend (Express + TypeScript)</h3>
+    <pre><span class="k">mkdir</span> backend && <span class="k">cd</span> backend
+<span class="k">npm</span> init -y
+<span class="k">npx</span> tsc --init                       <span class="c"># configuración TypeScript</span>
+
+<span class="c"># Dependencias de producción (Fases 0–5)</span>
+<span class="k">npm install</span> express mongoose zod dotenv \
+  jsonwebtoken bcryptjs cookie-parser cors helmet morgan \
+  express-rate-limit express-mongo-sanitize \
+  swagger-jsdoc swagger-ui-express speakeasy qrcode pdfkit socket.io
+
+<span class="c"># Dependencias añadidas en la Fase 6 (recordatorios + email)</span>
+<span class="k">npm install</span> node-cron nodemailer
+
+<span class="c"># Dependencias de desarrollo</span>
+<span class="k">npm install</span> <span class="f">-D</span> typescript tsx vitest eslint \
+  @typescript-eslint/eslint-plugin @typescript-eslint/parser \
+  @types/node @types/express @types/jsonwebtoken @types/bcryptjs \
+  @types/cookie-parser @types/cors @types/morgan @types/pdfkit \
+  @types/qrcode @types/speakeasy @types/swagger-jsdoc \
+  @types/swagger-ui-express @types/node-cron @types/nodemailer</pre>
+
+    <h3>2 · Scaffold del frontend (Angular 22)</h3>
+    <pre><span class="c"># Generación de la aplicación Angular (standalone + signals + SCSS)</span>
+<span class="k">npx</span> @angular/cli@22 new frontend <span class="f">--style=scss</span> <span class="f">--ssr=false</span> <span class="f">--routing</span>
+<span class="k">cd</span> frontend
+
+<span class="c"># Librerías de la SPA</span>
+<span class="k">npm install</span> chart.js socket.io-client</pre>
+    <p class="hint">Nota histórica: el frontend se generó primero en Angular 20 (el Node instalado no alcanzaba para v22) y luego se migró
+      <span class="mono">20 → 21 → 22</span> con <span class="mono">ng update</span>. Hoy, con Node 24, el comando de arriba lo crea directamente en v22.</p>
+  </section>
+
+  <!-- 08 DEPENDENCIAS BACKEND -->
+  <section class="slide" id="s8">
+    <div class="kicker">Dependencias · 1/2</div>
+    <h2 class="tit">Backend — paquetes instalados</h2>
+    <div class="grid2">
+      <div>
+        <h3>Producción</h3>
+        <table>
+          <tbody>
+            <tr><td><code>express</code></td><td class="v">^4.21.2</td><td>Framework HTTP</td></tr>
+            <tr><td><code>mongoose</code></td><td class="v">^8.9.5</td><td>ODM de MongoDB</td></tr>
+            <tr><td><code>zod</code></td><td class="v">^3.24.1</td><td>Validación de entrada</td></tr>
+            <tr><td><code>jsonwebtoken</code></td><td class="v">^9.0.2</td><td>JWT access/refresh</td></tr>
+            <tr><td><code>bcryptjs</code></td><td class="v">^2.4.3</td><td>Hash de contraseñas</td></tr>
+            <tr><td><code>cookie-parser</code></td><td class="v">^1.4.7</td><td>Cookie refresh httpOnly</td></tr>
+            <tr><td><code>cors</code></td><td class="v">^2.8.5</td><td>CORS con credenciales</td></tr>
+            <tr><td><code>helmet</code></td><td class="v">^8.0.0</td><td>Cabeceras de seguridad</td></tr>
+            <tr><td><code>morgan</code></td><td class="v">^1.10.0</td><td>Logging de peticiones</td></tr>
+            <tr><td><code>express-rate-limit</code></td><td class="v">^7.5.0</td><td>Límite de peticiones</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>Producción (cont.)</h3>
+        <table>
+          <tbody>
+            <tr><td><code>express-mongo-sanitize</code></td><td class="v">^2.2.0</td><td>Anti NoSQL-injection</td></tr>
+            <tr><td><code>dotenv</code></td><td class="v">^16.4.7</td><td>Variables de entorno</td></tr>
+            <tr><td><code>swagger-jsdoc</code></td><td class="v">^6.2.8</td><td>OpenAPI desde JSDoc</td></tr>
+            <tr><td><code>swagger-ui-express</code></td><td class="v">^5.0.1</td><td>UI de la documentación</td></tr>
+            <tr><td><code>speakeasy</code></td><td class="v">^2.0.0</td><td>2FA TOTP</td></tr>
+            <tr><td><code>qrcode</code></td><td class="v">^1.5.4</td><td>QR (receta / 2FA)</td></tr>
+            <tr><td><code>pdfkit</code></td><td class="v">^0.15.2</td><td>PDF de recetas y facturas</td></tr>
+            <tr><td><code>socket.io</code></td><td class="v">^4.8.3</td><td>Tiempo real</td></tr>
+            <tr><td><code>node-cron</code></td><td class="v">^4.4.1</td><td>Recordatorios programados</td></tr>
+            <tr><td><code>nodemailer</code></td><td class="v">^9.0.1</td><td>Envío de emails</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <h3>Desarrollo</h3>
+    <p style="font-size:.9rem;color:var(--gris);">
+      <code>typescript</code> <span class="v">^5.7.3</span> · <code>tsx</code> <span class="v">^4.19.2</span> (ejecuta TS con watch) ·
+      <code>vitest</code> <span class="v">^2.1.8</span> (tests) · <code>eslint</code> <span class="v">^8.57.1</span> +
+      <code>@typescript-eslint/*</code> <span class="v">^8.20.0</span> · paquetes <code>@types/*</code> (tipados).
+    </p>
+  </section>
+
+  <!-- 09 DEPENDENCIAS FRONTEND -->
+  <section class="slide" id="s9">
+    <div class="kicker">Dependencias · 2/2</div>
+    <h2 class="tit">Frontend — paquetes instalados</h2>
+    <div class="grid2">
+      <div>
+        <h3>Producción</h3>
+        <table>
+          <tbody>
+            <tr><td><code>@angular/core</code></td><td class="v">^22.0.2</td><td>Núcleo (signals)</td></tr>
+            <tr><td><code>@angular/common</code></td><td class="v">^22.0.2</td><td>Directivas, pipes, HttpClient</td></tr>
+            <tr><td><code>@angular/compiler</code></td><td class="v">^22.0.2</td><td>Compilador de plantillas</td></tr>
+            <tr><td><code>@angular/forms</code></td><td class="v">^22.0.2</td><td>Formularios reactivos</td></tr>
+            <tr><td><code>@angular/platform-browser</code></td><td class="v">^22.0.2</td><td>Render en navegador</td></tr>
+            <tr><td><code>@angular/router</code></td><td class="v">^22.0.2</td><td>Ruteo + lazy loading</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div>
+        <h3>Producción (cont.) y soporte</h3>
+        <table>
+          <tbody>
+            <tr><td><code>chart.js</code></td><td class="v">^4.5.1</td><td>Gráficas (signos, analítica)</td></tr>
+            <tr><td><code>socket.io-client</code></td><td class="v">^4.8.3</td><td>Cliente de tiempo real</td></tr>
+            <tr><td><code>rxjs</code></td><td class="v">~7.8.0</td><td>Programación reactiva</td></tr>
+            <tr><td><code>zone.js</code></td><td class="v">~0.15.0</td><td>Detección de cambios</td></tr>
+            <tr><td><code>tslib</code></td><td class="v">^2.3.0</td><td>Helpers de TypeScript</td></tr>
+          </tbody>
+        </table>
+        <h3>Desarrollo</h3>
+        <table>
+          <tbody>
+            <tr><td><code>@angular/cli</code> / <code>build</code></td><td class="v">^22.0.3</td><td>CLI y builder (esbuild)</td></tr>
+            <tr><td><code>@angular/compiler-cli</code></td><td class="v">^22.0.2</td><td>Compilación AOT</td></tr>
+            <tr><td><code>typescript</code></td><td class="v">~6.0.3</td><td>Lenguaje</td></tr>
+            <tr><td><code>karma</code> + <code>jasmine</code></td><td class="v">6.4 / 5.x</td><td>Runner de tests (por defecto)</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p class="hint">Decisión técnica: se usó <strong>Chart.js directo</strong> (no ng2-charts) y una <strong>grilla de slots propia</strong> (no FullCalendar) para evitar conflictos de dependencias <em>peer</em> con Angular 22.</p>
+  </section>
+
+  <!-- RETOS TECNICOS -->
+  <section class="slide" id="sretos">
+    <div class="kicker">Profundidad técnica</div>
+    <h2 class="tit">Retos técnicos y cómo se resolvieron</h2>
+    <table>
+      <thead><tr><th>Reto</th><th>Solución aplicada</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Condición de carrera</strong> al reservar el mismo slot dos veces.</td>
+          <td>Índice único <em>parcial</em> en MongoDB (<code>{medicoId, fechaHora}</code> con <code>estado: 'reservada'</code>); se intenta <code>create()</code> y se captura el error 11000 → <code>409</code>. La base de datos arbitra, sin chequeo previo.</td>
+        </tr>
+        <tr>
+          <td><strong>Node 24 no resolvía el SRV de Atlas</strong> en Windows (<code>querySrv ECONNREFUSED</code>) aunque el SO sí.</td>
+          <td>Variable <code>DNS_SERVERS=8.8.8.8,1.1.1.1</code> aplicada con <code>dns.setServers()</code> antes de conectar.</td>
+        </tr>
+        <tr>
+          <td><strong>Angular 22 exigía Node ≥ 22.22</strong> y el instalado no alcanzaba.</td>
+          <td>Actualización a <strong>Node 24 LTS</strong> y migración del proyecto <code>20 → 21 → 22</code> con <code>ng update</code>.</td>
+        </tr>
+        <tr>
+          <td><strong>Conflictos de dependencias <em>peer</em></strong> con librerías de UI en Angular 22.</td>
+          <td>Se usó <strong>Chart.js directo</strong> (no ng2-charts) y una <strong>grilla de slots propia</strong> (no FullCalendar): menos peso y cero conflictos.</td>
+        </tr>
+        <tr>
+          <td><strong>Video</strong> sin presupuesto para servidor de medios (SFU/TURN).</td>
+          <td><strong>Jitsi Meet embebido</strong>: el backend solo genera la sala y valida acceso; cero infraestructura propia.</td>
+        </tr>
+        <tr>
+          <td><strong>Probar emails</strong> sin un servidor SMTP en desarrollo.</td>
+          <td>El <em>mailer</em> cae a <strong>modo "log"</strong> (imprime el correo en consola) cuando no hay SMTP configurado.</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- CALIDAD -->
+  <section class="slide" id="scalidad">
+    <div class="kicker">Aseguramiento de calidad</div>
+    <h2 class="tit">Calidad y verificación</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="big">31</div><div class="lbl">pruebas Vitest</div></div>
+      <div class="stat"><div class="big">100%</div><div class="lbl">endpoints validados con Zod</div></div>
+      <div class="stat"><div class="big">AOT</div><div class="lbl">build con chequeo de tipos</div></div>
+    </div>
+    <div class="grid2">
+      <div>
+        <h3>Pruebas automatizadas (lógica pura)</h3>
+        <ul class="clean">
+          <li><strong>slots</strong> — generación de disponibilidad (14 pruebas).</li>
+          <li><strong>drugSafety</strong> — alergias e interacciones (9 pruebas).</li>
+          <li><strong>billing</strong> — totales con IGV y ausentismo (8 pruebas).</li>
+        </ul>
+        <p style="font-size:.86rem;color:var(--gris);">La lógica crítica se extrajo a módulos puros (sin base de datos) para poder probarla de forma aislada y rápida.</p>
+      </div>
+      <div>
+        <h3>Disciplina por cada fase</h3>
+        <ul class="clean">
+          <li><code>npm run typecheck</code> — sin errores de TypeScript.</li>
+          <li><code>npm test</code> — toda la batería en verde.</li>
+          <li><code>ng build</code> — compilación AOT del frontend.</li>
+          <li><strong>Smoke test</strong> de extremo a extremo contra la API real.</li>
+          <li>Commit + push solo tras pasar lo anterior.</li>
+        </ul>
+        <p style="font-size:.86rem;color:var(--gris);">Swagger/OpenAPI actúa como <strong>contrato vivo</strong> de la API en <code>/docs</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 10 ROADMAP -->
+  <section class="slide" id="s10">
+    <div class="kicker">Ejecución incremental</div>
+    <h2 class="tit">Roadmap por fases — "siempre verde, siempre demostrable"</h2>
+    <div style="columns:2;column-gap:2.5rem;">
+      <div class="phase"><div class="num">0<small>LISTO</small></div><div><h4>Setup + arquitectura</h4><p>Capas, hardening, Swagger, Zod, logger.</p></div></div>
+      <div class="phase"><div class="num">1<small>LISTO</small></div><div><h4>Auth + RBAC + 2FA</h4><p>JWT access/refresh, roles, TOTP, bloqueo por intentos.</p></div></div>
+      <div class="phase"><div class="num">2<small>LISTO</small></div><div><h4>Médicos y horarios</h4><p>Perfiles, franjas, bloqueos, tipos de cita.</p></div></div>
+      <div class="phase"><div class="num">3<small>LISTO</small></div><div><h4>Agenda atómica</h4><p>Reserva sin doble-cita + calendario en tiempo real.</p></div></div>
+      <div class="phase"><div class="num">4<small>LISTO</small></div><div><h4>Historia clínica</h4><p>Consultas, signos vitales, CIE-10, gráficas.</p></div></div>
+      <div class="phase"><div class="num">5<small>LISTO</small></div><div><h4>Recetas + PDF + QR</h4><p>Alerta de alergias/interacciones + verificación pública.</p></div></div>
+      <div class="phase"><div class="num">6<small>LISTO</small></div><div><h4>Recordatorios + notificaciones</h4><p>node-cron + email + tiempo real (campana).</p></div></div>
+      <div class="phase"><div class="num">7<small>LISTO</small></div><div><h4>Teleconsulta + pre-consulta</h4><p>Video Jitsi embebido + formulario previo.</p></div></div>
+      <div class="phase"><div class="num">8<small>LISTO</small></div><div><h4>Analítica + facturación + auditoría</h4><p>Agregaciones MongoDB, IGV, bitácora automática.</p></div></div>
+      <div class="phase"><div class="num">9<small>LISTO</small></div><div><h4>Factura en PDF + seed</h4><p>PDF de factura (PDFKit), seed de demo idempotente y módulo de facturación con pruebas.</p></div></div>
+      <div class="phase"><div class="num">+<small>LISTO</small></div><div><h4>Rol Recepción / Director</h4><p>Modelo de clínica real: Recepción agenda por el paciente, lo registra y cobra.</p></div></div>
+      <div class="phase"><div class="num">+<small>LISTO</small></div><div><h4>Despliegue en producción</h4><p>Vercel + Render + Atlas; URL del API y CORS resueltos en runtime.</p></div></div>
+      <div class="phase"><div class="num">+<small>LISTO</small></div><div><h4>Realismo de roles</h4><p>La Dirección define los horarios (el médico no), el médico no factura, el Admin crea cuentas de Recepción, pago al reservar y el sitio solo anuncia especialidades con médico activo.</p></div></div>
+      <div class="phase"><div class="num">→<small>FUTURO</small></div><div><h4>Mejoras</h4><p>PWA, i18n (ES/EN), modo oscuro, Docker, adjuntos a la historia.</p></div></div>
+    </div>
+    <p class="hint">Cada fase deja el sistema funcionando de extremo a extremo y se cierra con commit + push tras verificar typecheck, build y pruebas de humo.</p>
+  </section>
+
+  <!-- 11 DECISIONES -->
+  <section class="slide" id="s11">
+    <div class="kicker">Criterio de ingeniería</div>
+    <h2 class="tit">Decisiones de diseño destacadas</h2>
+    <div class="grid2">
+      <div class="card"><h4>🔒 Reserva atómica</h4><p>El árbitro es la base de datos vía índice único parcial; se intenta <code>create()</code> y se captura el error 11000 → <code>409</code>. Sin condición de carrera.</p></div>
+      <div class="card"><h4>🎥 Video sin servidor de medios</h4><p>Jitsi Meet embebido: el backend solo genera una sala única e impredecible por cita y valida participante + ventana horaria.</p></div>
+      <div class="card"><h4>📡 Tiempo real dirigido</h4><p>Salas <code>medico:{id}</code> (disponibilidad) y <code>user:{id}</code> (notificaciones); sin difusión global.</p></div>
+      <div class="card"><h4>💊 Seguridad farmacológica</h4><p>Al recetar se cruzan medicamentos vs. alergias e interacciones; bloqueo <code>422</code> hasta que el médico confirma.</p></div>
+      <div class="card"><h4>🔐 Integridad de receta</h4><p>Hash SHA-256 del contenido; el endpoint público de verificación lo recalcula para detectar alteraciones.</p></div>
+      <div class="card"><h4>🛡️ Auditoría automática</h4><p>Un middleware registra toda acción que modifica datos (POST/PATCH/PUT/DELETE) sin tocar cada handler.</p></div>
+    </div>
+  </section>
+
+  <!-- 12 SEGURIDAD -->
+  <section class="slide" id="s12">
+    <div class="kicker">Confidencialidad de datos de salud</div>
+    <h2 class="tit">Seguridad</h2>
+    <div class="grid2">
+      <div>
+        <ul class="clean">
+          <li><strong>Contraseñas</strong> con bcrypt (12 rondas), nunca expuestas en respuestas.</li>
+          <li><strong>JWT</strong>: access de 15 min + refresh httpOnly de 7 días (rotable con <code>tokenVersion</code>).</li>
+          <li><strong>2FA TOTP</strong> opcional (Google Authenticator) con QR.</li>
+          <li><strong>RBAC</strong> + comprobación de propiedad del recurso en cada service.</li>
+        </ul>
+      </div>
+      <div>
+        <ul class="clean">
+          <li><strong>Helmet</strong>, <strong>CORS dinámico</strong> por entorno con credenciales y <strong>rate limiting</strong> en login.</li>
+          <li><strong>Sanitización</strong> anti NoSQL-injection (<code>$</code>, <code>.</code>).</li>
+          <li><strong>Bloqueo temporal</strong> de cuenta tras 5 intentos fallidos.</li>
+          <li><strong>Validación</strong> de toda entrada con Zod + secretos fuera del repositorio (<code>.env</code>).</li>
+        </ul>
+      </div>
+    </div>
+    <div class="stat-row">
+      <div class="stat"><div class="big">12</div><div class="lbl">rondas bcrypt</div></div>
+      <div class="stat"><div class="big">15m / 7d</div><div class="lbl">access / refresh</div></div>
+      <div class="stat"><div class="big">5</div><div class="lbl">intentos → bloqueo</div></div>
+      <div class="stat"><div class="big">100%</div><div class="lbl">endpoints validados</div></div>
+    </div>
+  </section>
+
+  <!-- 13 API -->
+  <section class="slide" id="s13">
+    <div class="kicker">Interfaz</div>
+    <h2 class="tit">API REST — principales endpoints</h2>
+    <table>
+      <thead><tr><th>Método</th><th>Ruta</th><th>Acceso</th><th>Descripción</th></tr></thead>
+      <tbody>
+        <tr><td><code>POST</code></td><td><code>/auth/login</code></td><td>Público</td><td>Login (token + cookie refresh)</td></tr>
+        <tr><td><code>GET</code></td><td><code>/appointments/disponibilidad/:id</code></td><td>Auth</td><td>Slots libres de un médico</td></tr>
+        <tr><td><code>POST</code></td><td><code>/appointments/reservar-y-pagar</code></td><td>Paciente</td><td>Reserva atómica + factura pagada (pago al confirmar)</td></tr>
+        <tr><td><code>POST</code></td><td><code>/appointments</code></td><td>Recepción/Admin</td><td>Agenda a nombre del paciente (cobro en caja)</td></tr>
+        <tr><td><code>GET</code></td><td><code>/especialidades/publicas</code></td><td><strong>Público</strong></td><td>Especialidades con médico activo (sitio web)</td></tr>
+        <tr><td><code>GET/POST</code></td><td><code>/staff</code></td><td>Admin</td><td>Cuentas de Recepción (listar / crear)</td></tr>
+        <tr><td><code>PUT</code></td><td><code>/medicos/:id/horario</code></td><td>Admin</td><td>Definir el horario de un médico</td></tr>
+        <tr><td><code>GET/POST</code></td><td><code>/patients</code></td><td>Recepción/Admin</td><td>Buscar y registrar pacientes</td></tr>
+        <tr><td><code>POST</code></td><td><code>/records</code></td><td>Médico</td><td>Consulta clínica + signos vitales</td></tr>
+        <tr><td><code>POST</code></td><td><code>/prescriptions</code></td><td>Médico</td><td>Receta con alerta de alergias</td></tr>
+        <tr><td><code>GET</code></td><td><code>/prescriptions/verify/:codigo</code></td><td><strong>Público</strong></td><td>Verificación de autenticidad (QR)</td></tr>
+        <tr><td><code>GET</code></td><td><code>/appointments/:id/video</code></td><td>Participante</td><td>Acceso a sala de teleconsulta</td></tr>
+        <tr><td><code>GET</code></td><td><code>/notifications</code></td><td>Auth</td><td>Notificaciones + contador</td></tr>
+        <tr><td><code>POST</code></td><td><code>/invoices</code> · <code>/:id/pdf</code></td><td>Recepción/Admin</td><td>Emitir factura / descargar PDF</td></tr>
+        <tr><td><code>GET</code></td><td><code>/analytics/overview</code></td><td>Admin</td><td>Métricas del consultorio</td></tr>
+        <tr><td><code>GET</code></td><td><code>/audit</code></td><td>Admin</td><td>Bitácora de auditoría</td></tr>
+      </tbody>
+    </table>
+    <p class="hint">Documentación interactiva completa (Swagger UI) en <code>http://localhost:4000/docs</code>.</p>
+  </section>
+
+  <!-- 14 EJECUTAR -->
+  <section class="slide" id="s14">
+    <div class="kicker">Puesta en marcha</div>
+    <h2 class="tit">Cómo ejecutar el proyecto</h2>
+    <div class="grid2">
+      <div>
+        <h3>Terminal 1 — Backend (:4000)</h3>
+        <pre><span class="k">cd</span> backend
+<span class="k">npm install</span>
+<span class="k">npm run</span> seed     <span class="c"># datos de demo (1ª vez)</span>
+<span class="k">npm run</span> dev      <span class="c"># API en :4000</span></pre>
+        <h3>Terminal 2 — Frontend (:4200)</h3>
+        <pre><span class="k">cd</span> frontend
+<span class="k">npm install</span>
+<span class="k">npm start</span>        <span class="c"># SPA en :4200</span></pre>
+      </div>
+      <div>
+        <h3>Cuentas de demostración</h3>
+        <table>
+          <thead><tr><th>Rol</th><th>Email</th><th>Contraseña</th></tr></thead>
+          <tbody>
+            <tr><td>Director / Admin</td><td><code>admin@ehr.dev</code></td><td>Admin1234</td></tr>
+            <tr><td>Recepción</td><td><code>recepcion@ehr.dev</code></td><td>Recepcion1234</td></tr>
+            <tr><td>Médico</td><td><code>medico@ehr.dev</code></td><td>Medico1234</td></tr>
+            <tr><td>Paciente</td><td><code>paciente@ehr.dev</code></td><td>Paciente1234</td></tr>
+            <tr><td>Paciente</td><td><code>maria@ehr.dev</code></td><td>Paciente1234</td></tr>
+          </tbody>
+        </table>
+        <p style="font-size:.86rem;color:var(--gris);margin-top:1rem;">El <code>seed</code> es idempotente y deja el sistema listo para demostrar: médico con horario, tipos de cita, citas en varios estados, una consulta, una receta verificable (<code>RX-DEMO-0001</code>) y facturas.</p>
+        <p style="font-size:.86rem;color:var(--gris);">Scripts útiles del backend: <code>npm test</code> (31 pruebas), <code>npm run typecheck</code>, <code>npm run build</code>.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 21 DESPLIEGUE -->
+  <section class="slide" id="sdeploy">
+    <div class="kicker">DevOps · Producción</div>
+    <h2 class="tit">Despliegue en producción</h2>
+    <p class="lead">Arquitectura partida: cada pieza en la plataforma donde rinde mejor, sin pagar infraestructura.</p>
+
+    <div style="display:flex;align-items:center;justify-content:center;gap:1rem;flex-wrap:wrap;margin:1.5rem 0;">
+      <div class="card" style="text-align:center;min-width:170px;">
+        <div style="font-size:1.6rem;">▲</div>
+        <h4 style="margin:.3rem 0;">Frontend → Vercel</h4>
+        <p style="font-size:.8rem;color:var(--gris);margin:0;">Angular estático (CDN, HTTPS)</p>
+      </div>
+      <div style="font-size:1.5rem;color:#2563eb;">→</div>
+      <div class="card" style="text-align:center;min-width:170px;">
+        <div style="font-size:1.6rem;">🛠️</div>
+        <h4 style="margin:.3rem 0;">Backend → Render</h4>
+        <p style="font-size:.8rem;color:var(--gris);margin:0;">Proceso Node persistente<br>(Socket.io + node-cron)</p>
+      </div>
+      <div style="font-size:1.5rem;color:#2563eb;">→</div>
+      <div class="card" style="text-align:center;min-width:170px;">
+        <div style="font-size:1.6rem;">🍃</div>
+        <h4 style="margin:.3rem 0;">DB → MongoDB Atlas</h4>
+        <p style="font-size:.8rem;color:var(--gris);margin:0;">Mismo clúster que en local</p>
+      </div>
+    </div>
+
+    <div class="grid2">
+      <div>
+        <h3>¿Por qué no todo en Vercel?</h3>
+        <p style="font-size:.88rem;color:var(--gris);">Vercel ejecuta <strong>funciones serverless</strong> (efímeras). El backend necesita un <strong>proceso vivo</strong> para <strong>WebSockets (Socket.io)</strong> y el <strong>cron de recordatorios</strong>, que mueren en serverless. Por eso el backend va en Render (proceso persistente) y solo el frontend en Vercel.</p>
+      </div>
+      <div>
+        <h3>Diseño que lo hizo portable (mismo build en todos lados)</h3>
+        <ul class="clean" style="font-size:.86rem;">
+          <li><strong>URL del API en <em>runtime</em></strong>: se resuelve según el host (local, Codespaces o Vercel) sin recompilar.</li>
+          <li><strong>CORS dinámico</strong> por variable de entorno, compartido por Express y Socket.io.</li>
+          <li><strong>Cookie de sesión cross-domain</strong>: <code>SameSite=None; Secure</code> configurable + <code>trust proxy</code>.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- 22 PROBLEMAS DE DESPLIEGUE -->
+  <section class="slide" id="sdeployfix">
+    <div class="kicker">Diagnóstico de causa raíz</div>
+    <h2 class="tit">Problemas de despliegue y cómo se resolvieron</h2>
+    <table>
+      <thead><tr><th>Entorno</th><th>Síntoma</th><th>Causa raíz → solución</th></tr></thead>
+      <tbody>
+        <tr>
+          <td><strong>Codespaces</strong></td>
+          <td>La app abría en una URL distinta a <code>localhost:4200</code> y el login no entraba.</td>
+          <td>El frontend llamaba a <code>localhost:4000</code>, que en el navegador es la PC del usuario, no el contenedor → <strong>resolución de URL del API en runtime</strong> (cambia el puerto del host de Codespaces) + <strong>CORS dinámico</strong> y exponer el puerto 4000 como <em>público</em>.</td>
+        </tr>
+        <tr>
+          <td><strong>Vercel ↔ Render</strong></td>
+          <td>El login entraba, pero la sesión se caía tras ~15 min.</td>
+          <td>La cookie de <em>refresh</em> era <code>SameSite=Strict</code>: el navegador no la envía entre dominios distintos → <strong><code>SameSite=None; Secure</code></strong> configurable por entorno (+ <code>trust proxy</code> en producción).</td>
+        </tr>
+        <tr>
+          <td><strong>Render</strong> (build)</td>
+          <td><code>TS5107: moduleResolution=node10 deprecado</code>.</td>
+          <td>Render usó un Node/TypeScript más nuevo que el del proyecto → se fijó <strong>Node 22</strong> con <code>.node-version</code> y se migró <code>tsconfig</code> a <strong><code>moduleResolution: "NodeNext"</code></strong> (no deprecado, sigue emitiendo CommonJS).</td>
+        </tr>
+        <tr>
+          <td><strong>Render</strong> (build)</td>
+          <td><code>TS7016: Could not find declaration file for 'express'</code> (faltaban los <code>@types/*</code>).</td>
+          <td><code>NODE_ENV=production</code> hace que <code>npm ci</code> <strong>omita las devDependencies</strong> (TypeScript y <code>@types</code>), necesarias en build → <strong><code>npm ci --include=dev</code></strong> como Build Command.</td>
+        </tr>
+        <tr>
+          <td><strong>Atlas ↔ Render</strong></td>
+          <td>Riesgo de que el backend no conectara a la base de datos.</td>
+          <td>Render (free) usa IPs de salida dinámicas → <strong>Network Access en <code>0.0.0.0/0</code></strong> en Atlas.</td>
+        </tr>
+        <tr>
+          <td><strong>Verificación</strong></td>
+          <td>"Credenciales inválidas" al primer login en producción.</td>
+          <td>No era infraestructura (CORS y DB estaban OK): era la <strong>contraseña</strong> del seed (<code>Admin1234</code>). El mensaje de la propia app confirmó que el cableado funcionaba.</td>
+        </tr>
+      </tbody>
+    </table>
+    <p style="font-size:.84rem;color:var(--gris);margin-top:.8rem;">Lección de ingeniería: cada fallo se atacó por <strong>causa raíz</strong> (no parches), verificando el <em>build</em> en local antes de cada redeploy.</p>
+  </section>
+
+  <!-- 24 AUDITORIA -->
+  <section class="slide" id="saudit">
+    <div class="kicker">Madurez de ingeniería</div>
+    <h2 class="tit">🔍 Auditoría de calidad y seguridad</h2>
+    <p class="lead">Terminado el sistema se auditó el propio código: <strong>9 hallazgos</strong> detectados y corregidos por <strong>causa raíz</strong>, re-verificando pruebas y build AOT tras cada cambio.</p>
+    <div class="grid3">
+      <div class="card">
+        <span class="ico">🔐</span><h4>Seguridad</h4>
+        <ul class="clean" style="font-size:.82rem;">
+          <li>Socket.io <strong>autenticado por token</strong>: la sala se deriva del JWT, no del id que mande el cliente → un usuario no puede escuchar las notificaciones de otro.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="ico">🧱</span><h4>Robustez del API</h4>
+        <ul class="clean" style="font-size:.82rem;">
+          <li>Errores de validación con <strong>mensaje específico</strong> (no genérico).</li>
+          <li>IDs malformados → <strong>400</strong> en vez de 500.</li>
+          <li>No se factura <strong>dos veces</strong> la misma cita…</li>
+          <li>…ni una cita <strong>cancelada o no atendida</strong>.</li>
+        </ul>
+      </div>
+      <div class="card">
+        <span class="ico">🖥️</span><h4>Experiencia de uso</h4>
+        <ul class="clean" style="font-size:.82rem;">
+          <li>Fecha del calendario en <strong>hora local</strong> (no UTC).</li>
+          <li>Errores de cancelación <strong>visibles</strong> (no fallan en silencio).</li>
+          <li>Búsqueda de pacientes con <strong>debounce</strong>.</li>
+          <li>Al cancelar Recepción/Admin se avisa a <strong>ambas partes</strong>.</li>
+        </ul>
+      </div>
+    </div>
+    <p class="hint">Verificado con 31 pruebas Vitest en verde y compilación AOT del frontend tras cada corrección.</p>
+  </section>
+
+  <!-- 15 CIERRE -->
+  <section class="slide" id="s15" style="background:linear-gradient(135deg,#1e3a8a,#2563eb);color:#fff;border:none;">
+    <div class="kicker" style="color:#bfdbfe;">Estado actual</div>
+    <h2 class="tit" style="color:#fff;">Resumen y cierre</h2>
+    <div class="stat-row">
+      <div class="stat"><div class="big" style="color:#fff;">9</div><div class="lbl" style="color:#bfdbfe;">fases completas + extras</div></div>
+      <div class="stat"><div class="big" style="color:#fff;">11</div><div class="lbl" style="color:#bfdbfe;">colecciones de datos</div></div>
+      <div class="stat"><div class="big" style="color:#fff;">31</div><div class="lbl" style="color:#bfdbfe;">pruebas automatizadas</div></div>
+      <div class="stat"><div class="big" style="color:#fff;">4</div><div class="lbl" style="color:#bfdbfe;">roles con RBAC</div></div>
+    </div>
+    <ul class="clean" style="color:#dbeafe;">
+      <li>Núcleo del encargo <strong style="color:#fff;">100% cubierto</strong>: roles, calendario que bloquea horas reservadas y recetas en PDF.</li>
+      <li>Modelo de roles cercano a una clínica real: <strong style="color:#fff;">Director, Recepción, Médico y Paciente</strong>.</li>
+      <li>Cuatro áreas de valor entregadas: seguridad clínica, anti-ausentismo, teleconsulta e inteligencia operativa.</li>
+      <li><strong style="color:#fff;">Desplegado en producción</strong> (Vercel + Render + Atlas) y ejecutable en local con dos comandos.</li>
+    </ul>
+    <h3 style="color:#fff;">Trabajo futuro</h3>
+    <p style="color:#dbeafe;max-width:70ch;">Modo oscuro e internacionalización (ES/EN), empaquetado con Docker, adjuntos a la historia clínica (multer/GridFS), lista de espera de citas y PWA.</p>
+    <p style="margin-top:2rem;color:#bfdbfe;">¡Gracias! &nbsp;·&nbsp; github.com/Isupreme2/sistema-medico</p>
+  </section>
+
+</main>
+
+<script>
+  // Barra de progreso de scroll
+  const progress = document.getElementById('progress');
+  const slides = Array.from(document.querySelectorAll('section.slide'));
+  function updateProgress() {
+    const h = document.documentElement;
+    const pct = (h.scrollTop || document.body.scrollTop) / ((h.scrollHeight - h.clientHeight) || 1) * 100;
+    progress.style.width = pct + '%';
+  }
+  window.addEventListener('scroll', updateProgress);
+  updateProgress();
+
+  // Navegación con flechas del teclado entre secciones
+  function currentIndex() {
+    const y = window.scrollY + 5;
+    let idx = 0;
+    slides.forEach((s, i) => { if (s.offsetTop <= y) idx = i; });
+    return idx;
+  }
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'ArrowRight' || e.key === 'PageDown') {
+      e.preventDefault();
+      const i = Math.min(slides.length - 1, currentIndex() + 1);
+      slides[i].scrollIntoView({ behavior: 'smooth' });
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
+      e.preventDefault();
+      const i = Math.max(0, currentIndex() - 1);
+      slides[i].scrollIntoView({ behavior: 'smooth' });
+    }
+  });
+</script>
+</body>
+</html>

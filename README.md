@@ -30,7 +30,8 @@ sistema-medico/
 │   │   ├── models/       user, medicoProfile, appointmentType, bloqueo,
 │   │   │                 appointment, medicalRecord, prescription,
 │   │   │                 notification, preConsulta, invoice, auditLog
-│   │   ├── modules/      auth · medico · appointmentType · appointment
+│   │   ├── modules/      auth · medico · staff (cuentas de Recepción) ·
+│   │   │                 specialty · appointmentType · appointment
 │   │   │                 (incl. teleconsulta/preconsulta) · patient · record ·
 │   │   │                 prescription · notification · invoice · analytics · audit
 │   │   ├── jobs/         reminders (node-cron)
@@ -118,15 +119,19 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/medicos` | Auth | Lista de médicos |
 | POST | `/api/v1/medicos` | Admin | Crear médico (usuario + perfil) |
 | GET | `/api/v1/medicos/:id` | Auth | Detalle de un médico |
-| PATCH | `/api/v1/medicos/:id` | Admin/Médico | Actualizar perfil |
-| PUT | `/api/v1/medicos/:id/horario` | Admin/Médico | Definir horarios y duración de slot |
-| GET/POST | `/api/v1/medicos/:id/bloqueos` | Auth/Médico | Listar/crear bloqueos |
-| DELETE | `/api/v1/medicos/:id/bloqueos/:bloqueoId` | Admin/Médico | Eliminar bloqueo |
+| PATCH | `/api/v1/medicos/:id` | Admin | Actualizar credenciales (especialidad, colegiatura, estado) |
+| PUT | `/api/v1/medicos/:id/horario` | **Admin** | Definir horarios y duración de slot (lo fija la Dirección) |
+| GET/POST | `/api/v1/medicos/:id/bloqueos` | Auth / **Admin** | Listar (auth) / crear bloqueos (Admin) |
+| DELETE | `/api/v1/medicos/:id/bloqueos/:bloqueoId` | Admin | Eliminar bloqueo |
+| GET/POST | `/api/v1/staff` | Admin | Cuentas de Recepción / Registrador (listar / crear) |
+| GET | `/api/v1/especialidades` | Auth | Catálogo de especialidades (selector) |
+| GET | `/api/v1/especialidades/publicas` | **Público** | Especialidades con médico activo (sitio web) |
 | GET | `/api/v1/appointment-types` | Auth | Lista de tipos de cita |
 | POST/PATCH/DELETE | `/api/v1/appointment-types/:id?` | Admin | Gestionar tipos de cita |
 | GET | `/api/v1/appointments/disponibilidad/:id?fecha=` | Auth | Slots disponibles de un médico |
 | GET | `/api/v1/appointments` | Auth | Citas (filtradas por rol) |
-| POST | `/api/v1/appointments` | Paciente/Recepción/Admin | Reservar cita atómica (Recepción/Admin agendan a nombre del paciente) |
+| POST | `/api/v1/appointments/reservar-y-pagar` | Paciente | Reserva atómica + factura pagada (pago al confirmar) |
+| POST | `/api/v1/appointments` | Recepción/Admin | Agendar a nombre del paciente (cobro en caja vía Facturar) |
 | PATCH | `/api/v1/appointments/:id/cancel` | Dueño/Médico/Recepción/Admin | Cancelar (libera slot) |
 | PATCH | `/api/v1/appointments/:id/status` | Médico | Marcar atendida/no-asistió |
 | GET | `/api/v1/patients?q=` | Recepción/Médico/Admin | Buscar pacientes por nombre/email |
@@ -146,9 +151,11 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/appointments/:id/video` | Participante | Datos de la sala de teleconsulta (+ventana horaria) |
 | GET | `/api/v1/appointments/:id/preconsulta` | Médico/Dueño/Admin | Ver formulario de pre-consulta |
 | POST | `/api/v1/appointments/:id/preconsulta` | Paciente dueño | Enviar/actualizar pre-consulta |
-| GET/POST | `/api/v1/invoices` | Auth / Médico-Recepción-Admin | Listar (por rol) / emitir factura |
-| GET | `/api/v1/invoices/:id/pdf` | Dueño/Médico/Recepción/Admin | Descargar factura en PDF |
+| GET/POST | `/api/v1/invoices` | Auth / Recepción-Admin | Listar (por rol) / emitir factura |
+| GET | `/api/v1/invoices/:id/pdf` | Dueño/Recepción/Admin | Descargar factura en PDF |
 | PATCH | `/api/v1/invoices/:id/pay` | Recepción/Admin | Registrar cobro (marcar pagada) |
+| PATCH | `/api/v1/invoices/:id/refund` | Recepción/Admin | Reembolsar una factura pagada |
+| POST | `/api/v1/invoices/reembolsar-cita/:citaId` | Paciente | Solicitar reembolso de una cita vencida |
 | PATCH | `/api/v1/invoices/:id/void` | Admin | Anular factura |
 | GET | `/api/v1/analytics/overview` | Admin | Métricas (citas, ausentismo, ingresos, top médicos) |
 | GET | `/api/v1/audit` | Admin | Bitácora de auditoría (paginada, filtrable) |
@@ -198,6 +205,7 @@ Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
 - [x] **Fase 9** — Factura en PDF (PDFKit) + seed de demostración enriquecido e idempotente + módulo de facturación con pruebas
 - [x] **Rol Recepción / Director** — modelo de roles de clínica real: Recepción agenda por el paciente, lo registra y cobra; Admin = Director
 - [x] **Despliegue en producción** — Vercel (frontend) + Render (backend) + Atlas, con URL del API y CORS resueltos en runtime
+- [x] **Realismo de roles** — la Dirección define los horarios de cada médico (el médico solo los consulta), el médico no factura (el cobro es de Recepción/Admin), el Admin crea cuentas de Recepción, pago al reservar (pay-to-confirm) y el sitio público solo anuncia especialidades con médico activo
 - [ ] **Futuro** — PWA, i18n (ES/EN), modo oscuro, Docker, adjuntos a la historia clínica, lista de espera
 
 ## Decisiones de diseño destacadas
@@ -223,6 +231,10 @@ Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
   (POST/PATCH/PUT/DELETE) con usuario, ruta y estado HTTP, sin tocar cada handler.
 - **Métricas en la base, no en memoria.** El panel analítico se calcula con *aggregation
   pipelines* de MongoDB (citas por estado, ausentismo, ingresos, top médicos).
+- **Roles cercanos a una clínica real.** La **Dirección** (Admin) define los horarios de
+  cada médico y crea las cuentas de **Recepción**; el médico se concentra en lo clínico
+  (no fija su agenda ni cobra) y el cobro vive en Recepción/Admin. El sitio público solo
+  anuncia especialidades que tengan **al menos un médico activo** asignado.
 
 ## Seguridad
 
