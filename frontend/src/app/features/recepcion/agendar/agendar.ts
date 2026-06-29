@@ -100,6 +100,16 @@ function hoyLocal(): string {
             </label>
           }
         </div>
+        <label class="motivo-field">
+          Motivo de consulta *
+          <input
+            class="input"
+            type="text"
+            maxlength="500"
+            placeholder="Ej. Control de presión arterial"
+            [(ngModel)]="motivoSel"
+          />
+        </label>
       </div>
 
       <!-- Paso 3: slots -->
@@ -138,6 +148,7 @@ function hoyLocal(): string {
       .input { width: 100%; padding: .6rem .75rem; border: 1px solid #d1d5db; border-radius: 8px; box-sizing: border-box; }
       .row { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
       .row label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #374151; }
+      .motivo-field { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: #374151; margin-top: .75rem; }
       .list { list-style: none; padding: 0; margin: .5rem 0 0; }
       .list li { display: flex; justify-content: space-between; align-items: center; gap: .5rem; padding: .5rem 0; border-bottom: 1px solid #f3f4f6; }
       .selected { display: flex; gap: .6rem; align-items: baseline; flex-wrap: wrap; }
@@ -162,6 +173,7 @@ export class RecepcionAgendar {
   readonly fecha = signal(hoyLocal());
   modalidadSel: AppointmentModality = 'presencial';
   tipoCitaSel = '';
+  motivoSel = '';
   readonly slots = signal<Slot[]>([]);
   readonly loading = signal(false);
 
@@ -242,6 +254,10 @@ export class RecepcionAgendar {
     if (!slot.disponible || !p) return;
     this.msg.set(null);
     this.error.set(null);
+    if (!this.motivoSel.trim()) {
+      this.error.set('Indica el motivo de la consulta antes de reservar.');
+      return;
+    }
     this.appointments
       .reservar({
         medicoId: this.medicoId(),
@@ -249,10 +265,12 @@ export class RecepcionAgendar {
         fechaHora: slot.fechaHora,
         modalidad: this.modalidadSel,
         tipoCitaId: this.tipoCitaSel || undefined,
+        motivo: this.motivoSel.trim(),
       })
       .subscribe({
         next: () => {
           this.msg.set(`Cita reservada para ${p.nombre} ${p.apellido} a las ${slot.hora} 🎉`);
+          this.motivoSel = '';
           this.cargarDisponibilidad();
         },
         error: (err: HttpErrorResponse) => {

@@ -16,7 +16,12 @@ export const createAppointmentSchema = z.object({
     modalidad: z
       .enum([AppointmentModality.PRESENCIAL, AppointmentModality.TELECONSULTA])
       .default(AppointmentModality.PRESENCIAL),
-    motivo: z.string().max(500).optional(),
+    /** Motivo de la visita: obligatorio (Recepción/Admin lo registran al agendar). */
+    motivo: z
+      .string()
+      .trim()
+      .min(1, 'Indica el motivo de la consulta')
+      .max(500, 'El motivo no puede superar 500 caracteres'),
     /** Solo en el flujo de paciente con pago (reservar-y-pagar). */
     metodoPago: z.string().max(60).optional(),
   }),
