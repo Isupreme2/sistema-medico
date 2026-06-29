@@ -19,6 +19,8 @@ export class Recetar {
 
   readonly pacienteId = this.route.snapshot.paramMap.get('pacienteId') ?? '';
   readonly pacienteNombre = this.route.snapshot.queryParamMap.get('nombre') ?? 'Paciente';
+  /** Si se receta desde una consulta del historial, queda vinculada a ella. */
+  readonly historialId = this.route.snapshot.queryParamMap.get('historialId') ?? undefined;
 
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
@@ -62,6 +64,7 @@ export class Recetar {
     this.prescriptionService
       .emitir({
         pacienteId: this.pacienteId,
+        historialId: this.historialId,
         medicamentos: v.medicamentos,
         indicaciones: v.indicaciones || undefined,
         confirmar,

@@ -1,9 +1,12 @@
 import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
-import { ActivatedRoute } from '@angular/router';
+import { ActivatedRoute, RouterLink } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { RecordService } from '../../core/services/record.service';
+import { PrescriptionService } from '../../core/services/prescription.service';
 import { MedicalRecord, SignosVitales } from '../../core/models/record.model';
+import { Prescription } from '../../core/models/prescription.model';
+import { UserRole } from '../../core/models/user.model';
 import { LineChart, SerieGrafica } from '../../shared/line-chart/line-chart';
 
 interface ChartConfig {
@@ -14,7 +17,7 @@ interface ChartConfig {
 
 @Component({
   selector: 'app-historial',
-  imports: [DatePipe, LineChart],
+  imports: [DatePipe, RouterLink, LineChart],
   templateUrl: './historial.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './historial.scss',
@@ -23,13 +26,27 @@ export class Historial {
   private route = inject(ActivatedRoute);
   private auth = inject(AuthService);
   private recordService = inject(RecordService);
+  private prescriptionService = inject(PrescriptionService);
 
   readonly records = signal<MedicalRecord[]>([]);
+  readonly recetas = signal<Prescription[]>([]);
   readonly loading = signal(true);
+
+  /** El médico puede recetar desde una consulta; el paciente solo consulta. */
+  readonly esMedico = this.auth.role() === UserRole.MEDICO;
 
   /** Si la ruta trae :id es el médico viendo a un paciente; si no, el paciente ve lo suyo. */
   private pacienteId =
     this.route.snapshot.paramMap.get('id') ?? this.auth.user()?._id ?? '';
+
+  /** Recetas emitidas a partir de una consulta concreta (vínculo por historialId). */
+  recetasDe(recordId: string): Prescription[] {
+    return this.recetas().filter((r) => r.historialId === recordId);
+  }
+
+  descargar(receta: Prescription): void {
+    this.prescriptionService.descargarPdf(receta);
+  }
 
   /** Registros con vitales, en orden cronológico ascendente (para las gráficas). */
   private conVitales = computed(() =>
@@ -90,6 +107,9 @@ export class Historial {
         this.loading.set(false);
       },
       error: () => this.loading.set(false),
+    });
+    this.prescriptionService.listByPatient(this.pacienteId).subscribe({
+      next: (r) => this.recetas.set(r),
     });
   }
 }

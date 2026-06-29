@@ -12,6 +12,8 @@ export interface Prescription {
   codigo: string;
   medicoId: PersonaRef;
   pacienteId: PersonaRef;
+  /** Consulta clínica a la que pertenece la receta (si se emitió desde una). */
+  historialId?: string;
   medicamentos: Medicamento[];
   indicaciones?: string;
   emitidaEn: string;

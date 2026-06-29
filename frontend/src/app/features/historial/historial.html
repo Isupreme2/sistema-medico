@@ -39,7 +39,7 @@
           <p class="bloque"><b>Notas:</b> {{ r.notas }}</p>
         }
         @if (r.tratamiento) {
-          <p class="bloque"><b>Tratamiento:</b> {{ r.tratamiento }}</p>
+          <p class="bloque"><b>Plan / Indicaciones:</b> {{ r.tratamiento }}</p>
         }
 
         @if (r.signosVitales; as sv) {
@@ -50,6 +50,27 @@
             @if (sv.temperatura) { <span>T°: {{ sv.temperatura }}°C</span> }
             @if (sv.glucosa) { <span>Glucosa: {{ sv.glucosa }}</span> }
             @if (sv.saturacionO2) { <span>SatO₂: {{ sv.saturacionO2 }}%</span> }
+          </div>
+        }
+
+        <!-- Recetas emitidas a partir de esta consulta -->
+        @if (recetasDe(r._id).length || esMedico) {
+          <div class="recetas">
+            @for (rx of recetasDe(r._id); track rx._id) {
+              <div class="receta">
+                <span class="rx">💊 {{ rx.codigo }}</span>
+                <span class="det">{{ rx.medicamentos.length }} medicamento(s) · {{ rx.emitidaEn | date: 'dd/MM/yyyy' }}</span>
+                <button type="button" class="pdf-btn" (click)="descargar(rx)">Descargar PDF</button>
+              </div>
+            }
+            @if (esMedico) {
+              <a
+                class="recetar-link"
+                [routerLink]="['/medico/recetar', r.pacienteId._id]"
+                [queryParams]="{ historialId: r._id, nombre: r.pacienteId.nombre + ' ' + r.pacienteId.apellido }"
+                >{{ recetasDe(r._id).length ? '+ Emitir otra receta' : '+ Recetar para esta consulta' }}</a
+              >
+            }
           </div>
         }
       </div>
