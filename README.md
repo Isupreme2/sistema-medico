@@ -130,8 +130,8 @@ Documentación interactiva: **http://localhost:4000/docs**
 | POST/PATCH/DELETE | `/api/v1/appointment-types/:id?` | Admin | Gestionar tipos de cita |
 | GET | `/api/v1/appointments/disponibilidad/:id?fecha=` | Auth | Slots disponibles de un médico |
 | GET | `/api/v1/appointments` | Auth | Citas (filtradas por rol) |
-| POST | `/api/v1/appointments/reservar-y-pagar` | Paciente | Reserva atómica + factura pagada (pago al confirmar) |
-| POST | `/api/v1/appointments` | Recepción/Admin | Agendar a nombre del paciente (cobro en caja vía Facturar) |
+| POST | `/api/v1/appointments/reservar-y-pagar` | Paciente | Reserva atómica + factura pagada (pago al confirmar; **motivo obligatorio**) |
+| POST | `/api/v1/appointments` | Recepción/Admin | Agendar a nombre del paciente (cobro en caja vía Facturar; **motivo obligatorio**) |
 | PATCH | `/api/v1/appointments/:id/cancel` | Dueño/Médico/Recepción/Admin | Cancelar (libera slot) |
 | PATCH | `/api/v1/appointments/:id/status` | Médico | Marcar atendida/no-asistió |
 | GET | `/api/v1/patients?q=` | Recepción/Médico/Admin | Buscar pacientes por nombre/email |
@@ -140,7 +140,7 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/records/paciente/:id` | Médico/Dueño/Admin | Historial clínico de un paciente |
 | GET | `/api/v1/records/:id` | Médico/Dueño/Admin | Detalle de una consulta |
 | PATCH | `/api/v1/auth/me` | Auth | Actualizar datos propios (teléfono, alergias) |
-| POST | `/api/v1/prescriptions` | Médico | Emitir receta (con alerta de alergias/interacciones) |
+| POST | `/api/v1/prescriptions` | Médico | Emitir receta (alerta de alergias/interacciones; opcional `historialId` → la vincula a la consulta) |
 | GET | `/api/v1/prescriptions/paciente/:id` | Médico/Dueño/Admin | Recetas de un paciente |
 | GET | `/api/v1/prescriptions/:id/pdf` | Médico/Dueño/Admin | Descargar receta en PDF |
 | GET | `/api/v1/prescriptions/verify/:codigo` | **Público** | Verificar autenticidad (QR) |
@@ -206,6 +206,7 @@ Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
 - [x] **Rol Recepción / Director** — modelo de roles de clínica real: Recepción agenda por el paciente, lo registra y cobra; Admin = Director
 - [x] **Despliegue en producción** — Vercel (frontend) + Render (backend) + Atlas, con URL del API y CORS resueltos en runtime
 - [x] **Realismo de roles** — la Dirección define los horarios de cada médico (el médico solo los consulta), el médico no factura (el cobro es de Recepción/Admin), el Admin crea cuentas de Recepción, pago al reservar (pay-to-confirm) y el sitio público solo anuncia especialidades con médico activo
+- [x] **Coherencia clínica** — Plan/Indicaciones separado de la Receta (vinculada a su consulta por `historialId`) y motivo de consulta obligatorio al reservar, con pre-consulta opcional ofrecida tras agendar
 - [ ] **Futuro** — PWA, i18n (ES/EN), modo oscuro, Docker, adjuntos a la historia clínica, lista de espera
 
 ## Decisiones de diseño destacadas
@@ -235,6 +236,14 @@ Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
   cada médico y crea las cuentas de **Recepción**; el médico se concentra en lo clínico
   (no fija su agenda ni cobra) y el cobro vive en Recepción/Admin. El sitio público solo
   anuncia especialidades que tengan **al menos un médico activo** asignado.
+- **Plan / Indicaciones ≠ Receta.** El campo **Plan / Indicaciones** de la consulta (texto
+  libre: reposo, dieta, exámenes, controles) se separa de la **receta**, que lleva los
+  medicamentos estructurados con alerta de alergias, QR y PDF. La receta queda **vinculada a
+  su consulta** vía `historialId`; en el historial, cada consulta muestra sus recetas.
+- **Motivo obligatorio al reservar.** Toda reserva (paciente y Recepción/Admin) exige un
+  **motivo de consulta**. La **pre-consulta** detallada (síntomas, dolor 0–10, medicación)
+  es **opcional** y se ofrece *después* de agendar — no antes, porque la pre-consulta cuelga
+  de la cita (relación 1:1 con `citaId`).
 
 ## Seguridad
 

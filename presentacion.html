@@ -296,8 +296,8 @@
     <p class="lead">Del registro a la receta, así vive el paciente el sistema de extremo a extremo.</p>
     <div style="columns:2;column-gap:2.5rem;">
       <div class="phase"><div class="num">1</div><div><h4>Registro e inicio de sesión</h4><p>Se autentica con JWT; la sesión se mantiene con un refresh httpOnly.</p></div></div>
-      <div class="phase"><div class="num">2</div><div><h4>Reserva y paga</h4><p>Elige médico, fecha y modalidad sobre un calendario que se actualiza <strong>en tiempo real</strong>. <strong>Paga para confirmar</strong>: la cita y su factura pagada se crean de forma atómica (si alguien toma el slot antes, no se cobra nada y recibe aviso).</p></div></div>
-      <div class="phase"><div class="num">3</div><div><h4>Pre-consulta (opcional)</h4><p>Completa un formulario previo (motivo, síntomas, dolor 0–10) que <strong>notifica al médico</strong>.</p></div></div>
+      <div class="phase"><div class="num">2</div><div><h4>Reserva y paga</h4><p>Elige médico, fecha y modalidad sobre un calendario que se actualiza <strong>en tiempo real</strong>, e indica el <strong>motivo de consulta (obligatorio)</strong>. <strong>Paga para confirmar</strong>: la cita y su factura pagada se crean de forma atómica (si alguien toma el slot antes, no se cobra nada y recibe aviso).</p></div></div>
+      <div class="phase"><div class="num">3</div><div><h4>Pre-consulta (opcional)</h4><p>Justo después de reservar se le ofrece completar un formulario previo (síntomas, dolor 0–10, medicación) que <strong>notifica al médico</strong>; también puede hacerlo luego desde “Mis citas”.</p></div></div>
       <div class="phase"><div class="num">4</div><div><h4>Recordatorio</h4><p>Recibe email + notificación in-app (campana) antes de su cita.</p></div></div>
       <div class="phase"><div class="num">5</div><div><h4>Teleconsulta</h4><p>Si la cita es virtual, entra a la videollamada dentro de la ventana horaria.</p></div></div>
       <div class="phase"><div class="num">6</div><div><h4>Después de la atención</h4><p>Consulta su historial y signos vitales, descarga su <strong>receta en PDF (con QR)</strong> y su <strong>factura</strong>.</p></div></div>
@@ -328,8 +328,8 @@
     <div style="columns:2;column-gap:2.5rem;">
       <div class="phase"><div class="num">1</div><div><h4>Consulta su horario</h4><p>Ve sus franjas de atención y bloqueos en <strong>solo lectura</strong>: los define la Dirección. Si necesita un cambio, lo solicita a administración.</p></div></div>
       <div class="phase"><div class="num">2</div><div><h4>Revisa su agenda</h4><p>Ve sus citas con estado y modalidad; recibe notificación de nuevas reservas y cancelaciones.</p></div></div>
-      <div class="phase"><div class="num">3</div><div><h4>Atiende la consulta</h4><p>Registra diagnóstico, código <strong>CIE-10</strong>, notas, tratamiento y <strong>signos vitales</strong>; marca la cita como atendida.</p></div></div>
-      <div class="phase"><div class="num">4</div><div><h4>Emite la receta</h4><p>Agrega medicamentos; el sistema cruza <strong>alergias e interacciones</strong>. Si hay conflicto, bloquea (422) y exige confirmación. Genera receta con QR y PDF.</p></div></div>
+      <div class="phase"><div class="num">3</div><div><h4>Atiende la consulta</h4><p>Registra diagnóstico, código <strong>CIE-10</strong>, notas, <strong>plan / indicaciones</strong> (reposo, dieta, exámenes, controles) y <strong>signos vitales</strong>; marca la cita como atendida.</p></div></div>
+      <div class="phase"><div class="num">4</div><div><h4>Emite la receta</h4><p>Solo los <strong>medicamentos</strong> (aparte del plan): el sistema cruza <strong>alergias e interacciones</strong>, bloquea (422) si hay conflicto y exige confirmación, y genera la receta con QR y PDF <strong>vinculada a esa consulta</strong>.</p></div></div>
       <div class="phase"><div class="num">5</div><div><h4>Teleconsulta</h4><p>Entra a la misma sala de video que el paciente para la atención virtual.</p></div></div>
       <div class="phase"><div class="num">6</div><div><h4>Sin caja</h4><p>El médico <strong>no factura</strong>: el cobro de la consulta lo gestiona <strong>Recepción / Administración</strong>, separando la atención clínica del dinero.</p></div></div>
     </div>
@@ -661,6 +661,7 @@ appointmentSchema.index(
       <div class="phase"><div class="num">+<small>LISTO</small></div><div><h4>Rol Recepción / Director</h4><p>Modelo de clínica real: Recepción agenda por el paciente, lo registra y cobra.</p></div></div>
       <div class="phase"><div class="num">+<small>LISTO</small></div><div><h4>Despliegue en producción</h4><p>Vercel + Render + Atlas; URL del API y CORS resueltos en runtime.</p></div></div>
       <div class="phase"><div class="num">+<small>LISTO</small></div><div><h4>Realismo de roles</h4><p>La Dirección define los horarios (el médico no), el médico no factura, el Admin crea cuentas de Recepción, pago al reservar y el sitio solo anuncia especialidades con médico activo.</p></div></div>
+      <div class="phase"><div class="num">+<small>LISTO</small></div><div><h4>Coherencia clínica</h4><p>Plan / Indicaciones separado de la Receta (vinculada a su consulta) y motivo de consulta obligatorio al reservar, con pre-consulta opcional ofrecida tras agendar.</p></div></div>
       <div class="phase"><div class="num">→<small>FUTURO</small></div><div><h4>Mejoras</h4><p>PWA, i18n (ES/EN), modo oscuro, Docker, adjuntos a la historia.</p></div></div>
     </div>
     <p class="hint">Cada fase deja el sistema funcionando de extremo a extremo y se cierra con commit + push tras verificar typecheck, build y pruebas de humo.</p>
@@ -676,6 +677,8 @@ appointmentSchema.index(
       <div class="card"><h4>📡 Tiempo real dirigido</h4><p>Salas <code>medico:{id}</code> (disponibilidad) y <code>user:{id}</code> (notificaciones); sin difusión global.</p></div>
       <div class="card"><h4>💊 Seguridad farmacológica</h4><p>Al recetar se cruzan medicamentos vs. alergias e interacciones; bloqueo <code>422</code> hasta que el médico confirma.</p></div>
       <div class="card"><h4>🔐 Integridad de receta</h4><p>Hash SHA-256 del contenido; el endpoint público de verificación lo recalcula para detectar alteraciones.</p></div>
+      <div class="card"><h4>📝 Plan vs. Receta</h4><p>El <strong>plan / indicaciones</strong> (texto libre en la historia) se separa de la <strong>receta</strong> (medicamentos estructurados, con alerta de alergias, QR y PDF), que queda <strong>vinculada a su consulta</strong> por <code>historialId</code>.</p></div>
+      <div class="card"><h4>🗒️ Motivo al reservar</h4><p>El <strong>motivo de consulta es obligatorio</strong> en toda reserva (paciente y Recepción); la <strong>pre-consulta</strong> detallada queda opcional, ofrecida tras agendar (cuelga de la cita, no puede ir antes).</p></div>
       <div class="card"><h4>🛡️ Auditoría automática</h4><p>Un middleware registra toda acción que modifica datos (POST/PATCH/PUT/DELETE) sin tocar cada handler.</p></div>
     </div>
   </section>
@@ -726,7 +729,7 @@ appointmentSchema.index(
         <tr><td><code>PUT</code></td><td><code>/medicos/:id/horario</code></td><td>Admin</td><td>Definir el horario de un médico</td></tr>
         <tr><td><code>GET/POST</code></td><td><code>/patients</code></td><td>Recepción/Admin</td><td>Buscar y registrar pacientes</td></tr>
         <tr><td><code>POST</code></td><td><code>/records</code></td><td>Médico</td><td>Consulta clínica + signos vitales</td></tr>
-        <tr><td><code>POST</code></td><td><code>/prescriptions</code></td><td>Médico</td><td>Receta con alerta de alergias</td></tr>
+        <tr><td><code>POST</code></td><td><code>/prescriptions</code></td><td>Médico</td><td>Receta (alerta de alergias) vinculada a la consulta</td></tr>
         <tr><td><code>GET</code></td><td><code>/prescriptions/verify/:codigo</code></td><td><strong>Público</strong></td><td>Verificación de autenticidad (QR)</td></tr>
         <tr><td><code>GET</code></td><td><code>/appointments/:id/video</code></td><td>Participante</td><td>Acceso a sala de teleconsulta</td></tr>
         <tr><td><code>GET</code></td><td><code>/notifications</code></td><td>Auth</td><td>Notificaciones + contador</td></tr>
