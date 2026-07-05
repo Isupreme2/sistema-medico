@@ -1,0 +1,190 @@
+{
+  "schemaVersion": "0.1.0",
+  "module": "clinical-risk-prediction",
+  "purpose": "Feature contract shared by synthetic data generation, Python training and Node inference.",
+  "constraints": {
+    "usesSyntheticTrainingData": true,
+    "usesRealPatientDataForTraining": false,
+    "usesAge": false,
+    "usesSex": false,
+    "predictionHorizon": "proxima_visita"
+  },
+  "riskCategories": [
+    "cardiovascular",
+    "metabolico",
+    "respiratorio"
+  ],
+  "riskLevels": [
+    {
+      "level": "bajo",
+      "minInclusive": 0,
+      "maxExclusive": 0.35
+    },
+    {
+      "level": "medio",
+      "minInclusive": 0.35,
+      "maxExclusive": 0.7
+    },
+    {
+      "level": "alto",
+      "minInclusive": 0.7,
+      "maxInclusive": 1
+    }
+  ],
+  "features": [
+    {
+      "name": "total_consultas",
+      "type": "number",
+      "source": "medicalRecord",
+      "description": "Cantidad total de consultas registradas del paciente."
+    },
+    {
+      "name": "consultas_con_signos_vitales",
+      "type": "number",
+      "source": "medicalRecord.signosVitales",
+      "description": "Cantidad de consultas que tienen al menos un signo vital registrado."
+    },
+    {
+      "name": "dias_desde_ultima_consulta",
+      "type": "number",
+      "source": "medicalRecord.fecha",
+      "description": "Días transcurridos desde la consulta más reciente."
+    },
+    {
+      "name": "intervalo_promedio_dias_consultas",
+      "type": "number",
+      "source": "medicalRecord.fecha",
+      "description": "Promedio de días entre consultas consecutivas."
+    },
+    {
+      "name": "presion_sistolica_ultima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.presionSistolica",
+      "description": "Último valor disponible de presión sistólica."
+    },
+    {
+      "name": "presion_sistolica_promedio",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.presionSistolica",
+      "description": "Promedio histórico de presión sistólica."
+    },
+    {
+      "name": "presion_sistolica_maxima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.presionSistolica",
+      "description": "Máximo histórico de presión sistólica."
+    },
+    {
+      "name": "presion_diastolica_ultima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.presionDiastolica",
+      "description": "Último valor disponible de presión diastólica."
+    },
+    {
+      "name": "presion_diastolica_promedio",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.presionDiastolica",
+      "description": "Promedio histórico de presión diastólica."
+    },
+    {
+      "name": "frecuencia_cardiaca_ultima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.frecuenciaCardiaca",
+      "description": "Último valor disponible de frecuencia cardíaca."
+    },
+    {
+      "name": "frecuencia_cardiaca_promedio",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.frecuenciaCardiaca",
+      "description": "Promedio histórico de frecuencia cardíaca."
+    },
+    {
+      "name": "glucosa_ultima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.glucosa",
+      "description": "Último valor disponible de glucosa."
+    },
+    {
+      "name": "glucosa_promedio",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.glucosa",
+      "description": "Promedio histórico de glucosa."
+    },
+    {
+      "name": "glucosa_maxima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.glucosa",
+      "description": "Máximo histórico de glucosa."
+    },
+    {
+      "name": "imc_ultimo",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.peso+talla",
+      "description": "IMC calculado con el último peso y talla disponibles."
+    },
+    {
+      "name": "saturacion_o2_ultima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.saturacionO2",
+      "description": "Último valor disponible de saturación de oxígeno."
+    },
+    {
+      "name": "saturacion_o2_minima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.saturacionO2",
+      "description": "Mínimo histórico de saturación de oxígeno."
+    },
+    {
+      "name": "temperatura_maxima",
+      "type": "number",
+      "source": "medicalRecord.signosVitales.temperatura",
+      "description": "Máxima temperatura registrada."
+    },
+    {
+      "name": "conteo_keywords_cardiovascular",
+      "type": "number",
+      "source": "medicalRecord.motivo+diagnostico+notas+cie10",
+      "description": "Conteo de coincidencias controladas asociadas a riesgo cardiovascular."
+    },
+    {
+      "name": "conteo_keywords_metabolico",
+      "type": "number",
+      "source": "medicalRecord.motivo+diagnostico+notas+cie10",
+      "description": "Conteo de coincidencias controladas asociadas a riesgo metabólico."
+    },
+    {
+      "name": "conteo_keywords_respiratorio",
+      "type": "number",
+      "source": "medicalRecord.motivo+diagnostico+notas+cie10",
+      "description": "Conteo de coincidencias controladas asociadas a riesgo respiratorio."
+    }
+  ],
+  "missingValuePolicy": {
+    "numeric": "Use null during feature construction and apply the same imputation strategy in training and inference.",
+    "keywordCounts": "Use 0 when no controlled keyword or CIE-10 prefix matches.",
+    "insufficientHistory": "Return a controlled prediction response with status datos_insuficientes in application layer."
+  },
+  "controlledKeywords": {
+    "cardiovascular": [
+      "hipertension",
+      "presion alta",
+      "dolor toracico",
+      "taquicardia",
+      "palpitaciones"
+    ],
+    "metabolico": [
+      "diabetes",
+      "glucosa",
+      "hiperglucemia",
+      "obesidad",
+      "sobrepeso"
+    ],
+    "respiratorio": [
+      "asma",
+      "tos",
+      "disnea",
+      "bronquitis",
+      "dificultad respiratoria"
+    ]
+  }
+}

@@ -1,0 +1,22 @@
+[
+  {
+    "feature": "conteo_keywords_metabolico",
+    "mean_abs_shap": 2.546099901199341
+  },
+  {
+    "feature": "glucosa_maxima",
+    "mean_abs_shap": 2.0039000511169434
+  },
+  {
+    "feature": "imc_ultimo",
+    "mean_abs_shap": 1.7719000577926636
+  },
+  {
+    "feature": "glucosa_ultima",
+    "mean_abs_shap": 1.6243000030517578
+  },
+  {
+    "feature": "saturacion_o2_minima",
+    "mean_abs_shap": 1.2862999439239502
+  }
+]

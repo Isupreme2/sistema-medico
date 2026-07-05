@@ -1,0 +1,128 @@
+{
+  "cardiovascular": {
+    "categoria": "cardiovascular",
+    "auc_roc": 0.9994,
+    "precision": 0.8462,
+    "recall": 0.7857,
+    "f1_score": 0.8148,
+    "specificity": 0.9973,
+    "true_positives": 11,
+    "true_negatives": 734,
+    "false_positives": 2,
+    "false_negatives": 3,
+    "total_test": 750,
+    "prevalence_alto": 0.018666666666666668,
+    "classification_report": {
+      "0": {
+        "precision": 0.9959294436906377,
+        "recall": 0.9972826086956522,
+        "f1-score": 0.9966055668703326,
+        "support": 736.0
+      },
+      "1": {
+        "precision": 0.8461538461538461,
+        "recall": 0.7857142857142857,
+        "f1-score": 0.8148148148148148,
+        "support": 14.0
+      },
+      "accuracy": 0.9933333333333333,
+      "macro avg": {
+        "precision": 0.9210416449222419,
+        "recall": 0.891498447204969,
+        "f1-score": 0.9057101908425738,
+        "support": 750.0
+      },
+      "weighted avg": {
+        "precision": 0.9931336325366176,
+        "recall": 0.9933333333333333,
+        "f1-score": 0.9932121394986296,
+        "support": 750.0
+      }
+    },
+    "nivel_accuracy": 0.8693
+  },
+  "metabolico": {
+    "categoria": "metabolico",
+    "auc_roc": 0.9996,
+    "precision": 0.9242,
+    "recall": 0.9839,
+    "f1_score": 0.9531,
+    "specificity": 0.9927,
+    "true_positives": 61,
+    "true_negatives": 683,
+    "false_positives": 5,
+    "false_negatives": 1,
+    "total_test": 750,
+    "prevalence_alto": 0.08266666666666667,
+    "classification_report": {
+      "0": {
+        "precision": 0.9985380116959064,
+        "recall": 0.9927325581395349,
+        "f1-score": 0.9956268221574344,
+        "support": 688.0
+      },
+      "1": {
+        "precision": 0.9242424242424242,
+        "recall": 0.9838709677419355,
+        "f1-score": 0.953125,
+        "support": 62.0
+      },
+      "accuracy": 0.992,
+      "macro avg": {
+        "precision": 0.9613902179691654,
+        "recall": 0.9883017629407351,
+        "f1-score": 0.9743759110787171,
+        "support": 750.0
+      },
+      "weighted avg": {
+        "precision": 0.9923962431330852,
+        "recall": 0.992,
+        "f1-score": 0.9921133381924198,
+        "support": 750.0
+      }
+    },
+    "nivel_accuracy": 0.884
+  },
+  "respiratorio": {
+    "categoria": "respiratorio",
+    "auc_roc": 1.0,
+    "precision": 1.0,
+    "recall": 1.0,
+    "f1_score": 1.0,
+    "specificity": 1.0,
+    "true_positives": 76,
+    "true_negatives": 674,
+    "false_positives": 0,
+    "false_negatives": 0,
+    "total_test": 750,
+    "prevalence_alto": 0.10133333333333333,
+    "classification_report": {
+      "0": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 674.0
+      },
+      "1": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 76.0
+      },
+      "accuracy": 1.0,
+      "macro avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 750.0
+      },
+      "weighted avg": {
+        "precision": 1.0,
+        "recall": 1.0,
+        "f1-score": 1.0,
+        "support": 750.0
+      }
+    },
+    "nivel_accuracy": 0.9213
+  }
+}

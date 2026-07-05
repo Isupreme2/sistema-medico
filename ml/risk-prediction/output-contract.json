@@ -1,0 +1,35 @@
+{
+  "schemaVersion": "0.1.0",
+  "module": "clinical-risk-prediction",
+  "endpointCandidate": "GET /api/v1/predictions/paciente/:id",
+  "responseShape": {
+    "status": "success",
+    "data": {
+      "prediction": {
+        "pacienteId": "string",
+        "generadoEn": "ISO-8601 datetime string",
+        "horizonte": "proxima_visita",
+        "estado": "ok | datos_insuficientes",
+        "categorias": [
+          {
+            "categoria": "cardiovascular | metabolico | respiratorio",
+            "probabilidad": "number between 0 and 1",
+            "nivel": "bajo | medio | alto",
+            "factores": [
+              "string"
+            ]
+          }
+        ],
+        "disclaimer": "string"
+      }
+    }
+  },
+  "disclaimer": "Esta predicción es una estimación académica generada a partir del historial registrado del paciente. No constituye un diagnóstico médico, no reemplaza el criterio profesional y debe utilizarse únicamente como apoyo orientativo para la revisión clínica.",
+  "accessPolicy": {
+    "roles": [
+      "medico",
+      "admin"
+    ],
+    "patientVisibleInMvp": false
+  }
+}

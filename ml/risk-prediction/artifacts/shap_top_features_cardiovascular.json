@@ -1,0 +1,22 @@
+[
+  {
+    "feature": "conteo_keywords_cardiovascular",
+    "mean_abs_shap": 3.6582000255584717
+  },
+  {
+    "feature": "presion_sistolica_ultima",
+    "mean_abs_shap": 2.270400047302246
+  },
+  {
+    "feature": "glucosa_ultima",
+    "mean_abs_shap": 2.149199962615967
+  },
+  {
+    "feature": "frecuencia_cardiaca_ultima",
+    "mean_abs_shap": 2.1266000270843506
+  },
+  {
+    "feature": "glucosa_promedio",
+    "mean_abs_shap": 0.7498000264167786
+  }
+]

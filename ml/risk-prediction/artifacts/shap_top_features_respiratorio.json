@@ -1,0 +1,22 @@
+[
+  {
+    "feature": "conteo_keywords_respiratorio",
+    "mean_abs_shap": 2.1575000286102295
+  },
+  {
+    "feature": "saturacion_o2_ultima",
+    "mean_abs_shap": 2.126199960708618
+  },
+  {
+    "feature": "saturacion_o2_minima",
+    "mean_abs_shap": 2.0725998878479004
+  },
+  {
+    "feature": "temperatura_maxima",
+    "mean_abs_shap": 1.6195000410079956
+  },
+  {
+    "feature": "presion_sistolica_maxima",
+    "mean_abs_shap": 0.5604000091552734
+  }
+]
