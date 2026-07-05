@@ -16,12 +16,15 @@ Sistema para agendar citas, gestionar historia clínica y emitir recetas digital
 | Recetas | **PDFKit** (PDF en streaming) + QR de verificación |
 | Recordatorios | **node-cron** + **nodemailer** (modo *log* sin SMTP) |
 | Teleconsulta | **Jitsi Meet** embebido (sin servidor de medios propio) |
+| IA clínica | Fase 0 documentada para predicción académica de riesgo clínico |
 | Docs | Swagger / OpenAPI en `/docs` |
 
 ## Estructura
 
 ```
 sistema-medico/
+├── docs/             Documentación de alcance y decisiones de diseño
+├── ml/               Contratos de features/salida para modelos predictivos
 ├── backend/          API Express + TypeScript (arquitectura en capas)
 │   ├── src/
 │   │   ├── config/       env (Zod), db (con fallback DNS), cors (dinámico), swagger
@@ -72,7 +75,7 @@ npm run seed              # crea cuentas demo (ver abajo)
 | `npm run build` | Compila TypeScript a `dist/` |
 | `npm start` | Ejecuta el build de producción |
 | `npm run typecheck` | Chequeo de tipos sin emitir |
-| `npm run seed` | Cuentas demo de los 4 roles (idempotente) |
+| `npm run seed` | Universo clínico demo re-ejecutable para predicción y vistas históricas |
 | `npm test` | Batería de pruebas (Vitest) |
 
 ## Puesta en marcha (frontend)
@@ -92,15 +95,20 @@ npm start                 # ng serve → http://localhost:4200
 |-----|-------|-----------|
 | Director / Admin | `admin@ehr.dev` | `Admin1234` |
 | Recepción | `recepcion@ehr.dev` | `Recepcion1234` |
-| Médico | `medico@ehr.dev` | `Medico1234` |
-| Paciente | `paciente@ehr.dev` | `Paciente1234` |
-| Paciente | `maria@ehr.dev` | `Paciente1234` |
 
-> El seed es **idempotente** y deja el sistema **listo para demostrar**: el médico
-> ya tiene perfil + horario (Lun-Vie), tipos de cita, citas en varios estados y
-> modalidades, una consulta clínica con signos vitales, una receta verificable
-> (`RX-DEMO-0001`) y facturas (una pendiente y una pagada). Para una base limpia,
-> elimina la base `ehr_dev` y vuelve a ejecutar `npm run seed`.
+Además, el seed crea un universo clínico de demostración con:
+
+- múltiples médicos bajo el namespace `seed.demo+doctor.N@ehr.dev`
+- múltiples pacientes bajo el namespace `seed.demo+patient.N@ehr.dev`
+- contraseña común parametrizable vía `SEED_PASSWORD` (por defecto `SeedDemo1234`)
+- 6 meses de citas atendidas, historias clínicas, recetas y facturas coherentes con el módulo de predicción
+
+> El seed es **re-ejecutable**: primero limpia solo su propio universo (`seed.demo+...`) y luego lo regenera. No toca datos ajenos a ese namespace. Los parámetros principales se pueden ajustar con `SEED_DOCTORS`, `SEED_PATIENTS`, `SEED_MONTHS_BACK`, `SEED_PAID_RATIO` y `SEED_PASSWORD`.
+
+### Política de artefactos ML
+
+- Sí se versionan los artefactos runtime del backend en `backend/src/modules/prediction/model/`, incluyendo `*.onnx` y `model-metadata.json`.
+- No se versionan el dataset sintético CSV/JSONL, `.venv`, `__pycache__` ni archivos locales temporales de soporte.
 
 ## API (estado actual)
 
@@ -207,7 +215,8 @@ Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
 - [x] **Despliegue en producción** — Vercel (frontend) + Render (backend) + Atlas, con URL del API y CORS resueltos en runtime
 - [x] **Realismo de roles** — la Dirección define los horarios de cada médico (el médico solo los consulta), el médico no factura (el cobro es de Recepción/Admin), el Admin crea cuentas de Recepción, pago al reservar (pay-to-confirm) y el sitio público solo anuncia especialidades con médico activo
 - [x] **Coherencia clínica** — Plan/Indicaciones separado de la Receta (vinculada a su consulta por `historialId`) y motivo de consulta obligatorio al reservar, con pre-consulta opcional ofrecida tras agendar
-- [ ] **Futuro** — PWA, i18n (ES/EN), modo oscuro, Docker, adjuntos a la historia clínica, lista de espera
+- [x] **IA clínica Fase 0** — Alcance, categorías, umbrales, disclaimer y contratos iniciales para predicción académica de riesgo clínico
+- [ ] **Futuro** — PWA, i18n (ES/EN), modo oscuro, Docker, adjuntos a la historia clínica, lista de espera, entrenamiento ML e inferencia ONNX
 
 ## Decisiones de diseño destacadas
 

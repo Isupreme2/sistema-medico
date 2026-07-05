@@ -18,6 +18,11 @@ logs/
 *.log
 npm-debug.log*
 
+# Python / ML locales
+**/.venv/
+**/__pycache__/
+*.pyc
+
 # Editor / OS / herramientas
 .claude/
 .vscode/
@@ -33,3 +38,15 @@ uploads/tmp/
 
 # Angular
 frontend/.angular/
+
+# Datos locales / seed / utilidades temporales
+backend/cookies.txt
+backend/colecciones/
+
+# Datasets y artefactos pesados que no van al repo
+ml/risk-prediction/synthetic-risk-dataset.csv
+ml/risk-prediction/synthetic-medical-histories.jsonl
+
+# Artefactos runtime del backend que SI deben versionarse
+!backend/src/modules/prediction/model/*.onnx
+!backend/src/modules/prediction/model/model-metadata.json
