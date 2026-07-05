@@ -1,114 +1,358 @@
 import crypto from 'node:crypto';
 import bcrypt from 'bcryptjs';
 import { connectDatabase, disconnectDatabase } from '../config/db';
-import { User, IUser } from '../models/user.model';
-import { MedicoProfile } from '../models/medicoProfile.model';
-import { AppointmentType } from '../models/appointmentType.model';
-import { Especialidad } from '../models/especialidad.model';
 import { ESPECIALIDADES_SEED } from '../constants/especialidades';
-import { Appointment, AppointmentStatus, AppointmentModality } from '../models/appointment.model';
-import { MedicalRecord } from '../models/medicalRecord.model';
-import { Prescription } from '../models/prescription.model';
-import { Invoice, InvoiceStatus } from '../models/invoice.model';
 import { UserRole } from '../constants/roles';
-import { calcularTotales } from '../utils/billing';
+import { Appointment, AppointmentModality, AppointmentStatus } from '../models/appointment.model';
+import { AppointmentType, IAppointmentType } from '../models/appointmentType.model';
+import { Especialidad } from '../models/especialidad.model';
+import { Invoice } from '../models/invoice.model';
+import { MedicalRecord } from '../models/medicalRecord.model';
+import { MedicoProfile } from '../models/medicoProfile.model';
+import { Notification } from '../models/notification.model';
+import { Prescription } from '../models/prescription.model';
+import { User, IUser } from '../models/user.model';
+import * as authService from '../modules/auth/auth.service';
+import * as appointmentService from '../modules/appointment/appointment.service';
+import * as invoiceService from '../modules/invoice/invoice.service';
+import * as medicoService from '../modules/medico/medico.service';
+import * as patientService from '../modules/patient/patient.service';
+import * as prescriptionService from '../modules/prescription/prescription.service';
+import * as recordService from '../modules/record/record.service';
+import type { AccessTokenPayload } from '../utils/jwt';
 import { logger } from '../utils/logger';
+import {
+  buildDoctorSeedInput,
+  buildHistoricalDates,
+  buildPatientSeedInput,
+  buildRiskKeywords,
+  buildRiskTrend,
+  buildSafeMedicationPlan,
+  buildWeeklySchedule,
+  pickDominantSpecialty,
+  pickHistoricalVisitCount,
+} from './seed.generators';
+import type { PatientRiskProfile, SeedScheduleSlot } from './seed.types';
 
-/**
- * Pobla la base con datos de DEMOSTRACIÓN realistas e idempotentes:
- * cuentas por rol, perfil + horario del médico, tipos de cita, citas en varios
- * estados, una consulta clínica, una receta verificable y facturas.
- * Ejecutar con: npm run seed
- */
+const BCRYPT_ROUNDS = 12;
+const SEED_EMAIL_NAMESPACE = 'seed.demo+';
+const SEED_PREFIX = '[seed-demo]';
+const DEFAULT_PASSWORD = process.env.SEED_PASSWORD ?? 'SeedDemo1234';
+const DEFAULT_DOCTOR_COUNT = 10;
+const DEFAULT_PATIENT_COUNT = 48;
+const DEFAULT_MONTHS_BACK = 6;
+const DEFAULT_PAID_RATIO = 0.75;
+const SLOT_OPTIONS = [20, 30, 60] as const;
 
-const DEMO_USERS = [
-  { email: 'admin@ehr.dev', password: 'Admin1234', role: UserRole.ADMIN, nombre: 'Ana', apellido: 'Administradora' },
-  { email: 'recepcion@ehr.dev', password: 'Recepcion1234', role: UserRole.RECEPCIONISTA, nombre: 'Rosa', apellido: 'Recepción' },
-  { email: 'medico@ehr.dev', password: 'Medico1234', role: UserRole.MEDICO, nombre: 'Carlos', apellido: 'Pérez' },
-  { email: 'paciente@ehr.dev', password: 'Paciente1234', role: UserRole.PACIENTE, nombre: 'Juan', apellido: 'Gómez', alergias: ['penicilina'] },
-  { email: 'maria@ehr.dev', password: 'Paciente1234', role: UserRole.PACIENTE, nombre: 'María', apellido: 'Torres' },
-];
-
-/** Fecha a N días (negativo = pasado) a una hora local concreta. */
-function diaA(offset: number, hh: number, mm = 0): Date {
-  const d = new Date();
-  d.setDate(d.getDate() + offset);
-  d.setHours(hh, mm, 0, 0);
-  return d;
+interface SeedDoctorContext {
+  userId: string;
+  email: string;
+  specialty: string;
+  slotMinutes: number;
+  schedule: SeedScheduleSlot[];
 }
 
-/** Hash canónico idéntico al de prescription.service para que la verificación dé integridadOk. */
-function hashReceta(codigo: string, pacienteId: string, medicamentos: unknown, emitidaEn: Date): string {
-  const canonical = JSON.stringify({ codigo, pacienteId, medicamentos, emitidaEn: emitidaEn.toISOString() });
+interface SeedPatientContext {
+  seedIndex: number;
+  userId: string;
+  email: string;
+  alergias: string[];
+  profile: PatientRiskProfile;
+  dominantSpecialty: string;
+}
+
+interface SeedCounters {
+  doctors: number;
+  patients: number;
+  appointments: number;
+  records: number;
+  prescriptions: number;
+  invoices: number;
+}
+
+const STATIC_USERS = [
+  {
+    email: 'admin@ehr.dev',
+    password: 'Admin1234',
+    role: UserRole.ADMIN,
+    nombre: 'Ana',
+    apellido: 'Administradora',
+  },
+  {
+    email: 'recepcion@ehr.dev',
+    password: 'Recepcion1234',
+    role: UserRole.RECEPCIONISTA,
+    nombre: 'Rosa',
+    apellido: 'Recepción',
+  },
+] as const;
+
+function parseIntEnv(value: string | undefined, fallback: number): number {
+  const parsed = Number.parseInt(value ?? '', 10);
+  return Number.isFinite(parsed) && parsed > 0 ? parsed : fallback;
+}
+
+function parseRatioEnv(value: string | undefined, fallback: number): number {
+  const parsed = Number.parseFloat(value ?? '');
+  if (!Number.isFinite(parsed)) return fallback;
+  return Math.max(0, Math.min(1, parsed));
+}
+
+const SEED_DOCTOR_COUNT = parseIntEnv(process.env.SEED_DOCTORS, DEFAULT_DOCTOR_COUNT);
+const SEED_PATIENT_COUNT = parseIntEnv(process.env.SEED_PATIENTS, DEFAULT_PATIENT_COUNT);
+const SEED_MONTHS_BACK = parseIntEnv(process.env.SEED_MONTHS_BACK, DEFAULT_MONTHS_BACK);
+const SEED_PAID_RATIO = parseRatioEnv(process.env.SEED_PAID_RATIO, DEFAULT_PAID_RATIO);
+
+function requesterFromUser(user: Pick<IUser, '_id' | 'email' | 'rol'>): AccessTokenPayload {
+  return {
+    sub: user._id.toString(),
+    role: user.rol,
+    email: user.email,
+  };
+}
+
+function hashPrescription(
+  codigo: string,
+  pacienteId: string,
+  medicamentos: Array<{ nombre: string; dosis: string; frecuencia: string; duracion: string }>,
+  emitidaEn: Date,
+): string {
+  const canonical = JSON.stringify({
+    codigo,
+    pacienteId,
+    medicamentos,
+    emitidaEn: emitidaEn.toISOString(),
+  });
+
   return crypto.createHash('sha256').update(canonical).digest('hex');
 }
 
-async function upsertUser(u: (typeof DEMO_USERS)[number]): Promise<IUser> {
-  const existente = await User.findOne({ email: u.email });
-  if (existente) {
-    logger.info(`= ya existe: ${u.email} (${u.role})`);
-    return existente;
-  }
-  const claveHash = await bcrypt.hash(u.password, 12);
-  const creado = await User.create({
-    email: u.email,
-    claveHash,
-    rol: u.role,
-    nombre: u.nombre,
-    apellido: u.apellido,
-    alergias: (u as { alergias?: string[] }).alergias ?? [],
-  });
-  logger.info(`+ creado: ${u.email} / ${u.password} (${u.role})`);
-  return creado;
+function specialtyPriority(count: number): string[] {
+  const curated = [
+    'Medicina General',
+    'Medicina Interna',
+    'Cardiología',
+    'Endocrinología',
+    'Neumología',
+    'Nutrición',
+    'Pediatría',
+    'Dermatología',
+    'Ginecología y Obstetricia',
+    'Neurología',
+    'Traumatología y Ortopedia',
+    'Psiquiatría',
+    'Urología',
+    'Oftalmología',
+    'Gastroenterología',
+  ];
+
+  return [...new Set([...curated, ...ESPECIALIDADES_SEED])].slice(0, count);
 }
 
-async function seed(): Promise<void> {
-  await connectDatabase();
+function slotMinutesForIndex(index: number): number {
+  return SLOT_OPTIONS[index % SLOT_OPTIONS.length];
+}
 
-  // 1) Usuarios
-  const users: Record<string, IUser> = {};
-  for (const u of DEMO_USERS) {
-    users[u.email] = await upsertUser(u);
+function pickDoctorForPatient(
+  patient: SeedPatientContext,
+  doctors: SeedDoctorContext[],
+): SeedDoctorContext {
+  const priorityBySpecialty: Record<string, string[]> = {
+    'Cardiología': ['Cardiología', 'Medicina Interna', 'Medicina General'],
+    'Endocrinología': ['Endocrinología', 'Medicina Interna', 'Nutrición', 'Medicina General'],
+    'Neumología': ['Neumología', 'Medicina General', 'Medicina Interna'],
+    'Medicina General': ['Medicina General', 'Medicina Interna'],
+  };
+
+  const priority =
+    priorityBySpecialty[patient.dominantSpecialty] ?? [patient.dominantSpecialty, 'Medicina General'];
+
+  for (const specialty of priority) {
+    const doctor = doctors.find((item) => item.specialty === specialty);
+    if (doctor) return doctor;
   }
-  const medico = users['medico@ehr.dev'];
-  const juan = users['paciente@ehr.dev'];
-  const maria = users['maria@ehr.dev'];
-  const admin = users['admin@ehr.dev'];
 
-  // 2) Perfil + horario del médico (Lun-Vie 08:00-13:00 y 15:00-18:00)
-  const franjas = [1, 2, 3, 4, 5].flatMap((diaSemana) => [
-    { diaSemana, horaInicio: '08:00', horaFin: '13:00' },
-    { diaSemana, horaInicio: '15:00', horaFin: '18:00' },
-  ]);
-  await MedicoProfile.findOneAndUpdate(
-    { usuarioId: medico._id },
-    {
-      usuarioId: medico._id,
-      especialidad: 'Medicina General',
-      numeroColegiatura: 'CMP-12345',
-      duracionSlotMin: 30,
-      horarios: franjas,
-      activo: true,
-    },
-    { upsert: true, setDefaultsOnInsert: true },
+  return doctors[0];
+}
+
+function buildClinicalNarrative(
+  specialty: string,
+  visitIndex: number,
+  totalVisits: number,
+): {
+  motivo: string;
+  diagnostico: string;
+  cie10: string;
+  tratamiento: string;
+  indicaciones: string;
+} {
+  const isLastVisit = visitIndex === totalVisits - 1;
+
+  switch (specialty) {
+    case 'Cardiología':
+      return {
+        motivo: 'Control de presión arterial y riesgo cardiovascular',
+        diagnostico: isLastVisit
+          ? 'Hipertensión arterial persistente en seguimiento'
+          : 'Hipertensión arterial en seguimiento',
+        cie10: 'I10',
+        tratamiento: 'Plan de control de sodio, caminatas y vigilancia periódica.',
+        indicaciones: 'Registrar la presión en casa y mantener adherencia al tratamiento.',
+      };
+    case 'Endocrinología':
+    case 'Nutrición':
+      return {
+        motivo: 'Control metabólico con glucosa alterada',
+        diagnostico: isLastVisit
+          ? 'Diabetes mellitus tipo 2 en control insuficiente'
+          : 'Alteración metabólica en seguimiento',
+        cie10: 'E11.9',
+        tratamiento: 'Ajuste de plan nutricional y educación terapéutica.',
+        indicaciones: 'Evitar bebidas azucaradas y registrar glucemias de ayuno.',
+      };
+    case 'Neumología':
+      return {
+        motivo: 'Seguimiento respiratorio por disnea y tos recurrente',
+        diagnostico: isLastVisit
+          ? 'Asma persistente parcialmente controlada'
+          : 'Síntomas respiratorios crónicos en evaluación',
+        cie10: 'J45.4',
+        tratamiento: 'Optimizar técnica inhalatoria y control de desencadenantes.',
+        indicaciones: 'Usar inhaladores como se indicó y vigilar saturación en casa.',
+      };
+    default:
+      return {
+        motivo: 'Chequeo clínico integral y seguimiento preventivo',
+        diagnostico: isLastVisit
+          ? 'Control preventivo sin hallazgos mayores'
+          : 'Evaluación clínica general de seguimiento',
+        cie10: 'Z00.0',
+        tratamiento: 'Promover hábitos saludables, sueño y actividad física.',
+        indicaciones: 'Mantener alimentación balanceada y control anual.',
+      };
+  }
+}
+
+function buildInvoiceConcept(specialty: string, slotMinutes: number) {
+  const base = specialty === 'Cardiología' || specialty === 'Endocrinología' || specialty === 'Neumología'
+    ? 110
+    : 85;
+  const premium = slotMinutes >= 60 ? 30 : slotMinutes >= 30 ? 15 : 0;
+
+  return {
+    descripcion: `Consulta de ${specialty}`,
+    cantidad: 1,
+    precioUnitario: base + premium,
+  };
+}
+
+function maxRiskWeight(profile: PatientRiskProfile): number {
+  const weights = { bajo: 1, medio: 2, alto: 3 } as const;
+  return Math.max(
+    weights[profile.cardiovascular],
+    weights[profile.metabolico],
+    weights[profile.respiratorio],
   );
-  logger.info('= perfil y horario del médico listos');
+}
 
-  // 3) Tipos de cita
-  const tipos = [
-    { nombre: 'Consulta general', duracionMin: 30, color: '#2563eb' },
-    { nombre: 'Control', duracionMin: 20, color: '#16a34a' },
-    { nombre: 'Procedimiento', duracionMin: 45, color: '#7c3aed' },
-  ];
-  for (const t of tipos) {
-    await AppointmentType.findOneAndUpdate({ nombre: t.nombre }, t, {
-      upsert: true,
-      setDefaultsOnInsert: true,
-    });
+function alignDatesToRisk(
+  dates: Date[],
+  profile: PatientRiskProfile,
+): Date[] {
+  const maxRisk = maxRiskWeight(profile);
+  const allHigh =
+    profile.cardiovascular === 'alto' &&
+    profile.metabolico === 'alto' &&
+    profile.respiratorio === 'alto';
+
+  return dates.map((date, index) => {
+    const adjusted = new Date();
+    if (allHigh) {
+      const daysAgo = (dates.length - 1 - index) * 12 + 3;
+      adjusted.setTime(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+    } else if (maxRisk >= 3) {
+      const daysAgo = (dates.length - 1 - index) * 18 + 7;
+      adjusted.setTime(Date.now() - daysAgo * 24 * 60 * 60 * 1000);
+    } else {
+      adjusted.setTime(date.getTime());
+    }
+    adjusted.setHours(date.getHours(), date.getMinutes(), 0, 0);
+    return adjusted;
+  });
+}
+
+function shouldMarkPaid(patientSeedIndex: number, visitIndex: number): boolean {
+  const normalized = (((patientSeedIndex + 1) * 17 + visitIndex * 13) % 100) / 100;
+  return normalized < SEED_PAID_RATIO;
+}
+
+async function ensureStaticUser(data: (typeof STATIC_USERS)[number]): Promise<IUser> {
+  const existing = await User.findOne({ email: data.email });
+  if (existing) return existing;
+
+  const claveHash = await bcrypt.hash(data.password, BCRYPT_ROUNDS);
+  const created = await User.create({
+    email: data.email,
+    claveHash,
+    rol: data.role,
+    nombre: data.nombre,
+    apellido: data.apellido,
+  });
+
+  logger.info(`+ creado usuario base: ${data.email}`);
+  return created;
+}
+
+async function cleanupSeedData(): Promise<void> {
+  const seedUsers = await User.find({
+    email: { $regex: `^${SEED_EMAIL_NAMESPACE.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}` },
+  }).select('_id email rol');
+
+  if (seedUsers.length === 0) {
+    logger.info('= no había datos previos del seed para limpiar');
+    return;
   }
-  logger.info('= tipos de cita listos');
 
-  // 3b) Catálogo de especialidades médicas (para el selector al crear médicos)
+  const userIds = seedUsers.map((user) => user._id);
+  const appointments = await Appointment.find({
+    $or: [{ medicoId: { $in: userIds } }, { pacienteId: { $in: userIds } }],
+  }).select('_id');
+  const appointmentIds = appointments.map((item) => item._id);
+
+  const records = await MedicalRecord.find({
+    $or: [
+      { medicoId: { $in: userIds } },
+      { pacienteId: { $in: userIds } },
+      { citaId: { $in: appointmentIds } },
+    ],
+  }).select('_id');
+  const recordIds = records.map((item) => item._id);
+
+  await Notification.deleteMany({ usuarioId: { $in: userIds } });
+  await Invoice.deleteMany({
+    $or: [
+      { pacienteId: { $in: userIds } },
+      { medicoId: { $in: userIds } },
+      { emitidaPor: { $in: userIds } },
+      { citaId: { $in: appointmentIds } },
+    ],
+  });
+  await Prescription.deleteMany({
+    $or: [
+      { pacienteId: { $in: userIds } },
+      { medicoId: { $in: userIds } },
+      { historialId: { $in: recordIds } },
+    ],
+  });
+  await MedicalRecord.deleteMany({ _id: { $in: recordIds } });
+  await Appointment.deleteMany({ _id: { $in: appointmentIds } });
+  await MedicoProfile.deleteMany({ usuarioId: { $in: userIds } });
+  await User.deleteMany({ _id: { $in: userIds } });
+
+  logger.info(`= limpieza seed completada (${seedUsers.length} usuarios demo removidos)`);
+}
+
+async function seedCatalogs(): Promise<void> {
   await Especialidad.bulkWrite(
     ESPECIALIDADES_SEED.map((nombre) => ({
       updateOne: {
@@ -118,97 +362,272 @@ async function seed(): Promise<void> {
       },
     })),
   );
-  logger.info(`= catálogo de especialidades listo (${ESPECIALIDADES_SEED.length})`);
 
-  // 4) Datos clínicos de demo (guardados por la factura ancla FAC-DEMO-0001)
-  if (await Invoice.findOne({ numero: 'FAC-DEMO-0001' })) {
-    logger.info('= datos clínicos de demo ya existían (no se duplican)');
-  } else {
-    // Citas en varios estados
-    const citaAtendida = await Appointment.create({
-      medicoId: medico._id, pacienteId: juan._id, fechaHora: diaA(-7, 10, 0),
-      duracionMin: 30, estado: AppointmentStatus.ATENDIDA,
-      modalidad: AppointmentModality.PRESENCIAL, motivo: '[demo] Dolor abdominal',
-    });
-    await Appointment.create({
-      medicoId: medico._id, pacienteId: maria._id, fechaHora: diaA(-5, 9, 30),
-      duracionMin: 30, estado: AppointmentStatus.NO_ASISTIO,
-      modalidad: AppointmentModality.PRESENCIAL, motivo: '[demo] Control de presión',
-    });
-    await Appointment.create({
-      medicoId: medico._id, pacienteId: juan._id, fechaHora: diaA(-3, 11, 0),
-      duracionMin: 30, estado: AppointmentStatus.CANCELADA,
-      modalidad: AppointmentModality.PRESENCIAL, motivo: '[demo] Consulta cancelada',
-    });
-    await Appointment.create({
-      medicoId: medico._id, pacienteId: maria._id, fechaHora: diaA(2, 9, 0),
-      duracionMin: 30, estado: AppointmentStatus.RESERVADA,
-      modalidad: AppointmentModality.PRESENCIAL, motivo: '[demo] Chequeo general',
-    });
-    await Appointment.create({
-      medicoId: medico._id, pacienteId: juan._id, fechaHora: diaA(3, 11, 30),
-      duracionMin: 30, estado: AppointmentStatus.RESERVADA,
-      modalidad: AppointmentModality.TELECONSULTA, motivo: '[demo] Teleconsulta seguimiento',
-      salaVideo: `EHR-${crypto.randomBytes(12).toString('hex')}`,
-    });
-    logger.info('+ 5 citas de demo creadas (varios estados y modalidades)');
+  const tipos = [
+    { nombre: 'Consulta general', duracionMin: 30, color: '#2563eb' },
+    { nombre: 'Control', duracionMin: 20, color: '#16a34a' },
+    { nombre: 'Teleconsulta', duracionMin: 20, color: '#7c3aed' },
+  ];
 
-    // Consulta clínica para la cita atendida
-    const record = await MedicalRecord.create({
-      pacienteId: juan._id, medicoId: medico._id, citaId: citaAtendida._id,
-      fecha: diaA(-7, 10, 15), motivo: 'Dolor abdominal',
-      diagnostico: 'Gastritis aguda', cie10: 'K29.1',
-      notas: 'Paciente refiere dolor epigástrico de 3 días.',
-      tratamiento: 'Dieta blanda e hidratación.',
-      signosVitales: {
-        peso: 78, talla: 175, presionSistolica: 120, presionDiastolica: 80,
-        frecuenciaCardiaca: 72, temperatura: 36.8, saturacionO2: 98,
-      },
+  for (const tipo of tipos) {
+    await AppointmentType.findOneAndUpdate({ nombre: tipo.nombre }, tipo, {
+      upsert: true,
+      new: true,
+      setDefaultsOnInsert: true,
     });
-    logger.info('+ consulta clínica de demo creada');
-
-    // Receta verificable (hash canónico)
-    const medicamentos = [
-      { nombre: 'Omeprazol', dosis: '20mg', frecuencia: 'cada 24h', duracion: '14 días' },
-      { nombre: 'Paracetamol', dosis: '500mg', frecuencia: 'cada 8h', duracion: '3 días' },
-    ];
-    const codigo = 'RX-DEMO-0001';
-    const emitidaEn = diaA(-7, 10, 20);
-    await Prescription.create({
-      codigo, medicoId: medico._id, pacienteId: juan._id, historialId: record._id,
-      medicamentos, indicaciones: 'Tomar con alimentos.', emitidaEn,
-      hash: hashReceta(codigo, juan._id.toString(), medicamentos, emitidaEn),
-    });
-    logger.info(`+ receta de demo creada (${codigo}, verificable)`);
-
-    // Facturas: una pendiente (de la consulta) y una pagada
-    const items1 = [
-      { descripcion: 'Consulta general', cantidad: 1, precioUnitario: 80 },
-      { descripcion: 'Procedimiento menor', cantidad: 1, precioUnitario: 50 },
-    ];
-    const t1 = calcularTotales(items1, 18);
-    await Invoice.create({
-      numero: 'FAC-DEMO-0001', pacienteId: juan._id, medicoId: medico._id,
-      citaId: citaAtendida._id, emitidaPor: medico._id, conceptos: items1,
-      ...t1, impuestoPct: 18, estado: InvoiceStatus.PENDIENTE, emitidaEn: diaA(-7, 10, 30),
-    });
-
-    const items2 = [{ descripcion: 'Control', cantidad: 1, precioUnitario: 60 }];
-    const t2 = calcularTotales(items2, 18);
-    await Invoice.create({
-      numero: 'FAC-DEMO-0002', pacienteId: maria._id, medicoId: medico._id,
-      emitidaPor: admin._id, conceptos: items2, ...t2, impuestoPct: 18,
-      estado: InvoiceStatus.PAGADA, emitidaEn: diaA(-4, 12, 0), pagadaEn: diaA(-4, 12, 5),
-    });
-    logger.info('+ 2 facturas de demo creadas (1 pendiente, 1 pagada)');
   }
 
-  logger.info('✅ Seed completado');
-  await disconnectDatabase();
-  process.exit(0);
+  logger.info('= catálogos de especialidades y tipos de cita listos');
 }
 
-seed().catch((err) => {
-  logger.error('Error en seed:', err);
-  process.exit(1);
-});
+async function seedDoctors(adminRequester: AccessTokenPayload): Promise<SeedDoctorContext[]> {
+  const specialties = specialtyPriority(SEED_DOCTOR_COUNT);
+  const doctors: SeedDoctorContext[] = [];
+
+  for (const [index, specialty] of specialties.entries()) {
+    const slotMinutes = slotMinutesForIndex(index);
+    const input = buildDoctorSeedInput(index + 1, specialty);
+    input.password = DEFAULT_PASSWORD;
+    input.duracionSlotMin = slotMinutes;
+
+    const profile = await medicoService.createMedico(input);
+    const profileUser = profile.usuarioId as unknown as {
+      _id: { toString(): string };
+      email: string;
+    };
+    const schedule = buildWeeklySchedule(slotMinutes);
+
+    await medicoService.updateHorario(
+      profileUser._id.toString(),
+      { duracionSlotMin: slotMinutes, horarios: schedule },
+      adminRequester,
+    );
+
+    doctors.push({
+      userId: profileUser._id.toString(),
+      email: input.email,
+      specialty,
+      slotMinutes,
+      schedule,
+    });
+  }
+
+  logger.info(`+ médicos seed creados: ${doctors.length}`);
+  return doctors;
+}
+
+async function seedPatients(): Promise<SeedPatientContext[]> {
+  const patients: SeedPatientContext[] = [];
+
+  for (let index = 0; index < SEED_PATIENT_COUNT; index += 1) {
+    const input = buildPatientSeedInput(index + 1);
+    input.password = DEFAULT_PASSWORD;
+
+    const created = await patientService.create({
+      email: input.email,
+      password: input.password,
+      nombre: input.nombre,
+      apellido: input.apellido,
+      telefono: input.telefono,
+      tipoDocumento: input.tipoDocumento,
+      numeroDocumento: input.numeroDocumento,
+    });
+
+    await authService.updateMe(created._id.toString(), {
+      telefono: input.telefono,
+      alergias: input.alergias,
+    });
+
+    patients.push({
+      seedIndex: index,
+      userId: created._id.toString(),
+      email: input.email,
+      alergias: input.alergias,
+      profile: input.profile,
+      dominantSpecialty: pickDominantSpecialty(input.profile, ['Medicina General']),
+    });
+  }
+
+  logger.info(`+ pacientes seed creados: ${patients.length}`);
+  return patients;
+}
+
+async function buildAppointmentTypeMap(): Promise<Record<'consulta' | 'control', IAppointmentType | null>> {
+  const [consulta, control] = await Promise.all([
+    AppointmentType.findOne({ nombre: 'Consulta general' }),
+    AppointmentType.findOne({ nombre: 'Control' }),
+  ]);
+
+  return { consulta, control };
+}
+
+async function seedClinicalHistory(
+  doctors: SeedDoctorContext[],
+  patients: SeedPatientContext[],
+): Promise<SeedCounters> {
+  const counters: SeedCounters = {
+    doctors: doctors.length,
+    patients: patients.length,
+    appointments: 0,
+    records: 0,
+    prescriptions: 0,
+    invoices: 0,
+  };
+
+  const appointmentTypes = await buildAppointmentTypeMap();
+
+  for (const patient of patients) {
+    const doctor = pickDoctorForPatient(patient, doctors);
+    const doctorRequester: AccessTokenPayload = {
+      sub: doctor.userId,
+      role: UserRole.MEDICO,
+      email: doctor.email,
+    };
+    const visitCount = pickHistoricalVisitCount(patient.profile);
+    const dates = alignDatesToRisk(
+      buildHistoricalDates({
+        monthsBack: SEED_MONTHS_BACK,
+        visitCount,
+        weeklySchedule: doctor.schedule,
+      }),
+      patient.profile,
+    );
+    const riskKeywords = buildRiskKeywords(patient.profile);
+
+    for (const [visitIndex, fechaHora] of dates.entries()) {
+      const appointmentType = visitIndex === 0 ? appointmentTypes.consulta : appointmentTypes.control;
+      const narrative = buildClinicalNarrative(doctor.specialty, visitIndex, dates.length);
+      const appointment = await Appointment.create({
+        medicoId: doctor.userId,
+        pacienteId: patient.userId,
+        tipoCitaId: appointmentType?._id,
+        fechaHora,
+        duracionMin: appointmentType?.duracionMin ?? doctor.slotMinutes,
+        estado: AppointmentStatus.RESERVADA,
+        modalidad: AppointmentModality.PRESENCIAL,
+        motivo: `${SEED_PREFIX} ${narrative.motivo}`,
+      });
+      counters.appointments += 1;
+
+      await appointmentService.actualizarEstado(appointment._id.toString(), doctorRequester, {
+        estado: AppointmentStatus.ATENDIDA,
+      });
+
+      const record = await recordService.createRecord(doctor.userId, {
+        pacienteId: patient.userId,
+        citaId: appointment._id.toString(),
+        motivo: `${SEED_PREFIX} ${narrative.motivo}`,
+        diagnostico: narrative.diagnostico,
+        cie10: narrative.cie10,
+        notas: `${SEED_PREFIX} evolución clínica coherente con la trayectoria de riesgo del paciente. Keywords: ${riskKeywords.join(', ')}.`,
+        tratamiento: narrative.tratamiento,
+        signosVitales: buildRiskTrend({
+          profile: patient.profile,
+          visitIndex,
+          totalVisits: dates.length,
+        }),
+      });
+      counters.records += 1;
+
+      const recordDoc = await MedicalRecord.findById(record._id);
+      if (recordDoc) {
+        recordDoc.fecha = new Date(fechaHora.getTime() + 15 * 60_000);
+        await recordDoc.save();
+      }
+
+      const prescriptionResult = await prescriptionService.emitir(doctor.userId, {
+        pacienteId: patient.userId,
+        historialId: record._id.toString(),
+        medicamentos: buildSafeMedicationPlan({
+          specialty: doctor.specialty,
+          alergias: patient.alergias,
+        }),
+        indicaciones: narrative.indicaciones,
+      });
+      counters.prescriptions += 1;
+
+      const prescriptionDoc = await Prescription.findById(prescriptionResult.receta._id);
+      if (prescriptionDoc) {
+        prescriptionDoc.emitidaEn = new Date(fechaHora.getTime() + 20 * 60_000);
+        prescriptionDoc.hash = hashPrescription(
+          prescriptionDoc.codigo,
+          patient.userId,
+          prescriptionDoc.medicamentos,
+          prescriptionDoc.emitidaEn,
+        );
+        await prescriptionDoc.save();
+      }
+
+      const invoice = await invoiceService.crear(doctorRequester, {
+        citaId: appointment._id.toString(),
+        impuestoPct: 0,
+        notas: `${SEED_PREFIX} atención integral de ${doctor.specialty}`,
+        conceptos: [buildInvoiceConcept(doctor.specialty, doctor.slotMinutes)],
+      });
+      counters.invoices += 1;
+
+      const invoiceDoc = await Invoice.findById(invoice._id);
+      if (invoiceDoc) {
+        invoiceDoc.emitidaEn = new Date(fechaHora.getTime() + 25 * 60_000);
+
+        if (shouldMarkPaid(patient.seedIndex, visitIndex)) {
+          await invoiceService.marcarPagada(invoiceDoc._id.toString());
+          const paidInvoiceDoc = await Invoice.findById(invoiceDoc._id);
+          if (paidInvoiceDoc) {
+            paidInvoiceDoc.emitidaEn = new Date(fechaHora.getTime() + 25 * 60_000);
+            paidInvoiceDoc.pagadaEn = new Date(fechaHora.getTime() + 35 * 60_000);
+            paidInvoiceDoc.metodoPago = paidInvoiceDoc.metodoPago ?? 'Tarjeta demo';
+            await paidInvoiceDoc.save();
+          }
+        } else {
+          await invoiceDoc.save();
+        }
+      }
+    }
+  }
+
+  return counters;
+}
+
+async function emitSummary(counters: SeedCounters): Promise<void> {
+  logger.info('=== Resumen seed demo ===');
+  logger.info(`Médicos: ${counters.doctors}`);
+  logger.info(`Pacientes: ${counters.patients}`);
+  logger.info(`Citas atendidas: ${counters.appointments}`);
+  logger.info(`Consultas clínicas: ${counters.records}`);
+  logger.info(`Recetas: ${counters.prescriptions}`);
+  logger.info(`Facturas: ${counters.invoices}`);
+  logger.info(`Password demo para usuarios seed: ${DEFAULT_PASSWORD}`);
+  logger.info(`Ejemplos de login: ${SEED_EMAIL_NAMESPACE}doctor.1@ehr.dev / ${SEED_EMAIL_NAMESPACE}patient.1@ehr.dev`);
+}
+
+async function seed(): Promise<void> {
+  await connectDatabase();
+
+  try {
+    logger.info('=== Seed demo clínico ===');
+    await cleanupSeedData();
+    await seedCatalogs();
+
+    const [admin] = await Promise.all(STATIC_USERS.map(ensureStaticUser));
+    const adminRequester = requesterFromUser(admin);
+
+    const doctors = await seedDoctors(adminRequester);
+    const patients = await seedPatients();
+    const counters = await seedClinicalHistory(doctors, patients);
+
+    await emitSummary(counters);
+  } finally {
+    await disconnectDatabase();
+  }
+}
+
+seed()
+  .then(() => {
+    logger.info('✅ Seed completado');
+    process.exit(0);
+  })
+  .catch((err) => {
+    logger.error('Error en seed:', err);
+    process.exit(1);
+  });
