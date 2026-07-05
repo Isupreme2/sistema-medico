@@ -5,9 +5,17 @@ import { initSocket } from './realtime/socket';
 import { startReminderJob, stopReminderJob } from './jobs/reminders';
 import { env } from './config/env';
 import { logger } from './utils/logger';
+import { predictionEngine } from './modules/prediction/prediction.engine';
 
 async function bootstrap(): Promise<void> {
   await connectDatabase();
+
+  try {
+    await predictionEngine.initialize();
+    logger.info('Modelos ONNX cargados correctamente');
+  } catch (err) {
+    logger.error('Error al cargar modelos ONNX:', err);
+  }
 
   const app = createApp();
   const server = http.createServer(app);

@@ -12,6 +12,7 @@ import notificationRoutes from '../modules/notification/notification.routes';
 import invoiceRoutes from '../modules/invoice/invoice.routes';
 import analyticsRoutes from '../modules/analytics/analytics.routes';
 import auditRoutes from '../modules/audit/audit.routes';
+import predictionRoutes from '../modules/prediction/prediction.routes';
 
 const router = Router();
 
@@ -45,5 +46,6 @@ router.use('/notifications', notificationRoutes);
 router.use('/invoices', invoiceRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/audit', auditRoutes);
+router.use('/predictions', predictionRoutes);
 
 export default router;

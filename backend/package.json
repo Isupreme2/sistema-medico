@@ -24,6 +24,7 @@
   ],
   "license": "MIT",
   "dependencies": {
+    "@faker-js/faker": "^10.5.0",
     "bcryptjs": "^2.4.3",
     "cookie-parser": "^1.4.7",
     "cors": "^2.8.5",
@@ -37,6 +38,7 @@
     "morgan": "^1.10.0",
     "node-cron": "^4.4.1",
     "nodemailer": "^9.0.1",
+    "onnxruntime-node": "^1.27.0",
     "pdfkit": "^0.15.2",
     "qrcode": "^1.5.4",
     "socket.io": "^4.8.3",
