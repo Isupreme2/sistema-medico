@@ -1,0 +1,57 @@
+<div class="card">
+  <h3>Riesgo Clínico (IA)</h3>
+
+  @if (!loading() && !resultado() && !error()) {
+    <button class="btn-primary" (click)="analizar()">Analizar riesgo</button>
+  }
+
+  @if (loading()) {
+    <button class="btn-primary" disabled>Analizando…</button>
+  }
+
+  @if (resultado(); as res) {
+    @if (res.estado === 'datos_insuficientes') {
+      <p class="msg-insuficiente">
+        Historial clínico insuficiente para generar una predicción.
+        Se requieren al menos 2 consultas previas con signos vitales registrados.
+      </p>
+      <button class="btn-secondary" (click)="analizar()">Reintentar</button>
+    } @else if (res.estado === 'error_inferencia') {
+      <p class="msg-error">No se pudo obtener la predicción. Intente nuevamente.</p>
+      <button class="btn-secondary" (click)="analizar()">Reintentar</button>
+    } @else {
+      <div class="categorias">
+        @for (cat of res.categorias; track cat.categoria) {
+          <div class="categoria">
+            <div class="cat-header">
+              <span class="cat-label">{{ categoriaLabel(cat.categoria) }}</span>
+              <span class="cat-nivel" [style.color]="nivelColor(cat.nivel)">
+                {{ porcentajeDisplay(cat.probabilidad) }}% · {{ cat.nivel }}
+              </span>
+            </div>
+            <div class="bar-track">
+              <div
+                class="bar-fill"
+                [style.width.%]="barWidth(cat.probabilidad)"
+                [style.background]="nivelColor(cat.nivel)"
+              ></div>
+            </div>
+            @if (cat.nivel !== 'bajo' && cat.factores.length > 0) {
+              <ul class="factores">
+                @for (f of cat.factores; track f) {
+                  <li>{{ f }}</li>
+                }
+              </ul>
+            }
+          </div>
+        }
+      </div>
+      <p class="disclaimer">{{ res.disclaimer }}</p>
+    }
+  }
+
+  @if (error(); as errMsg) {
+    <p class="msg-error">{{ errMsg }}</p>
+    <button class="btn-secondary" (click)="analizar()">Reintentar</button>
+  }
+</div>

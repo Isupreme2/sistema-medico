@@ -14,6 +14,10 @@
     </section>
   }
 
+  @if (auth.role() === 'medico' || auth.role() === 'admin') {
+    <app-risk-prediction-card [pacienteId]="pacienteId" />
+  }
+
   <h2>Consultas</h2>
   <div class="lista">
     @for (r of records(); track r._id) {

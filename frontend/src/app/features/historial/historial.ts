@@ -8,6 +8,7 @@ import { MedicalRecord, SignosVitales } from '../../core/models/record.model';
 import { Prescription } from '../../core/models/prescription.model';
 import { UserRole } from '../../core/models/user.model';
 import { LineChart, SerieGrafica } from '../../shared/line-chart/line-chart';
+import { RiskPredictionCard } from '../../shared/risk-prediction-card/risk-prediction-card';
 
 interface ChartConfig {
   titulo: string;
@@ -17,14 +18,14 @@ interface ChartConfig {
 
 @Component({
   selector: 'app-historial',
-  imports: [DatePipe, RouterLink, LineChart],
+  imports: [DatePipe, RouterLink, LineChart, RiskPredictionCard],
   templateUrl: './historial.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './historial.scss',
 })
 export class Historial {
   private route = inject(ActivatedRoute);
-  private auth = inject(AuthService);
+  readonly auth = inject(AuthService);
   private recordService = inject(RecordService);
   private prescriptionService = inject(PrescriptionService);
 
@@ -36,7 +37,7 @@ export class Historial {
   readonly esMedico = this.auth.role() === UserRole.MEDICO;
 
   /** Si la ruta trae :id es el médico viendo a un paciente; si no, el paciente ve lo suyo. */
-  private pacienteId =
+  readonly pacienteId =
     this.route.snapshot.paramMap.get('id') ?? this.auth.user()?._id ?? '';
 
   /** Recetas emitidas a partir de una consulta concreta (vínculo por historialId). */
