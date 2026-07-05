@@ -96,14 +96,45 @@ npm start                 # ng serve → http://localhost:4200
 | Director / Admin | `admin@ehr.dev` | `Admin1234` |
 | Recepción | `recepcion@ehr.dev` | `Recepcion1234` |
 
-Además, el seed crea un universo clínico de demostración con:
+Además, el seed crea un universo clínico de demostración con 10 médicos y 48 pacientes (por defecto), cada uno con 6 meses de citas atendidas, historias clínicas, recetas y facturas coherentes con el módulo de predicción.
 
-- múltiples médicos bajo el namespace `seed.demo+doctor.N@ehr.dev`
-- múltiples pacientes bajo el namespace `seed.demo+patient.N@ehr.dev`
-- contraseña común parametrizable vía `SEED_PASSWORD` (por defecto `SeedDemo1234`)
-- 6 meses de citas atendidas, historias clínicas, recetas y facturas coherentes con el módulo de predicción
+**Médicos generados (10 por defecto):**
 
-> El seed es **re-ejecutable**: primero limpia solo su propio universo (`seed.demo+...`) y luego lo regenera. No toca datos ajenos a ese namespace. Los parámetros principales se pueden ajustar con `SEED_DOCTORS`, `SEED_PATIENTS`, `SEED_MONTHS_BACK`, `SEED_PAID_RATIO` y `SEED_PASSWORD`.
+| # | Email | Contraseña | Especialidad |
+|---|-------|-----------|-------------|
+| 1 | `seed.demo+doctor.1@ehr.dev` | `SeedDemo1234` | Medicina General |
+| 2 | `seed.demo+doctor.2@ehr.dev` | `SeedDemo1234` | Medicina Interna |
+| 3 | `seed.demo+doctor.3@ehr.dev` | `SeedDemo1234` | Cardiología |
+| 4 | `seed.demo+doctor.4@ehr.dev` | `SeedDemo1234` | Endocrinología |
+| 5 | `seed.demo+doctor.5@ehr.dev` | `SeedDemo1234` | Neumología |
+| 6 | `seed.demo+doctor.6@ehr.dev` | `SeedDemo1234` | Nutrición |
+| 7 | `seed.demo+doctor.7@ehr.dev` | `SeedDemo1234` | Pediatría |
+| 8 | `seed.demo+doctor.8@ehr.dev` | `SeedDemo1234` | Dermatología |
+| 9 | `seed.demo+doctor.9@ehr.dev` | `SeedDemo1234` | Ginecología y Obstetricia |
+| 10 | `seed.demo+doctor.10@ehr.dev` | `SeedDemo1234` | Neurología |
+
+**Pacientes generados (48 por defecto):**
+
+| # | Email | Contraseña | Perfil de riesgo |
+|---|-------|-----------|-----------------|
+| 1 | `seed.demo+patient.0@ehr.dev` | `SeedDemo1234` | alto (cardiovascular + metabólico + respiratorio) |
+| 2 | `seed.demo+patient.1@ehr.dev` | `SeedDemo1234` | medio (metabólico) |
+| 3 | `seed.demo+patient.2@ehr.dev` | `SeedDemo1234` | medio (respiratorio) |
+| 4 | `seed.demo+patient.3@ehr.dev` | `SeedDemo1234` | alto (cardiovascular + metabólico + respiratorio) |
+| 5 | `seed.demo+patient.4@ehr.dev` | `SeedDemo1234` | medio (metabólico) |
+| 6 | `seed.demo+patient.5@ehr.dev` | `SeedDemo1234` | medio (respiratorio) |
+| 7 | `seed.demo+patient.6@ehr.dev` | `SeedDemo1234` | alto (cardiovascular + metabólico + respiratorio) |
+| 8 | `seed.demo+patient.7@ehr.dev` | `SeedDemo1234` | medio (metabólico) |
+| 9 | `seed.demo+patient.8@ehr.dev` | `SeedDemo1234` | medio (respiratorio) |
+| 10 | `seed.demo+patient.9@ehr.dev` | `SeedDemo1234` | alto (cardiovascular + metabólico + respiratorio) |
+| 11 | `seed.demo+patient.10@ehr.dev` | `SeedDemo1234` | medio (metabólico) |
+| 12 | `seed.demo+patient.11@ehr.dev` | `SeedDemo1234` | medio (respiratorio) |
+| … | … | … | … |
+| 48 | `seed.demo+patient.47@ehr.dev` | `SeedDemo1234` | medio (respiratorio) |
+
+El patrón se repite cada 3 pacientes: índice `% 3 === 0` → riesgo alto en las 3 categorías, `% 3 === 1` → riesgo medio metabólico, `% 3 === 2` → riesgo medio respiratorio. La contraseña común se parametriza vía `SEED_PASSWORD`, la cantidad de médicos con `SEED_DOCTORS` y la de pacientes con `SEED_PATIENTS`.
+
+> El seed es **re-ejecutable**: primero limpia solo su propio universo (`seed.demo+...`) y luego lo regenera. No toca datos ajenos a ese namespace. Los parámetros se ajustan vía variables de entorno: `SEED_DOCTORS` (10), `SEED_PATIENTS` (48), `SEED_MONTHS_BACK` (6), `SEED_PAID_RATIO` (0.85) y `SEED_PASSWORD` (SeedDemo1234).
 
 ### Política de artefactos ML
 
