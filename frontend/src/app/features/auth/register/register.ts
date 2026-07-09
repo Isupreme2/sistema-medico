@@ -9,7 +9,7 @@ import { AuthService } from '../../../core/services/auth.service';
   imports: [ReactiveFormsModule, RouterLink],
   templateUrl: './register.html',
   changeDetection: ChangeDetectionStrategy.Eager,
-  styleUrls: ['../login/login.scss'],
+  styleUrls: ['../login/login.scss', './register.scss'],
 })
 export class Register {
   private fb = inject(FormBuilder);

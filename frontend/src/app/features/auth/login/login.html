@@ -1,15 +1,22 @@
 <div class="auth-wrapper">
   <div class="auth-card">
     <div class="brand">
-      <span class="mark"><span class="mark__inner"></span></span>
-      <h1>Clínica Cordillera</h1>
-      <p class="subtitle">Portal clínico — Inicia sesión</p>
+      <img class="logo" src="assets/logo.png" alt="Clínica Cordillera" />
+      <p class="title">Portal clínico — Inicia sesión</p>
     </div>
 
     <form [formGroup]="form" (ngSubmit)="submit()" novalidate>
       <label class="field">
         <span>Correo electrónico</span>
-        <input type="email" formControlName="email" placeholder="tucorreo@ejemplo.com" autocomplete="username" />
+        <div class="input-wrap">
+          <img class="input-icon" src="assets/svg/correo.svg" alt="logo correo" />
+          <input
+            type="email"
+            formControlName="email"
+            placeholder="tucorreo@ejemplo.com"
+            autocomplete="username"
+          />
+        </div>
         @if (form.controls.email.touched && form.controls.email.invalid) {
           <small class="err">Ingresa un email válido</small>
         }
@@ -17,7 +24,15 @@
 
       <label class="field">
         <span>Contraseña</span>
-        <input type="password" formControlName="password" placeholder="••••••••" autocomplete="current-password" />
+        <div class="input-wrap">
+          <img class="input-icon" src="assets/svg/contraseña.svg" alt="logo contraseña" />
+          <input
+            type="password"
+            formControlName="password"
+            placeholder="••••••••"
+            autocomplete="current-password"
+          />
+        </div>
         @if (form.controls.password.touched && form.controls.password.invalid) {
           <small class="err">La contraseña es obligatoria</small>
         }
@@ -26,7 +41,13 @@
       @if (requires2FA()) {
         <label class="field">
           <span>Código de verificación (2FA)</span>
-          <input type="text" formControlName="totp" placeholder="123456" maxlength="6" inputmode="numeric" />
+          <input
+            type="text"
+            formControlName="totp"
+            placeholder="123456"
+            maxlength="6"
+            inputmode="numeric"
+          />
         </label>
       }
 
@@ -35,15 +56,16 @@
       }
 
       <button type="submit" class="btn-primary" [disabled]="loading()">
-        {{ loading() ? 'Ingresando…' : 'Iniciar sesión' }}
+        <span>{{ loading() ? 'Ingresando…' : 'Iniciar sesión' }}</span>
       </button>
     </form>
 
-    <p class="footer">
-      ¿No tienes cuenta? <a routerLink="/register">Regístrate como paciente</a>
-    </p>
+    <p class="footer">¿No tienes cuenta? <a routerLink="/register">Regístrate como paciente</a></p>
     <p class="footer back">
-      <a routerLink="/">← Volver al sitio</a>
+      <a routerLink="/">
+        <img class="btn-icon" src="assets/svg/flecha.svg" alt="" />
+        <span>Volver al sitio</span>
+      </a>
     </p>
   </div>
 </div>

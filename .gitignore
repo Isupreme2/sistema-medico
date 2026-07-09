@@ -50,3 +50,8 @@ ml/risk-prediction/synthetic-medical-histories.jsonl
 # Artefactos runtime del backend que SI deben versionarse
 !backend/src/modules/prediction/model/*.onnx
 !backend/src/modules/prediction/model/model-metadata.json
+
+
+.agents
+skills-lock.json
+**/design-philosophy.md
