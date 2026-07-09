@@ -1,4 +1,10 @@
 <h1>Reservar cita</h1>
+@if (reprogramandoId()) {
+  <div class="alert info">
+    Estás reprogramando una cita. La cita anterior fue cancelada.
+    Elige un nuevo horario con el mismo médico.
+  </div>
+}
 <p class="lead">
   Elige médico, día y horario. Al elegir un horario se abrirá el pago: tu cita se
   confirma solo cuando el pago se completa.

@@ -168,6 +168,7 @@ Documentación interactiva: **http://localhost:4000/docs**
 | GET | `/api/v1/appointment-types` | Auth | Lista de tipos de cita |
 | POST/PATCH/DELETE | `/api/v1/appointment-types/:id?` | Admin | Gestionar tipos de cita |
 | GET | `/api/v1/appointments/disponibilidad/:id?fecha=` | Auth | Slots disponibles de un médico |
+| GET | `/api/v1/appointments/alternativos?medicoId=&fecha=&hora?` | Auth | Médicos alternativos cuando el seleccionado no tiene disponibilidad (misma especialidad + fallback a Medicina General) |
 | GET | `/api/v1/appointments` | Auth | Citas (filtradas por rol) |
 | POST | `/api/v1/appointments/reservar-y-pagar` | Paciente | Reserva atómica + factura pagada (pago al confirmar; **motivo obligatorio**) |
 | POST | `/api/v1/appointments` | Recepción/Admin | Agendar a nombre del paciente (cobro en caja vía Facturar; **motivo obligatorio**) |
@@ -247,6 +248,9 @@ Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
 - [x] **Realismo de roles** — la Dirección define los horarios de cada médico (el médico solo los consulta), el médico no factura (el cobro es de Recepción/Admin), el Admin crea cuentas de Recepción, pago al reservar (pay-to-confirm) y el sitio público solo anuncia especialidades con médico activo
 - [x] **Coherencia clínica** — Plan/Indicaciones separado de la Receta (vinculada a su consulta por `historialId`) y motivo de consulta obligatorio al reservar, con pre-consulta opcional ofrecida tras agendar
 - [x] **IA clínica Fase 0** — Alcance, categorías, umbrales, disclaimer y contratos iniciales para predicción académica de riesgo clínico
+- [x] **IA clínica Fase 0** — Alcance, categorías, umbrales, disclaimer y contratos iniciales para predicción académica de riesgo clínico
+- [x] **Médicos alternativos** — Cuando el médico seleccionado no tiene disponibilidad, el sistema sugiere otros de la misma especialidad o fallback a Medicina General, integrado en paciente, recepción y reprogramación
+- [x] **Visor de auditoría** — Panel Admin con tabla paginada, filtros por método y rol, sobre el log automático del middleware `auditTrail`
 - [ ] **Futuro** — PWA, i18n (ES/EN), modo oscuro, Docker, adjuntos a la historia clínica, lista de espera, entrenamiento ML e inferencia ONNX
 
 ## Decisiones de diseño destacadas
@@ -284,6 +288,20 @@ Arquitectura partida: cada pieza en la plataforma donde rinde mejor.
   **motivo de consulta**. La **pre-consulta** detallada (síntomas, dolor 0–10, medicación)
   es **opcional** y se ofrece *después* de agendar — no antes, porque la pre-consulta cuelga
   de la cita (relación 1:1 con `citaId`).
+- **Médicos alternativos con fallback.** Cuando el médico seleccionado no tiene
+  disponibilidad, el sistema busca automáticamente otros médicos activos en la **misma
+  especialidad**. Si tampoco hay, amplía la búsqueda a **Medicina General** como
+  alternativa de último recurso. Los slots se marcan con un badge de **"Misma hora"**
+  cuando algún alternativo tiene disponibilidad exacta a la hora solicitada. El componente
+  reutilizable se integra en los flujos de reserva del paciente, recepción y
+  reprogramación, y al seleccionar un alternativo se cambia el médico seleccionado
+  manteniendo la fecha y el motivo. Tarifa fija de S/80.
+- **Visor de auditoría para administradores.** El middleware `auditTrail` captura
+  automáticamente toda acción mutante (POST/PATCH/PUT/DELETE) con usuario, rol, ruta,
+  código de estado e IP. Desde el panel de Admin, el visor de auditoría en
+  `/admin/auditoria` permite **filtrar por método HTTP y rol**, navegar con paginación,
+  y ver cada evento en una tabla con badges de color por método (verde POST, azul PATCH,
+  rojo DELETE). El endpoint solo responde al rol Admin.
 
 ## Seguridad
 

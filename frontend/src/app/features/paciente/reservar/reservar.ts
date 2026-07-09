@@ -57,6 +57,8 @@ export class Reservar {
   readonly error = signal<string | null>(null);
   /** Id de la cita recién creada, para ofrecer completar la pre-consulta. */
   readonly citaCreadaId = signal<string | null>(null);
+  /** Id de la cita que se canceló para reprogramar (viene de Mis Citas). */
+  readonly reprogramandoId = signal<string | null>(null);
 
   // --- Pago para confirmar (la cita se crea solo si el pago tiene éxito) ---
   readonly tarifa = TARIFA_CONSULTA;
@@ -72,8 +74,9 @@ export class Reservar {
       .pipe(takeUntilDestroyed())
       .subscribe((m) => {
         this.medicos.set(m);
+        const reprogramando = this.route.snapshot.queryParamMap.get('reprogramando');
+        if (reprogramando) this.reprogramandoId.set(reprogramando);
         if (m.length && !this.medicoId()) {
-          // Si venimos de "Reprogramar", preseleccionamos ese médico.
           const preseleccion = this.route.snapshot.queryParamMap.get('medico');
           const existe = preseleccion && m.some((x) => x.usuarioId._id === preseleccion);
           this.onMedicoChange(existe ? preseleccion! : m[0].usuarioId._id);

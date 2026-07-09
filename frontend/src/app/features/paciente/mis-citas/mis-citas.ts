@@ -65,7 +65,7 @@ export class MisCitas {
     if (!ok) return;
     this.error.set(null);
     this.service.cancelar(c._id).subscribe({
-      next: () => this.router.navigate(['/paciente/reservar'], { queryParams: { medico: c.medicoId._id } }),
+      next: () => this.router.navigate(['/paciente/reservar'], { queryParams: { medico: c.medicoId._id, reprogramando: c._id } }),
       error: (err) => this.error.set(err.error?.message ?? 'No se pudo reprogramar'),
     });
   }
