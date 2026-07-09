@@ -74,3 +74,33 @@ export interface PreConsulta {
 }
 
 export type PreConsultaPayload = Omit<PreConsulta, '_id' | 'citaId' | 'enviadoEn'>;
+
+export interface MedicoAlternativo {
+  _id: string;
+  usuarioId: {
+    _id: string;
+    nombre: string;
+    apellido: string;
+    email: string;
+  };
+  especialidad: string;
+  numeroColegiatura: string;
+  duracionSlotMin: number;
+  activo: boolean;
+}
+
+export interface AlternativoConSlots {
+  medico: MedicoAlternativo;
+  slots: Slot[];
+  coincideHora: boolean;
+}
+
+export interface AlternativosResponse {
+  especialidad: string;
+  coincideHora: boolean;
+  alternativos: AlternativoConSlots[];
+  especialidadAlternativa?: {
+    especialidad: string;
+    alternativos: AlternativoConSlots[];
+  };
+}

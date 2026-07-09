@@ -4,6 +4,7 @@ import { Observable, map } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/user.model';
 import {
+  AlternativosResponse,
   Appointment,
   AppointmentModality,
   AppointmentStatus,
@@ -17,6 +18,14 @@ import {
 export class AppointmentService {
   private http = inject(HttpClient);
   private api = `${environment.apiUrl}/appointments`;
+
+  getAlternativos(medicoId: string, fecha: string, hora?: string): Observable<AlternativosResponse> {
+    let url = `${this.api}/alternativos?medicoId=${medicoId}&fecha=${fecha}`;
+    if (hora) url += `&hora=${hora}`;
+    return this.http
+      .get<ApiResponse<AlternativosResponse>>(url)
+      .pipe(map((r) => r.data));
+  }
 
   disponibilidad(medicoId: string, fecha: string): Observable<Availability> {
     return this.http

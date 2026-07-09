@@ -76,8 +76,22 @@
   <div class="card empty">No hay médicos disponibles todavía.</div>
 } @else if (slots().length === 0) {
   <div class="card empty">El médico no atiende ese día. Prueba con otra fecha.</div>
+  @if (medicoId()) {
+    <app-medicos-alternativos
+      [medicoId]="medicoId()"
+      [fecha]="fecha()"
+      (seleccionar)="onSeleccionarAlternativo($event)"
+    />
+  }
 } @else if (!hayDisponibles()) {
   <div class="card empty">No quedan horarios libres ese día. 😔</div>
+  @if (medicoId()) {
+    <app-medicos-alternativos
+      [medicoId]="medicoId()"
+      [fecha]="fecha()"
+      (seleccionar)="onSeleccionarAlternativo($event)"
+    />
+  }
 } @else {
   <div class="slots">
     @for (slot of slots(); track slot.fechaHora) {

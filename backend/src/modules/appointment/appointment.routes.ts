@@ -9,6 +9,7 @@ import {
   reservarPagarSchema,
   updateStatusSchema,
   preConsultaSchema,
+  alternativosQuerySchema,
 } from './appointment.validation';
 
 const router = Router();
@@ -34,6 +35,33 @@ const router = Router();
  *       200: { description: Lista de slots (disponible true/false) }
  */
 router.get('/disponibilidad/:id', authenticate, ctrl.disponibilidad);
+
+/**
+ * @openapi
+ * /appointments/alternativos:
+ *   get:
+ *     tags: [Citas]
+ *     summary: Médicos alternativos en la misma especialidad (con fallback a Medicina General)
+ *     security: [{ bearerAuth: [] }]
+ *     parameters:
+ *       - in: query
+ *         name: medicoId
+ *         required: true
+ *         schema: { type: string }
+ *         description: userId del médico de referencia
+ *       - in: query
+ *         name: fecha
+ *         required: true
+ *         schema: { type: string, example: "2026-07-10" }
+ *       - in: query
+ *         name: hora
+ *         required: false
+ *         schema: { type: string, example: "10:00" }
+ *         description: Hora preferida para marcar coincidencia exacta
+ *     responses:
+ *       200: { description: Lista de médicos alternativos con sus slots }
+ */
+router.get('/alternativos', authenticate, validate(alternativosQuerySchema), ctrl.getAlternativos);
 
 /**
  * @openapi

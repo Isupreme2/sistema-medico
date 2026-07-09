@@ -16,6 +16,7 @@ import { SocketService } from '../../../core/services/socket.service';
 import { MedicoProfile, AppointmentType } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
 import { PaymentGateway } from '../../../shared/payment-gateway/payment-gateway';
+import { MedicosAlternativos } from '../../../shared/medicos-alternativos/medicos-alternativos';
 
 /** Tarifa de consulta para la demo de pago (S/). */
 const TARIFA_CONSULTA = 80;
@@ -29,7 +30,7 @@ function hoyLocal(): string {
 
 @Component({
   selector: 'app-reservar',
-  imports: [PaymentGateway, RouterLink],
+  imports: [PaymentGateway, RouterLink, MedicosAlternativos],
   templateUrl: './reservar.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './reservar.scss',
@@ -175,4 +176,8 @@ export class Reservar {
   }
 
   readonly hayDisponibles = () => this.slots().some((s) => s.disponible);
+
+  onSeleccionarAlternativo(ev: { medicoId: string; slot: Slot }): void {
+    this.onMedicoChange(ev.medicoId);
+  }
 }

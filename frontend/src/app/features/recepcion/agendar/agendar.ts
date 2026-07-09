@@ -11,6 +11,7 @@ import { PatientService } from '../../../core/services/patient.service';
 import { MedicoProfile, AppointmentType } from '../../../core/models/medico.model';
 import { AppointmentModality, Slot } from '../../../core/models/appointment.model';
 import { PatientLite } from '../../../core/models/user.model';
+import { MedicosAlternativos } from '../../../shared/medicos-alternativos/medicos-alternativos';
 
 /** Fecha de hoy en formato YYYY-MM-DD según la zona horaria LOCAL (no UTC). */
 function hoyLocal(): string {
@@ -22,7 +23,7 @@ function hoyLocal(): string {
 /** Recepción agenda una cita a nombre de un paciente. */
 @Component({
   selector: 'app-recepcion-agendar',
-  imports: [FormsModule],
+  imports: [FormsModule, MedicosAlternativos],
   changeDetection: ChangeDetectionStrategy.Eager,
   template: `
     <section class="page">
@@ -119,6 +120,13 @@ function hoyLocal(): string {
           <p class="muted">Cargando disponibilidad…</p>
         } @else if (!slots().length) {
           <p class="muted">El médico no atiende ese día o no hay horarios configurados.</p>
+          @if (medicoId()) {
+            <app-medicos-alternativos
+              [medicoId]="medicoId()"
+              [fecha]="fecha()"
+              (seleccionar)="onSeleccionarAlternativo($event)"
+            />
+          }
         } @else {
           <div class="slots">
             @for (s of slots(); track s.fechaHora) {
@@ -277,6 +285,10 @@ export class RecepcionAgendar {
           this.error.set(err.error?.message ?? 'No se pudo reservar la cita');
           this.cargarDisponibilidad();
         },
-      });
+        });
+  }
+
+  onSeleccionarAlternativo(ev: { medicoId: string; slot: Slot }): void {
+    this.onMedicoChange(ev.medicoId);
   }
 }

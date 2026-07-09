@@ -1,0 +1,85 @@
+<div class="alt-card">
+  <h3>Médicos alternativos disponibles</h3>
+  <p class="alt-desc">
+    El médico seleccionado no tiene horarios libres esa fecha.
+    Estos son otros médicos disponibles:
+  </p>
+
+  @if (loading()) {
+    <p class="muted">Buscando alternativas…</p>
+  } @else if (error(); as err) {
+    <p class="err">{{ err }}</p>
+  } @else if (data(); as d) {
+    @if (d.alternativos.length) {
+      <section>
+        <h4 class="esp-titulo">{{ d.especialidad }}</h4>
+        <div class="alt-grid">
+          @for (alt of d.alternativos; track alt.medico._id) {
+            <div class="alt-medico">
+              <div class="alt-info">
+                <strong>{{ alt.medico.usuarioId.nombre }} {{ alt.medico.usuarioId.apellido }}</strong>
+                <span class="muted">Col. {{ alt.medico.numeroColegiatura }}</span>
+              </div>
+              @if (alt.coincideHora) {
+                <span class="coincide-badge">Misma hora disponible</span>
+              }
+              <div class="alt-slots">
+                @for (slot of alt.slots; track slot.fechaHora) {
+                  <button
+                    class="slot"
+                    [class.coincide]="slot.disponible && alt.coincideHora"
+                    [class.ocupado]="!slot.disponible"
+                    [disabled]="!slot.disponible"
+                    (click)="onSeleccionar(alt, slot)"
+                  >
+                    {{ slot.hora }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (d.especialidadAlternativa; as fallback) {
+      <section class="fallback">
+        <h4 class="esp-titulo">También disponible · {{ fallback.especialidad }}</h4>
+        <p class="alt-desc">
+          No hay más médicos en {{ d.especialidad }} disponibles. Puedes consultar con
+          {{ fallback.especialidad }}:
+        </p>
+        <div class="alt-grid">
+          @for (alt of fallback.alternativos; track alt.medico._id) {
+            <div class="alt-medico">
+              <div class="alt-info">
+                <strong>{{ alt.medico.usuarioId.nombre }} {{ alt.medico.usuarioId.apellido }}</strong>
+                <span class="muted">Col. {{ alt.medico.numeroColegiatura }}</span>
+              </div>
+              @if (alt.coincideHora) {
+                <span class="coincide-badge">Misma hora disponible</span>
+              }
+              <div class="alt-slots">
+                @for (slot of alt.slots; track slot.fechaHora) {
+                  <button
+                    class="slot"
+                    [class.coincide]="slot.disponible && alt.coincideHora"
+                    [class.ocupado]="!slot.disponible"
+                    [disabled]="!slot.disponible"
+                    (click)="onSeleccionar(alt, slot)"
+                  >
+                    {{ slot.hora }}
+                  </button>
+                }
+              </div>
+            </div>
+          }
+        </div>
+      </section>
+    }
+
+    @if (!d.alternativos.length && !d.especialidadAlternativa) {
+      <p class="muted">No hay médicos alternativos disponibles para esa fecha.</p>
+    }
+  }
+</div>
