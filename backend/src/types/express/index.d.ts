@@ -7,6 +7,14 @@ declare global {
       /** Usuario autenticado, inyectado por el middleware authenticate. */
       user?: AccessTokenPayload;
     }
+
+    interface Locals {
+      /**
+       * Identidad alternativa para rutas sin autenticación middleware
+       * (register, login). El controller lo setea antes de responder.
+       */
+      auditUser?: AccessTokenPayload;
+    }
   }
 }
 

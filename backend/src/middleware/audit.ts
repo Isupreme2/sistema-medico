@@ -14,11 +14,11 @@ export function auditTrail(req: Request, res: Response, next: NextFunction): voi
 
   res.on('finish', () => {
     const ruta = req.originalUrl.split('?')[0];
-    const user = req.user;
+    const auditUser = req.user ?? res.locals.auditUser;
     AuditLog.create({
-      usuarioId: user?.sub,
-      emailUsuario: user?.email,
-      rol: user?.role,
+      usuarioId: auditUser?.sub,
+      emailUsuario: auditUser?.email,
+      rol: auditUser?.role,
       accion: `${req.method} ${ruta}`,
       metodo: req.method,
       ruta,

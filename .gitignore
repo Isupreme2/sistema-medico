@@ -55,3 +55,5 @@ ml/risk-prediction/synthetic-medical-histories.jsonl
 .agents
 skills-lock.json
 **/design-philosophy.md
+.opencode
+openspec

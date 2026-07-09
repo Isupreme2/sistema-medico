@@ -31,11 +31,13 @@ function setRefreshCookie(res: Response, token: string): void {
 
 export const register = asyncHandler(async (req: Request, res: Response) => {
   const user = await authService.register(req.body);
+  res.locals.auditUser = { sub: user._id.toString(), email: user.email, role: user.rol };
   res.status(201).json({ status: 'success', data: { user } });
 });
 
 export const login = asyncHandler(async (req: Request, res: Response) => {
   const { user, tokens } = await authService.login(req.body);
+  res.locals.auditUser = { sub: user._id.toString(), email: user.email, role: user.rol };
   setRefreshCookie(res, tokens.refreshToken);
   res.json({
     status: 'success',
