@@ -1,16 +1,16 @@
 .shell {
   min-height: 100vh;
-  background: var(--slate-100);
+  background: var(--bg-page);
 }
 
 .navbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: rgba(255, 255, 255, 0.85);
+  background: color-mix(in srgb, var(--bg-surface) 85%, transparent);
   backdrop-filter: blur(12px);
   padding: 0.7rem 1.5rem;
-  border-bottom: 1px solid var(--slate-200);
+  border-bottom: 1px solid var(--border);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -26,7 +26,7 @@
   display: flex;
   align-items: center;
   gap: 0.55rem;
-  color: var(--slate-900);
+  color: var(--text-primary);
   text-decoration: none;
 
   .nav-logo {
@@ -49,7 +49,7 @@
 
   a {
     text-decoration: none;
-    color: var(--slate-600);
+    color: var(--text-muted);
     font-size: 0.88rem;
     padding: 0.4rem 0.75rem;
     border-radius: 8px;
@@ -63,6 +63,25 @@
       color: var(--brand);
       font-weight: 600;
     }
+  }
+}
+
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 1px solid var(--border);
+  border-radius: 0.5rem;
+  background: var(--bg-surface);
+  cursor: pointer;
+  transition: background 0.15s, border-color 0.15s;
+  img {
+    display: block;
+  }
+  &:hover {
+    background: var(--slate-100);
   }
 }
 
@@ -81,7 +100,7 @@
     .name {
       font-size: 0.88rem;
       font-weight: 600;
-      color: #1e293b;
+      color: var(--text-primary);
     }
     .role-badge {
       font-size: 0.68rem;
@@ -94,16 +113,16 @@
   }
 
   .btn-logout {
-    border: 1px solid #cbd5e1;
-    background: #fff;
-    color: #334155;
+    border: 1px solid var(--border);
+    background: var(--bg-surface);
+    color: var(--text-primary);
     padding: 0.45rem 0.9rem;
     border-radius: 8px;
     cursor: pointer;
     font-size: 0.85rem;
     transition: background 0.15s;
     &:hover {
-      background: #f8fafc;
+      background: var(--slate-100);
     }
   }
 }

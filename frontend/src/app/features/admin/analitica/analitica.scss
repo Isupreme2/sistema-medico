@@ -24,9 +24,9 @@ h1 {
 }
 
 .stat {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 16px;
-  border: 1.5px solid #93c5fd;
+  border: 1.5px solid var(--border);
   padding: 1.25rem;
   display: flex;
   flex-direction: column;
@@ -35,7 +35,7 @@ h1 {
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
+    box-shadow: var(--shadow);
   }
 
   .num {
@@ -58,9 +58,9 @@ h1 {
 }
 
 .card {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 16px;
-  border: 1.5px solid #93c5fd;
+  border: 1.5px solid var(--border);
   padding: 1.25rem 1.5rem;
 
   &.empty {
@@ -85,10 +85,10 @@ h1 {
       display: flex;
       justify-content: space-between;
       padding: 0.4rem 0;
-      border-bottom: 1px solid #e0e7ff;
+      border-bottom: 1px solid var(--border);
 
       strong {
-        color: #2563eb;
+    color: var(--brand);
       }
     }
   }

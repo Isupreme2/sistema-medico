@@ -13,9 +13,9 @@ h1 {
 }
 
 .card {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 16px;
-  border: 1.5px solid #93c5fd;
+  border: 1.5px solid var(--border);
   padding: 1.5rem;
 }
 
@@ -26,8 +26,8 @@ h1 {
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 1rem;
-  border: 1.5px solid #93c5fd;
-  background: #eff6ff;
+  border: 1.5px solid var(--border);
+  background: color-mix(in srgb, var(--brand) 15%, transparent);
   border-radius: 12px;
   padding: 1rem 1.25rem;
 
@@ -39,12 +39,12 @@ h1 {
   }
 
   strong {
-    color: #1e3a8a;
+    color: var(--brand-dark);
   }
 
   .btn-pre {
     flex-shrink: 0;
-    background: #2563eb;
+    background: var(--brand);
     color: #fff;
     font-weight: 700;
     font-size: 0.88rem;
@@ -55,7 +55,7 @@ h1 {
     transition: all 0.15s ease;
 
     &:hover {
-      background: #1d4ed8;
+      background: var(--brand-dark);
       transform: translateY(-1px);
     }
   }
@@ -68,10 +68,10 @@ h1 {
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 1rem;
-  border: 1.5px solid #93c5fd;
+  border: 1.5px solid var(--border);
   border-radius: 12px;
   padding: 1rem 1.25rem;
-  background: #f8fafc;
+  background: var(--slate-100);
 
   .pago-info strong {
     display: block;
@@ -97,7 +97,7 @@ h1 {
 
   .btn-pagar {
     border: none;
-    background: #2563eb;
+    background: var(--brand);
     color: #fff;
     font-weight: 700;
     padding: 0.7rem 1.3rem;
@@ -106,7 +106,7 @@ h1 {
     transition: all 0.15s ease;
 
     &:hover {
-      background: #1d4ed8;
+      background: var(--brand-dark);
       transform: translateY(-1px);
     }
   }
@@ -141,7 +141,7 @@ h1 {
   select,
   input {
     padding: 0.6rem 0.75rem;
-    border: 1.5px solid #bfdbfe;
+    border: 1.5px solid var(--border);
     border-radius: 8px;
     font-size: 0.92rem;
     min-width: 220px;
@@ -149,8 +149,8 @@ h1 {
 
     &:focus {
       outline: none;
-      border-color: #3b82f6;
-      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px var(--shadow);
     }
   }
 }
@@ -197,9 +197,9 @@ h1 {
 
 .slot {
   padding: 0.7rem 0;
-  border: 1.5px solid #93c5fd;
-  background: #eff6ff;
-  color: #1d4ed8;
+  border: 1.5px solid var(--border);
+  background: color-mix(in srgb, var(--brand) 15%, transparent);
+  color: var(--brand-dark);
   border-radius: 10px;
   font-size: 0.95rem;
   font-weight: 600;
@@ -207,15 +207,15 @@ h1 {
   transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
-    background: #2563eb;
+    background: var(--brand);
     color: #fff;
     transform: translateY(-1px);
   }
 
   &.ocupado {
-    background: #f1f5f9;
-    color: #cbd5e1;
-    border-color: #e2e8f0;
+    background: var(--slate-100);
+    color: var(--text-muted);
+    border-color: var(--border);
     cursor: not-allowed;
     text-decoration: line-through;
   }
@@ -237,13 +237,13 @@ h1 {
     margin-left: 0.75rem;
 
     &.libre {
-      background: #eff6ff;
-      border: 1.5px solid #93c5fd;
+      background: color-mix(in srgb, var(--brand) 15%, transparent);
+      border: 1.5px solid var(--border);
     }
 
     &.ocupada {
-      background: #f1f5f9;
-      border: 1px solid #e2e8f0;
+      background: var(--slate-100);
+      border: 1px solid var(--border);
     }
   }
 }

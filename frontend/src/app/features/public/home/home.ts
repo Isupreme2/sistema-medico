@@ -101,8 +101,8 @@ interface Spec {
                     </div>
                   }
                 </div>
-                <div style="margin-top:3rem;padding:1.5rem;background:var(--brand);border-radius:1rem;color:#fff">
-                  <p style="margin:0 0 .25rem;opacity:.9;font-size:.88rem">¿Necesitas una cita rápida?</p>
+                <div style="margin-top:3rem;padding:1.5rem;background:var(--brand-dark);border-radius:1rem;color:#fff">
+                  <p style="margin:0 0 .25rem;font-size:.88rem">¿Necesitas una cita rápida?</p>
                   <p style="margin:0 0 1rem;font-size:1.25rem;font-weight:700">Escríbenos por WhatsApp</p>
                   <a class="btn btn--block" style="background:#fff;color:var(--brand)" href="https://wa.me/51932101485" target="_blank" rel="noopener">Iniciar Chat</a>
                 </div>

@@ -13,9 +13,9 @@ h1 {
 }
 
 .card {
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 16px;
-  border: 1.5px solid #93c5fd;
+  border: 1.5px solid var(--border);
   padding: 1.25rem 1.5rem;
 
   &.empty {
@@ -43,7 +43,7 @@ h1 {
 
   &:hover {
     transform: translateY(-2px);
-    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
+    box-shadow: var(--shadow);
   }
 
   &.cancelada {
@@ -56,7 +56,7 @@ h1 {
     align-items: center;
     min-width: 80px;
     padding-right: 1.25rem;
-    border-right: 1px solid #e0e7ff;
+    border-right: 1px solid var(--border);
 
     .dia {
       font-size: 0.82rem;
@@ -67,7 +67,7 @@ h1 {
     .hora {
       font-size: 1.25rem;
       font-weight: 700;
-      color: #2563eb;
+      color: var(--brand);
     }
   }
 
@@ -92,12 +92,12 @@ h1 {
   padding: 0.25rem 0.7rem;
   border-radius: 999px;
   font-weight: 600;
-  background: #e2e8f0;
+  background: var(--slate-100);
   color: var(--slate-600);
 
   &[data-estado='reservada'] {
-    background: #dbeafe;
-    color: #2563eb;
+    background: color-mix(in srgb, var(--brand) 15%, transparent);
+    color: var(--brand);
   }
   &[data-estado='atendida'] {
     background: #dcfce7;
@@ -112,7 +112,7 @@ h1 {
     color: #ca8a04;
   }
   &[data-estado='vencida'] {
-    background: #e2e8f0;
+    background: var(--slate-100);
     color: var(--slate-600);
   }
 }
@@ -126,7 +126,7 @@ h1 {
 .link-btn {
   background: none;
   border: none;
-  color: #2563eb;
+  color: var(--brand);
   cursor: pointer;
   font-size: 0.85rem;
   transition: color 0.15s;
@@ -167,20 +167,20 @@ h1 {
   }
 
   &.primary {
-    background: #2563eb;
+    background: var(--brand);
     color: #fff;
 
     &:hover {
-      background: #1d4ed8;
+      background: var(--brand-dark);
     }
   }
 
   &.ghost {
-    background: #f1f5f9;
+    background: var(--slate-100);
     color: var(--slate-600);
 
     &:hover {
-      background: #e2e8f0;
+      background: var(--slate-100);
     }
   }
 

@@ -6,10 +6,14 @@
   padding: 1rem;
 }
 
+[data-theme="dark"] .auth-wrapper {
+  background: #1a3a4a;
+}
+
 .auth-card {
   width: 100%;
   max-width: 383px;
-  background: #fff;
+  background: var(--bg-surface);
   border-radius: 2rem;
   box-shadow:
     0 1px 3px rgba(0, 0, 0, 0.04),
@@ -83,7 +87,7 @@
     &:focus {
       outline: none;
       border-color: var(--brand);
-      background: #fff;
+      background: var(--bg-surface);
       box-shadow: 0 0 0 3px color-mix(in oklch, var(--brand) 14%, transparent);
     }
   }

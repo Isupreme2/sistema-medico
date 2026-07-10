@@ -45,8 +45,8 @@ select {
   border-radius: 0.85rem;
   font-size: 0.92rem;
   font-family: inherit;
-  background: var(--slate-50);
-  color: var(--slate-900);
+  background: var(--bg-surface);
+  color: var(--text-primary);
   appearance: none;
   -webkit-appearance: none;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
@@ -59,7 +59,7 @@ select {
   &:focus {
     outline: none;
     border-color: var(--brand);
-    background-color: #fff;
+    background-color: var(--bg-surface);
     box-shadow: 0 0 0 3px color-mix(in oklch, var(--brand) 14%, transparent);
   }
 }

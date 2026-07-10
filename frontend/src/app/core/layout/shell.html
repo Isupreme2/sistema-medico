@@ -12,6 +12,13 @@
       </nav>
     </div>
     <div class="nav-user">
+      <button class="theme-toggle" (click)="theme.toggle()" [attr.aria-label]="theme.current() === 'dark' ? 'Modo claro' : 'Modo oscuro'">
+        @if (theme.current() === 'dark') {
+          <img src="assets/svg/claro.svg" alt="Modo claro" width="20" height="20" />
+        } @else {
+          <img src="assets/svg/noche.svg" alt="Modo oscuro" width="20" height="20" />
+        }
+      </button>
       <app-notification-bell />
       <a class="user-meta" routerLink="/perfil" title="Mi perfil">
         <span class="name">{{ user()?.nombre }} {{ user()?.apellido }}</span>

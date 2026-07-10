@@ -1,6 +1,7 @@
 import { Component, OnInit, computed, inject } from '@angular/core';
 import { Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { AuthService } from '../services/auth.service';
+import { ThemeService } from '../services/theme.service';
 import { NotificationService } from '../services/notification.service';
 import { NotificationBell } from './notification-bell/notification-bell';
 import { UserRole } from '../models/user.model';
@@ -20,6 +21,7 @@ export class Shell implements OnInit {
   private auth = inject(AuthService);
   private notifications = inject(NotificationService);
   private router = inject(Router);
+  readonly theme = inject(ThemeService);
 
   readonly user = this.auth.user;
 

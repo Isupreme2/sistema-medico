@@ -1,27 +1,27 @@
 .lead {
-  color: #475569;
+  color: var(--text-muted);
 }
 
 .muted {
-  color: #94a3b8;
+  color: var(--text-muted);
 }
 
 .card.info {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  background: #fff;
-  border: 1px solid #e2e8f0;
+  background: var(--bg-surface);
+  border: 1px solid var(--border);
   border-radius: 12px;
   padding: 0.9rem 1.1rem;
   margin-bottom: 1rem;
 
   strong {
     display: block;
-    color: #1e293b;
+    color: var(--text-primary);
   }
   small {
-    color: #64748b;
+    color: var(--text-muted);
     text-transform: capitalize;
   }
 }
@@ -46,7 +46,7 @@
   margin: 1rem 0;
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 30px rgba(15, 23, 42, 0.18);
+  box-shadow: var(--shadow);
 
   &.activo {
     display: block;
@@ -65,7 +65,7 @@
     opacity: 0.9;
   }
   &.primary {
-    background: #2563eb;
+    background: var(--brand);
     color: #fff;
   }
   &.danger {
@@ -73,8 +73,8 @@
     color: #fff;
   }
   &.ghost {
-    background: #f1f5f9;
-    color: #475569;
+    background: var(--slate-100);
+    color: var(--text-muted);
   }
 }
 

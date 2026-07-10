@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
+import { ThemeService } from '../../core/services/theme.service';
 
 /** Cabecera del sitio público (sticky, con blur). */
 @Component({
@@ -11,8 +12,11 @@ import { AuthService } from '../../core/services/auth.service';
     <header class="site-header">
       <div class="container site-header__inner">
         <a routerLink="/" class="brand-logo">
-          <span class="mark"><span class="mark__inner"></span></span>
-          <span class="brand-name">Clínica Cordillera</span>
+                  <img
+  src="assets/logo.png"
+  alt="Clínica Cordillera"
+  style="width: 90px; height: auto;"
+/>
         </a>
 
         <nav class="site-nav">
@@ -25,6 +29,13 @@ import { AuthService } from '../../core/services/auth.service';
 
         <div class="header-actions">
           <a class="tel" href="tel:+51932101485">Emergencias: +51 932 101 485</a>
+          <button class="theme-toggle" (click)="theme.toggle()" [attr.aria-label]="theme.current() === 'dark' ? 'Modo claro' : 'Modo oscuro'">
+            @if (theme.current() === 'dark') {
+              <img src="assets/svg/claro.svg" alt="Modo claro" width="20" height="20" />
+            } @else {
+              <img src="assets/svg/noche.svg" alt="Modo oscuro" width="20" height="20" />
+            }
+          </button>
           @if (autenticado()) {
             <a class="link-login" routerLink="/dashboard">Mi panel</a>
           } @else {
@@ -38,5 +49,6 @@ import { AuthService } from '../../core/services/auth.service';
 })
 export class SiteHeader {
   private auth = inject(AuthService);
+  readonly theme = inject(ThemeService);
   readonly autenticado = computed(() => this.auth.isAuthenticated());
 }

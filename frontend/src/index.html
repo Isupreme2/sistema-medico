@@ -23,6 +23,10 @@
       if (!isDev) {
         window.__API_URL__ = 'https://sistema-medico-backend-nvf0.onrender.com/api/v1';
       }
+      var theme = localStorage.getItem('theme');
+      if (theme === 'dark') {
+        document.documentElement.setAttribute('data-theme', 'dark');
+      }
     })();
   </script>
 </head>
