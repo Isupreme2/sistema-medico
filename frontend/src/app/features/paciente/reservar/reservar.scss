@@ -4,18 +4,19 @@
 
 h1 {
   margin: 0;
-  color: #0f172a;
+  color: var(--slate-900);
 }
+
 .lead {
   margin: 0.3rem 0 1.5rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .card {
   background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1.5px solid #93c5fd;
+  padding: 1.5rem;
 }
 
 .preconsulta-cta {
@@ -25,18 +26,22 @@ h1 {
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 1rem;
-  border: 1px solid #bfdbfe;
+  border: 1.5px solid #93c5fd;
   background: #eff6ff;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
 
   p {
     margin: 0.25rem 0 0;
     font-size: 0.86rem;
-    color: #475569;
+    color: var(--slate-600);
     max-width: 48ch;
   }
+
   strong {
     color: #1e3a8a;
   }
+
   .btn-pre {
     flex-shrink: 0;
     background: #2563eb;
@@ -44,12 +49,15 @@ h1 {
     font-weight: 700;
     font-size: 0.88rem;
     padding: 0.55rem 1rem;
-    border-radius: 0.65rem;
+    border-radius: 10px;
     text-decoration: none;
     white-space: nowrap;
-  }
-  .btn-pre:hover {
-    background: #1d4ed8;
+    transition: all 0.15s ease;
+
+    &:hover {
+      background: #1d4ed8;
+      transform: translateY(-1px);
+    }
   }
 }
 
@@ -60,17 +68,22 @@ h1 {
   gap: 1rem;
   flex-wrap: wrap;
   margin-bottom: 1rem;
-  border: 1px solid color-mix(in oklch, var(--brand) 25%, transparent);
+  border: 1.5px solid #93c5fd;
+  border-radius: 12px;
+  padding: 1rem 1.25rem;
+  background: #f8fafc;
 
   .pago-info strong {
     display: block;
     color: var(--slate-900);
   }
+
   .muted {
     margin: 0.2rem 0 0;
     color: var(--slate-500);
     font-size: 0.88rem;
   }
+
   .pagado-badge {
     display: inline-block;
     margin-top: 0.3rem;
@@ -78,20 +91,23 @@ h1 {
     font-weight: 700;
     color: #047857;
     background: #dcfce7;
-    padding: 0.15rem 0.6rem;
+    padding: 0.2rem 0.65rem;
     border-radius: 999px;
   }
+
   .btn-pagar {
     border: none;
-    background: var(--brand);
+    background: #2563eb;
     color: #fff;
     font-weight: 700;
     padding: 0.7rem 1.3rem;
-    border-radius: 0.75rem;
+    border-radius: 10px;
     cursor: pointer;
-    transition: background 0.15s;
+    transition: all 0.15s ease;
+
     &:hover {
-      background: var(--brand-dark);
+      background: #1d4ed8;
+      transform: translateY(-1px);
     }
   }
 }
@@ -114,55 +130,63 @@ h1 {
 .field {
   display: flex;
   flex-direction: column;
+
   span {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--slate-700);
     margin-bottom: 0.3rem;
   }
+
   select,
   input {
     padding: 0.6rem 0.75rem;
-    border: 1px solid #cbd5e1;
+    border: 1.5px solid #bfdbfe;
     border-radius: 8px;
     font-size: 0.92rem;
     min-width: 220px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
     &:focus {
       outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
   }
 }
 
 .alert {
-  padding: 0.6rem 0.9rem;
-  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
   font-size: 0.86rem;
   margin-bottom: 1rem;
+
   &.ok {
     background: #dcfce7;
     color: #166534;
     border: 1px solid #bbf7d0;
   }
+
   &.err {
     background: #fef2f2;
     color: #b91c1c;
     border: 1px solid #fecaca;
   }
+
   &.info {
-    background: #e0f2fe;
-    color: #075985;
-    border: 1px solid #bae6fd;
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
   }
 }
 
 .muted {
-  color: #64748b;
+  color: var(--slate-500);
 }
+
 .empty {
   text-align: center;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .slots {
@@ -173,20 +197,21 @@ h1 {
 
 .slot {
   padding: 0.7rem 0;
-  border: 1px solid #bfdbfe;
+  border: 1.5px solid #93c5fd;
   background: #eff6ff;
   color: #1d4ed8;
   border-radius: 10px;
   font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
-  transition: background 0.12s, transform 0.12s;
+  transition: all 0.15s ease;
 
   &:hover:not(:disabled) {
     background: #2563eb;
     color: #fff;
     transform: translateY(-1px);
   }
+
   &.ocupado {
     background: #f1f5f9;
     color: #cbd5e1;
@@ -202,7 +227,7 @@ h1 {
   gap: 0.5rem;
   margin-top: 1.25rem;
   font-size: 0.82rem;
-  color: #64748b;
+  color: var(--slate-500);
 
   .muestra {
     display: inline-block;
@@ -210,10 +235,12 @@ h1 {
     height: 14px;
     border-radius: 4px;
     margin-left: 0.75rem;
+
     &.libre {
       background: #eff6ff;
-      border: 1px solid #bfdbfe;
+      border: 1.5px solid #93c5fd;
     }
+
     &.ocupada {
       background: #f1f5f9;
       border: 1px solid #e2e8f0;

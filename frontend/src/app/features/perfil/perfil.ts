@@ -73,25 +73,85 @@ import { AuthService } from '../../core/services/auth.service';
       :host { display: block; }
       h1 { margin: 0; color: var(--slate-900); }
       .lead { margin: 0.3rem 0 1.5rem; color: var(--slate-500); }
-      .grid { display: grid; gap: 1rem; grid-template-columns: 1fr; max-width: 760px; }
+      .grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; max-width: 760px; }
       @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } }
-      .card { background: #fff; border: 1px solid var(--slate-100); border-radius: 14px; padding: 1.5rem; box-shadow: 0 2px 8px rgba(0,0,0,.06); }
-      h2 { margin: 0 0 1rem; font-size: 1.05rem; }
-      .ro { display: flex; justify-content: space-between; gap: 1rem; padding: 0.4rem 0; border-bottom: 1px solid var(--slate-50); font-size: 0.9rem; }
+      .card {
+        background: #fff;
+        border: 1.5px solid #93c5fd;
+        border-radius: 16px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.06);
+        transition: box-shadow 0.15s;
+      }
+      .card:hover {
+        box-shadow: 0 6px 20px rgba(59, 130, 246, 0.1);
+      }
+      h2 { margin: 0 0 1rem; font-size: 1.05rem; color: var(--slate-800); }
+      .ro {
+        display: flex;
+        justify-content: space-between;
+        gap: 1rem;
+        padding: 0.5rem 0;
+        border-bottom: 1px solid #e0e7ff;
+        font-size: 0.9rem;
+      }
       .ro span { color: var(--slate-500); }
+      .ro strong { color: var(--slate-800); }
       .field { display: block; margin: 1rem 0 0.75rem; }
-      .field span { display: block; font-size: 0.82rem; font-weight: 600; color: var(--slate-700); margin-bottom: 0.35rem; }
-      .field input, .totp { width: 100%; box-sizing: border-box; padding: 0.6rem 0.8rem; border: 1px solid var(--slate-200); border-radius: 0.6rem; font: inherit; }
-      .totp { letter-spacing: 0.3em; text-align: center; font-size: 1.2rem; margin: 0.5rem 0; }
-      .field input:focus, .totp:focus { outline: none; border-color: var(--brand); }
-      .btn { border: none; background: var(--brand); color: #fff; font-weight: 700; padding: 0.65rem 1.2rem; border-radius: 0.65rem; cursor: pointer; }
-      .btn:hover:not(:disabled) { background: var(--brand-dark); }
+      .field span {
+        display: block;
+        font-size: 0.82rem;
+        font-weight: 600;
+        color: var(--slate-700);
+        margin-bottom: 0.35rem;
+      }
+      .field input, .totp {
+        width: 100%;
+        box-sizing: border-box;
+        padding: 0.6rem 0.8rem;
+        border: 1.5px solid #bfdbfe;
+        border-radius: 8px;
+        font: inherit;
+        transition: border-color 0.15s, box-shadow 0.15s;
+      }
+      .totp {
+        letter-spacing: 0.3em;
+        text-align: center;
+        font-size: 1.2rem;
+        margin: 0.5rem 0;
+      }
+      .field input:focus, .totp:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      }
+      .btn {
+        border: none;
+        background: #2563eb;
+        color: #fff;
+        font-weight: 700;
+        padding: 0.65rem 1.2rem;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.15s ease;
+      }
+      .btn:hover:not(:disabled) {
+        background: #1d4ed8;
+        transform: translateY(-1px);
+      }
       .btn:disabled { opacity: 0.6; cursor: default; }
       .muted { color: var(--slate-500); font-size: 0.9rem; }
-      .ok { color: #047857; font-size: 0.85rem; }
+      .ok { color: #047857; font-size: 0.85rem; font-weight: 500; }
       .err { color: #dc2626; font-size: 0.85rem; }
       .estado.on { color: #047857; font-weight: 600; }
-      .qr { width: 160px; height: 160px; display: block; margin: 0.5rem 0 1rem; border: 1px solid var(--slate-100); border-radius: 8px; }
+      .qr {
+        width: 160px;
+        height: 160px;
+        display: block;
+        margin: 0.5rem 0 1rem;
+        border: 1.5px solid #93c5fd;
+        border-radius: 10px;
+      }
     `,
   ],
 })

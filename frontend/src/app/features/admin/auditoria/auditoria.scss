@@ -1,27 +1,32 @@
 :host {
   display: block;
 }
+
 h1 {
   margin: 0;
-  color: #0f172a;
+  color: var(--slate-900);
 }
+
 .lead {
   margin: 0.3rem 0 1.5rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
+
 .muted {
-  color: #94a3b8;
+  color: var(--slate-400);
 }
 
 .card {
   background: #fff;
-  border-radius: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 1rem 1.1rem;
-}
-.empty {
-  text-align: center;
-  color: #64748b;
+  border-radius: 16px;
+  border: 1.5px solid #93c5fd;
+  padding: 1.25rem 1.5rem;
+
+  &.empty {
+    text-align: center;
+    color: var(--slate-500);
+    padding: 2rem;
+  }
 }
 
 .filtros {
@@ -33,16 +38,25 @@ h1 {
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
+
     span {
       font-size: 0.78rem;
       font-weight: 600;
-      color: #334155;
+      color: var(--slate-700);
     }
+
     select {
-      border: 1px solid #cbd5e1;
+      border: 1.5px solid #bfdbfe;
       border-radius: 8px;
-      padding: 0.4rem 0.6rem;
+      padding: 0.45rem 0.65rem;
       font: inherit;
+      transition: border-color 0.15s, box-shadow 0.15s;
+
+      &:focus {
+        outline: none;
+        border-color: #3b82f6;
+        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+      }
     }
   }
 }
@@ -60,37 +74,42 @@ table {
   th,
   td {
     text-align: left;
-    padding: 0.6rem 0.9rem;
-    border-bottom: 1px solid #f1f5f9;
+    padding: 0.65rem 0.9rem;
+    border-bottom: 1px solid #e0e7ff;
     white-space: nowrap;
   }
+
   th {
-    color: #64748b;
+    color: var(--slate-500);
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
   }
+
   td {
-    color: #334155;
+    color: var(--slate-700);
   }
 }
 
 .metodo {
   font-weight: 700;
   font-size: 0.74rem;
-  padding: 0.1rem 0.4rem;
+  padding: 0.15rem 0.5rem;
   border-radius: 6px;
   background: #e2e8f0;
-  color: #475569;
+  color: var(--slate-600);
+
   &[data-m='POST'] {
     background: #dcfce7;
     color: #166534;
   }
+
   &[data-m='PATCH'],
   &[data-m='PUT'] {
     background: #dbeafe;
     color: #2563eb;
   }
+
   &[data-m='DELETE'] {
     background: #fee2e2;
     color: #dc2626;
@@ -99,9 +118,11 @@ table {
 
 .status {
   font-weight: 700;
+
   &.ok {
     color: #16a34a;
   }
+
   &.err {
     color: #dc2626;
   }
@@ -112,19 +133,24 @@ table {
   align-items: center;
   justify-content: center;
   gap: 1rem;
-  margin-top: 1rem;
-  color: #64748b;
+  margin-top: 1.25rem;
+  color: var(--slate-500);
   font-size: 0.85rem;
 
   button {
-    border: 1px solid #cbd5e1;
+    border: 1.5px solid #93c5fd;
     background: #fff;
     border-radius: 8px;
-    padding: 0.4rem 0.8rem;
+    padding: 0.45rem 0.85rem;
     cursor: pointer;
+    font-weight: 600;
+    color: #2563eb;
+    transition: all 0.15s ease;
+
     &:hover:not(:disabled) {
-      background: #f8fafc;
+      background: #dbeafe;
     }
+
     &:disabled {
       opacity: 0.5;
       cursor: default;

@@ -4,31 +4,35 @@
 
 h1 {
   margin: 0;
-  color: #0f172a;
+  color: var(--slate-900);
 }
+
 .lead {
   margin: 0.3rem 0 1.5rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .card {
   background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 1.1rem 1.25rem;
+  border-radius: 16px;
+  border: 1.5px solid #93c5fd;
+  padding: 1.25rem 1.5rem;
+
+  &.empty {
+    text-align: center;
+    color: var(--slate-500);
+    padding: 2rem;
+  }
 }
+
 .muted {
-  color: #64748b;
-}
-.empty {
-  text-align: center;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .lista {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 1rem;
 }
 
 .receta {
@@ -36,32 +40,48 @@ h1 {
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  padding: 1rem;
+  border: 1.5px solid #e0e7ff;
+  border-radius: 12px;
+  background: #f8fafc;
+  transition: all 0.15s ease;
+
+  &:hover {
+    border-color: #93c5fd;
+    background: #fff;
+  }
 
   .cabecera {
     display: flex;
     align-items: center;
     gap: 0.75rem;
   }
+
   .codigo {
     color: #2563eb;
     font-family: monospace;
     font-size: 1rem;
+    font-weight: 600;
   }
+
   .fecha {
-    color: #94a3b8;
+    color: var(--slate-400);
     font-size: 0.82rem;
   }
+
   .medico {
     display: block;
-    color: #475569;
+    color: var(--slate-600);
     font-size: 0.85rem;
     margin-top: 0.2rem;
   }
+
   .meds {
     margin: 0.6rem 0 0;
     padding-left: 1.1rem;
-    color: #334155;
+    color: var(--slate-700);
     font-size: 0.85rem;
+
     li {
       margin-bottom: 0.15rem;
     }
@@ -73,12 +93,15 @@ h1 {
   background: #2563eb;
   color: #fff;
   padding: 0.55rem 1rem;
-  border-radius: 9px;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 0.85rem;
   cursor: pointer;
   white-space: nowrap;
+  transition: all 0.15s ease;
+
   &:hover {
     background: #1d4ed8;
+    transform: translateY(-1px);
   }
 }

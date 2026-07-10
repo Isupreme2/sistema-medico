@@ -1,22 +1,125 @@
-<h1>Hola, {{ user()?.nombre }} 👋</h1>
-<p class="lead">Bienvenido a tu panel de <strong>{{ roleLabel() }}</strong>.</p>
+<div class="dashboard" [class.dashboard--medico]="isMedico()">
+  <div class="dashboard__header">
+    <h1>Hola, {{ user()?.nombre }} 👋</h1>
+    <p class="dashboard__subtitle">Bienvenido a tu panel de <strong>{{ roleLabel() }}</strong>.</p>
+  </div>
 
-<div class="cards">
-  @for (card of cards(); track card.title) {
-    @let clickable = card.status === 'listo' && card.link;
-    <a
-      class="card"
-      [class.clickable]="clickable"
-      [routerLink]="clickable ? card.link : null"
-    >
-      <span class="card-icon">{{ card.icon }}</span>
-      <div class="card-body">
-        <h3>{{ card.title }}</h3>
-        <p>{{ card.desc }}</p>
+  @if (isMedico() || isPaciente() || isAdmin()) {
+    <div class="cards">
+      @for (card of cards(); track card.title) {
+        @let clickable = card.status === 'listo' && card.link;
+        <a
+          class="card"
+          [class.clickable]="clickable"
+          [routerLink]="clickable ? card.link : null"
+        >
+          <div class="card__icon">
+            @switch (card.icon) {
+              @case ('calendario') {
+                <img src="assets/svg/calendario.svg" alt="" class="card__svg" />
+              }
+              @case ('clock') {
+                <img src="assets/svg/clock.svg" alt="" class="card__svg" />
+              }
+              @case ('pastilla') {
+                <img src="assets/svg/pastilla.svg" alt="" class="card__svg" />
+              }
+              @case ('documento') {
+                <img src="assets/svg/documento.svg" alt="" class="card__svg" />
+              }
+              @case ('grafico') {
+                <img src="assets/svg/grafico.svg" alt="" class="card__svg" />
+              }
+              @case ('perfil') {
+                <img src="assets/svg/perfil.svg" alt="" class="card__svg" />
+              }
+              @case ('medico') {
+                <img src="assets/svg/medico.svg" alt="" class="card__svg" />
+              }
+              @case ('recepcionista') {
+                <img src="assets/svg/recepcionista.svg" alt="" class="card__svg" />
+              }
+              @case ('tipo-cita') {
+                <img src="assets/svg/tipo-cita.svg" alt="" class="card__svg" />
+              }
+              @case ('cita') {
+                <img src="assets/svg/cita.svg" alt="" class="card__svg" />
+              }
+              @case ('paciente') {
+                <img src="assets/svg/paciente.svg" alt="" class="card__svg" />
+              }
+              @case ('factura') {
+                <img src="assets/svg/factura.svg" alt="" class="card__svg" />
+              }
+              @case ('auditoria') {
+                <img src="assets/svg/auditoria.svg" alt="" class="card__svg" />
+              }
+              @default {
+                <span class="card__emoji">{{ card.icon }}</span>
+              }
+            }
+          </div>
+          <div class="card__body">
+            <h3>{{ card.title }}</h3>
+            <p>{{ card.desc }}</p>
+          </div>
+          <span class="card__tag" [class.card__tag--soon]="card.status === 'pronto'">
+            {{ card.status === 'listo' ? 'Disponible' : 'Próximamente' }}
+          </span>
+        </a>
+      }
+    </div>
+
+    @if (quickStats().length > 0) {
+      <div class="quick-stats">
+        <h2 class="quick-stats__title">Quick Stats</h2>
+        <div class="quick-stats__grid">
+          @for (stat of quickStats(); track stat.label) {
+            <div class="stat">
+              <div class="stat__info">
+                <span class="stat__label">{{ stat.label }}:</span>
+                <span class="stat__value">{{ stat.value }}</span>
+              </div>
+              <div class="stat__icon">
+                @switch (stat.icon) {
+                  @case ('chart') {
+                    <img src="assets/svg/grafico.svg" alt="" class="stat__svg" />
+                  }
+                  @case ('mail') {
+                    <img src="assets/svg/mensajes.svg" alt="" class="stat__svg" />
+                  }
+                  @case ('calendar') {
+                    <img src="assets/svg/calendario.svg" alt="" class="stat__svg" />
+                  }
+                  @case ('medico') {
+                    <img src="assets/svg/medico.svg" alt="" class="stat__svg" />
+                  }
+                }
+              </div>
+            </div>
+          }
+        </div>
       </div>
-      <span class="tag" [class.tag-soon]="card.status === 'pronto'">
-        {{ card.status === 'listo' ? 'Disponible' : 'Próximamente' }}
-      </span>
-    </a>
+    }
+  } @else {
+    <div class="cards">
+      @for (card of cards(); track card.title) {
+        @let clickable = card.status === 'listo' && card.link;
+        <a
+          class="card"
+          [class.clickable]="clickable"
+          [routerLink]="clickable ? card.link : null"
+        >
+          <span class="card__icon--emoji">{{ card.icon }}</span>
+          <div class="card__body">
+            <h3>{{ card.title }}</h3>
+            <p>{{ card.desc }}</p>
+          </div>
+          <span class="card__tag" [class.card__tag--soon]="card.status === 'pronto'">
+            {{ card.status === 'listo' ? 'Disponible' : 'Próximamente' }}
+          </span>
+        </a>
+      }
+    </div>
   }
 </div>

@@ -4,38 +4,47 @@
 
 h1 {
   margin: 0;
-  color: #0f172a;
+  color: var(--slate-900);
 }
+
 .lead {
   margin: 0.3rem 0 1.5rem;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .card {
   background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 1.1rem 1.25rem;
+  border-radius: 16px;
+  border: 1.5px solid #93c5fd;
+  padding: 1.25rem 1.5rem;
+
+  &.empty {
+    text-align: center;
+    color: var(--slate-500);
+    padding: 2rem;
+  }
 }
 
 .muted {
-  color: #64748b;
-}
-.empty {
-  text-align: center;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .lista {
   display: flex;
   flex-direction: column;
-  gap: 0.85rem;
+  gap: 1rem;
 }
 
 .cita {
   display: flex;
   align-items: center;
   gap: 1.25rem;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(59, 130, 246, 0.12);
+  }
 
   &.cancelada {
     opacity: 0.6;
@@ -47,12 +56,14 @@ h1 {
     align-items: center;
     min-width: 80px;
     padding-right: 1.25rem;
-    border-right: 1px solid #f1f5f9;
+    border-right: 1px solid #e0e7ff;
+
     .dia {
       font-size: 0.82rem;
-      color: #64748b;
+      color: var(--slate-500);
       text-transform: capitalize;
     }
+
     .hora {
       font-size: 1.25rem;
       font-weight: 700;
@@ -64,11 +75,13 @@ h1 {
     flex: 1;
     display: flex;
     flex-direction: column;
+
     strong {
-      color: #1e293b;
+      color: var(--slate-800);
     }
+
     small {
-      color: #94a3b8;
+      color: var(--slate-400);
       font-size: 0.82rem;
     }
   }
@@ -76,11 +89,11 @@ h1 {
 
 .badge {
   font-size: 0.72rem;
-  padding: 0.2rem 0.6rem;
+  padding: 0.25rem 0.7rem;
   border-radius: 999px;
   font-weight: 600;
   background: #e2e8f0;
-  color: #475569;
+  color: var(--slate-600);
 
   &[data-estado='reservada'] {
     background: #dbeafe;
@@ -100,13 +113,13 @@ h1 {
   }
   &[data-estado='vencida'] {
     background: #e2e8f0;
-    color: #475569;
+    color: var(--slate-600);
   }
 }
 
 .nota-cambio {
   font-size: 0.78rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   font-style: italic;
 }
 
@@ -116,11 +129,18 @@ h1 {
   color: #2563eb;
   cursor: pointer;
   font-size: 0.85rem;
+  transition: color 0.15s;
+
   &:hover {
     text-decoration: underline;
   }
+
   &.danger {
     color: #dc2626;
+
+    &:hover {
+      color: #b91c1c;
+    }
   }
 }
 
@@ -137,23 +157,39 @@ h1 {
   font-size: 0.8rem;
   font-weight: 600;
   cursor: pointer;
-  transition: opacity 0.15s;
+  transition: all 0.15s ease;
   text-decoration: none;
   display: inline-block;
 
   &:hover {
     opacity: 0.85;
+    transform: translateY(-1px);
   }
+
   &.primary {
     background: #2563eb;
     color: #fff;
+
+    &:hover {
+      background: #1d4ed8;
+    }
   }
+
   &.ghost {
     background: #f1f5f9;
-    color: #475569;
+    color: var(--slate-600);
+
+    &:hover {
+      background: #e2e8f0;
+    }
   }
+
   &.danger {
     background: #fee2e2;
     color: #dc2626;
+
+    &:hover {
+      background: #fecaca;
+    }
   }
 }

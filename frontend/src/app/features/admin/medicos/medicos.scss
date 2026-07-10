@@ -11,22 +11,22 @@
 
   h1 {
     margin: 0;
-    color: #0f172a;
+    color: var(--slate-900);
   }
+
   .lead {
     margin: 0.3rem 0 0;
-    color: #64748b;
+    color: var(--slate-500);
   }
 }
 
 .card {
   background: #fff;
-  border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  padding: 1.25rem;
+  border-radius: 16px;
+  border: 1.5px solid #93c5fd;
+  padding: 1.5rem;
 }
 
-/* Combobox de especialidad con buscador */
 .combo {
   position: relative;
 
@@ -42,9 +42,9 @@
     max-height: 14rem;
     overflow-y: auto;
     background: #fff;
-    border: 1px solid var(--slate-200);
-    border-radius: 0.75rem;
-    box-shadow: 0 12px 28px -10px rgba(15, 23, 42, 0.25);
+    border: 1.5px solid #93c5fd;
+    border-radius: 10px;
+    box-shadow: 0 12px 28px -10px rgba(59, 130, 246, 0.2);
 
     li button {
       display: block;
@@ -53,15 +53,16 @@
       border: none;
       background: none;
       padding: 0.5rem 0.65rem;
-      border-radius: 0.5rem;
+      border-radius: 8px;
       font: inherit;
       font-size: 0.9rem;
       color: var(--slate-700);
       cursor: pointer;
+      transition: all 0.15s ease;
 
       &:hover {
-        background: var(--brand-soft);
-        color: var(--brand);
+        background: #dbeafe;
+        color: #2563eb;
       }
     }
   }
@@ -71,16 +72,19 @@
   border: none;
   background: #2563eb;
   color: #fff;
-  padding: 0.6rem 1.1rem;
-  border-radius: 9px;
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
   font-weight: 600;
   font-size: 0.9rem;
   cursor: pointer;
   white-space: nowrap;
-  transition: background 0.15s;
+  transition: all 0.15s ease;
+
   &:hover:not(:disabled) {
     background: #1d4ed8;
+    transform: translateY(-1px);
   }
+
   &:disabled {
     opacity: 0.6;
     cursor: not-allowed;
@@ -90,32 +94,39 @@
 .form {
   margin-bottom: 1.5rem;
 }
+
 .grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 1rem;
 }
+
 .field {
   display: flex;
   flex-direction: column;
+
   span {
     font-size: 0.8rem;
     font-weight: 600;
-    color: #334155;
+    color: var(--slate-700);
     margin-bottom: 0.3rem;
   }
+
   input {
     padding: 0.6rem 0.75rem;
-    border: 1px solid #cbd5e1;
+    border: 1.5px solid #bfdbfe;
     border-radius: 8px;
     font-size: 0.92rem;
+    transition: border-color 0.15s, box-shadow 0.15s;
+
     &:focus {
       outline: none;
-      border-color: #2563eb;
-      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
     }
   }
 }
+
 .form-actions {
   margin-top: 1.1rem;
   display: flex;
@@ -123,15 +134,17 @@
 }
 
 .alert {
-  padding: 0.6rem 0.9rem;
-  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
   font-size: 0.86rem;
   margin-bottom: 1rem;
+
   &.ok {
     background: #dcfce7;
     color: #166534;
     border: 1px solid #bbf7d0;
   }
+
   &.err {
     background: #fef2f2;
     color: #b91c1c;
@@ -140,17 +153,19 @@
 }
 
 .muted {
-  color: #64748b;
+  color: var(--slate-500);
 }
+
 .empty {
   text-align: center;
-  color: #64748b;
+  color: var(--slate-500);
 }
 
 .table-wrap {
   padding: 0;
   overflow-x: auto;
 }
+
 table {
   width: 100%;
   border-collapse: collapse;
@@ -160,20 +175,23 @@ table {
   td {
     text-align: left;
     padding: 0.85rem 1rem;
-    border-bottom: 1px solid #f1f5f9;
+    border-bottom: 1px solid #e0e7ff;
   }
+
   th {
     font-size: 0.75rem;
     text-transform: uppercase;
     letter-spacing: 0.03em;
-    color: #94a3b8;
+    color: var(--slate-400);
     background: #f8fafc;
   }
+
   td small {
     display: block;
-    color: #94a3b8;
+    color: var(--slate-400);
     font-size: 0.78rem;
   }
+
   tr:last-child td {
     border-bottom: none;
   }
@@ -181,10 +199,12 @@ table {
 
 .badge {
   font-size: 0.72rem;
-  padding: 0.18rem 0.55rem;
+  padding: 0.2rem 0.6rem;
   border-radius: 999px;
   background: #dcfce7;
   color: #16a34a;
+  font-weight: 600;
+
   &.badge-off {
     background: #fee2e2;
     color: #dc2626;
@@ -204,6 +224,7 @@ table {
   gap: 0.75rem;
   white-space: nowrap;
 }
+
 .link-btn {
   background: none;
   border: none;
@@ -211,10 +232,17 @@ table {
   cursor: pointer;
   font-size: 0.83rem;
   padding: 0;
+  transition: color 0.15s;
+
   &:hover {
     text-decoration: underline;
   }
+
   &.danger {
     color: #dc2626;
+
+    &:hover {
+      color: #b91c1c;
+    }
   }
 }
