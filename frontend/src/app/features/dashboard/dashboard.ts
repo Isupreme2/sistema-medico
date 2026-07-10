@@ -55,6 +55,7 @@ export class Dashboard implements OnInit {
   readonly isMedico = computed(() => this.auth.role() === UserRole.MEDICO);
   readonly isPaciente = computed(() => this.auth.role() === UserRole.PACIENTE);
   readonly isAdmin = computed(() => this.auth.role() === UserRole.ADMIN);
+  readonly isRecepcionista = computed(() => this.auth.role() === UserRole.RECEPCIONISTA);
 
   readonly pacientesHoy = computed(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -135,10 +136,10 @@ export class Dashboard implements OnInit {
         ];
       case UserRole.RECEPCIONISTA:
         return [
-          { icon: '🗓️', title: 'Agendar cita', desc: 'Reserva citas a nombre de pacientes', status: 'listo', link: '/recepcion/agendar' },
-          { icon: '📋', title: 'Citas', desc: 'Todas las citas de la clínica', status: 'listo', link: '/recepcion/citas' },
-          { icon: '🧑‍🤝‍🧑', title: 'Pacientes', desc: 'Busca y registra pacientes', status: 'listo', link: '/recepcion/pacientes' },
-          { icon: '🧾', title: 'Facturación', desc: 'Emite comprobantes y registra cobros', status: 'listo', link: '/recepcion/facturacion' },
+          { icon: 'agendar-cita', title: 'Agendar cita', desc: 'Reserva citas a nombre de pacientes', status: 'listo', link: '/recepcion/agendar' },
+          { icon: 'cita', title: 'Citas', desc: 'Todas las citas de la clínica', status: 'listo', link: '/recepcion/citas' },
+          { icon: 'paciente', title: 'Pacientes', desc: 'Busca y registra pacientes', status: 'listo', link: '/recepcion/pacientes' },
+          { icon: 'factura', title: 'Facturación', desc: 'Emite comprobantes y registra cobros', status: 'listo', link: '/recepcion/facturacion' },
         ];
       case UserRole.MEDICO:
         return [

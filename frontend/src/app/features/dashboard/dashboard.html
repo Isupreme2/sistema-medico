@@ -4,7 +4,7 @@
     <p class="dashboard__subtitle">Bienvenido a tu panel de <strong>{{ roleLabel() }}</strong>.</p>
   </div>
 
-  @if (isMedico() || isPaciente() || isAdmin()) {
+  @if (isMedico() || isPaciente() || isAdmin() || isRecepcionista()) {
     <div class="cards">
       @for (card of cards(); track card.title) {
         @let clickable = card.status === 'listo' && card.link;
@@ -35,6 +35,9 @@
               }
               @case ('medico') {
                 <img src="assets/svg/medico.svg" alt="" class="card__svg" />
+              }
+              @case ('agendar-cita') {
+                <img src="assets/svg/agendar-cita.svg" alt="" class="card__svg" />
               }
               @case ('recepcionista') {
                 <img src="assets/svg/recepcionista.svg" alt="" class="card__svg" />

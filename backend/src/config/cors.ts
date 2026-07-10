@@ -24,6 +24,7 @@ const dynamicPatterns: RegExp[] = [
   /^https?:\/\/localhost(:\d+)?$/i,
   /^https?:\/\/127\.0\.0\.1(:\d+)?$/i,
   /^https?:\/\/([a-z0-9-]+\.)*app\.github\.dev$/i,
+  /^https?:\/\/([a-z0-9-]+\.)*vercel\.app$/i,
 ];
 
 export function isOriginAllowed(origin?: string): boolean {

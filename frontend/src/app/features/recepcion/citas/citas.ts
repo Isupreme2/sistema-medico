@@ -55,21 +55,60 @@ import { Appointment } from '../../../core/models/appointment.model';
   `,
   styles: [
     `
-      .page__head { margin-bottom: 1rem; }
-      .muted { color: #6b7280; font-size: .9rem; }
-      .tbl { width: 100%; border-collapse: collapse; background: #fff; border: 1px solid #e5e7eb; border-radius: 12px; overflow: hidden; }
-      .tbl th, .tbl td { text-align: left; padding: .7rem .8rem; border-bottom: 1px solid #f3f4f6; font-size: .9rem; }
-      .tbl th { background: #f9fafb; color: #374151; }
+      :host { display: block; }
+      .page__head { margin-bottom: 1.5rem; }
+      .page__head h1 { margin: 0; color: var(--slate-900); }
+      .muted { color: var(--slate-500); font-size: .9rem; }
+      .tbl {
+        width: 100%;
+        border-collapse: collapse;
+        background: #fff;
+        border: 1.5px solid #93c5fd;
+        border-radius: 16px;
+        overflow: hidden;
+      }
+      .tbl th, .tbl td {
+        text-align: left;
+        padding: .7rem .8rem;
+        border-bottom: 1px solid #e0e7ff;
+        font-size: .9rem;
+      }
+      .tbl th {
+        background: #dbeafe;
+        color: var(--slate-700);
+        font-weight: 600;
+      }
+      .tbl tr:hover { background: #f0f7ff; }
       .actions { display: flex; gap: .4rem; }
-      .btn-sm { padding: .35rem .7rem; background: #2563eb; color: #fff; border: 0; border-radius: 6px; cursor: pointer; text-decoration: none; font-size: .82rem; }
+      .btn-sm {
+        padding: .35rem .7rem;
+        background: #2563eb;
+        color: #fff;
+        border: 0;
+        border-radius: 8px;
+        cursor: pointer;
+        text-decoration: none;
+        font-size: .82rem;
+        font-weight: 600;
+        transition: all 0.15s ease;
+      }
+      .btn-sm:hover { background: #1d4ed8; transform: translateY(-1px); }
       .btn-sm.danger { background: #dc2626; }
-      .badge { padding: .15rem .5rem; border-radius: 999px; font-size: .78rem; background: #e5e7eb; }
-      .badge[data-estado='reservada'] { background: #dbeafe; color: #1e40af; }
-      .badge[data-estado='atendida'] { background: #dcfce7; color: #166534; }
-      .badge[data-estado='cancelada'] { background: #fee2e2; color: #991b1b; }
-      .badge[data-estado='no_asistio'] { background: #fef3c7; color: #92400e; }
-      .badge[data-estado='vencida'] { background: #e2e8f0; color: #475569; }
-      .err { color: #b91c1c; }
+      .btn-sm.danger:hover { background: #b91c1c; }
+      .badge {
+        padding: .15rem .5rem;
+        border-radius: 999px;
+        font-size: .78rem;
+        font-weight: 600;
+        background: #e2e8f0;
+        color: var(--slate-600);
+      }
+      .badge[data-estado='reservada'] { background: #dbeafe; color: #2563eb; }
+      .badge[data-estado='atendida'] { background: #dcfce7; color: #16a34a; }
+      .badge[data-estado='cancelada'] { background: #fee2e2; color: #dc2626; }
+      .badge[data-estado='no_asistio'] { background: #fef9c3; color: #ca8a04; }
+      .badge[data-estado='vencida'] { background: #e2e8f0; color: var(--slate-600); }
+      .err { color: #dc2626; font-weight: 600; }
     `,
   ],
 })
