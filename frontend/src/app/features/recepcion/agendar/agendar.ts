@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormsModule } from '@angular/forms';
 import { HttpErrorResponse } from '@angular/common/http';
@@ -13,11 +13,21 @@ import { AppointmentModality, Slot } from '../../../core/models/appointment.mode
 import { PatientLite } from '../../../core/models/user.model';
 import { MedicosAlternativos } from '../../../shared/medicos-alternativos/medicos-alternativos';
 
+/** Nombres cortos de día (0=domingo … 6=sábado). */
+const DIA_CORTO = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+/** Orden de presentación de los días de atención (semana laboral primero). */
+const ORDEN_DIAS = [1, 2, 3, 4, 5, 6, 0];
+
 /** Fecha de hoy en formato YYYY-MM-DD según la zona horaria LOCAL (no UTC). */
 function hoyLocal(): string {
   const d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().slice(0, 10);
+}
+
+/** Convierte una fecha YYYY-MM-DD en su día de semana local (0=domingo). */
+function diaSemanaDe(fecha: string): number {
+  return new Date(`${fecha}T00:00:00`).getDay();
 }
 
 /** Recepción agenda una cita a nombre de un paciente. */
@@ -69,11 +79,19 @@ function hoyLocal(): string {
         <h2>2. Médico y fecha</h2>
         <div class="row">
           <label>
+            Especialidad
+            <select class="input" [ngModel]="especialidad()" (ngModelChange)="onEspecialidadChange($event)">
+              @for (esp of especialidades(); track esp) {
+                <option [value]="esp">{{ esp }}</option>
+              }
+            </select>
+          </label>
+          <label>
             Médico
             <select class="input" [ngModel]="medicoId()" (ngModelChange)="onMedicoChange($event)">
-              @for (m of medicos(); track m._id) {
+              @for (m of medicosFiltrados(); track m._id) {
                 <option [value]="m.usuarioId._id">
-                  Dr(a). {{ m.usuarioId.nombre }} {{ m.usuarioId.apellido }} — {{ m.especialidad }}
+                  Dr(a). {{ m.usuarioId.nombre }} {{ m.usuarioId.apellido }}
                 </option>
               }
             </select>
@@ -81,6 +99,14 @@ function hoyLocal(): string {
           <label>
             Fecha
             <input class="input" type="date" [min]="minFecha" [ngModel]="fecha()" (ngModelChange)="onFechaChange($event)" />
+            @if (diasAtencion()) {
+              <small class="dias-hint">Atiende: {{ diasAtencion() }}</small>
+            }
+            @if (!fechaEsAtendida() && proximaFechaDisponible(); as prox) {
+              <button type="button" class="prox-btn" (click)="onFechaChange(prox.fecha)">
+                Próxima disponible: {{ prox.label }}
+              </button>
+            }
           </label>
           <label>
             Modalidad
@@ -172,6 +198,20 @@ function hoyLocal(): string {
       .input:focus { outline: none; border-color: var(--brand); }
       .row { display: grid; gap: .75rem; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
       .row label { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: var(--slate-700); }
+      .dias-hint { font-size: .78rem; color: var(--slate-500); }
+      .prox-btn {
+        align-self: flex-start;
+        background: var(--info-bg);
+        color: var(--info-text);
+        border: 1px solid var(--info-border);
+        border-radius: 8px;
+        padding: .3rem .6rem;
+        font-size: .78rem;
+        font-weight: 600;
+        cursor: pointer;
+        transition: filter 0.15s ease;
+      }
+      .prox-btn:hover { filter: brightness(1.05); }
       .motivo-field { display: flex; flex-direction: column; gap: .3rem; font-size: .85rem; color: var(--slate-700); margin-top: .75rem; }
       .list { list-style: none; padding: 0; margin: .5rem 0 0; }
       .list li {
@@ -222,10 +262,62 @@ export class RecepcionAgendar {
 
   readonly medicos = signal<MedicoProfile[]>([]);
   readonly tipos = signal<AppointmentType[]>([]);
+  /** Especialidad elegida: filtra el desplegable de médicos. */
+  readonly especialidad = signal('');
   readonly medicoId = signal('');
   readonly fecha = signal(hoyLocal());
   /** Fecha mínima seleccionable: hoy (no se permiten fechas pasadas). */
   readonly minFecha = hoyLocal();
+
+  /** Especialidades con al menos un médico activo (paso previo al médico). */
+  readonly especialidades = computed(() =>
+    [...new Set(this.medicos().map((m) => m.especialidad))].sort((a, b) => a.localeCompare(b, 'es')),
+  );
+  /** Médicos de la especialidad elegida, ordenados por nombre. */
+  readonly medicosFiltrados = computed(() => {
+    const esp = this.especialidad();
+    const list = esp ? this.medicos().filter((m) => m.especialidad === esp) : this.medicos();
+    return [...list].sort((a, b) =>
+      `${a.usuarioId.nombre} ${a.usuarioId.apellido}`.localeCompare(
+        `${b.usuarioId.nombre} ${b.usuarioId.apellido}`,
+        'es',
+      ),
+    );
+  });
+  /** Perfil del médico seleccionado (para mostrar sus días de atención). */
+  readonly medicoSel = computed(
+    () => this.medicos().find((m) => m.usuarioId._id === this.medicoId()) ?? null,
+  );
+  /** Días de atención del médico seleccionado, p. ej. "Lun, Mié, Vie". */
+  readonly diasAtencion = computed(() => {
+    const m = this.medicoSel();
+    if (!m) return '';
+    const set = new Set(m.horarios.map((h) => h.diaSemana));
+    return ORDEN_DIAS.filter((d) => set.has(d)).map((d) => DIA_CORTO[d]).join(', ');
+  });
+  /** ¿El médico atiende en la fecha elegida actualmente? */
+  readonly fechaEsAtendida = computed(() => {
+    const m = this.medicoSel();
+    if (!m) return true;
+    const d = diaSemanaDe(this.fecha());
+    return m.horarios.some((h) => h.diaSemana === d);
+  });
+  /** Próxima fecha (>= hoy) en que el médico seleccionado atiende. */
+  readonly proximaFechaDisponible = computed(() => {
+    const m = this.medicoSel();
+    if (!m || !m.horarios.length) return null;
+    const dias = new Set(m.horarios.map((h) => h.diaSemana));
+    const base = new Date(`${this.minFecha}T00:00:00`);
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(base.getTime() + i * 86_400_000);
+      if (dias.has(d.getDay())) {
+        const fecha = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const label = `${DIA_CORTO[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+        return { fecha, label };
+      }
+    }
+    return null;
+  });
   modalidadSel: AppointmentModality = 'presencial';
   tipoCitaSel = '';
   motivoSel = '';
@@ -245,7 +337,10 @@ export class RecepcionAgendar {
   constructor() {
     this.medicoService.list(true).subscribe((m) => {
       this.medicos.set(m);
-      if (m.length) this.onMedicoChange(m[0].usuarioId._id);
+      if (m.length) {
+        this.especialidad.set(m[0].especialidad);
+        this.onMedicoChange(m[0].usuarioId._id);
+      }
     });
 
     this.appointmentTypes.list(true).subscribe((t) => this.tipos.set(t));
@@ -282,6 +377,13 @@ export class RecepcionAgendar {
   onMedicoChange(id: string): void {
     this.medicoId.set(id);
     this.cargarDisponibilidad();
+  }
+
+  /** Paso previo: al cambiar la especialidad, elige su primer médico. */
+  onEspecialidadChange(esp: string): void {
+    this.especialidad.set(esp);
+    const primero = this.medicosFiltrados()[0];
+    if (primero) this.onMedicoChange(primero.usuarioId._id);
   }
 
   onFechaChange(fecha: string): void {
@@ -341,7 +443,15 @@ export class RecepcionAgendar {
         });
   }
 
+  /**
+   * Recepción eligió un horario de un médico alternativo: cambiamos al médico y
+   * reservamos ese slot directamente (reservar valida paciente y motivo).
+   */
   onSeleccionarAlternativo(ev: { medicoId: string; slot: Slot }): void {
-    this.onMedicoChange(ev.medicoId);
+    const alt = this.medicos().find((m) => m.usuarioId._id === ev.medicoId);
+    if (alt) this.especialidad.set(alt.especialidad);
+    this.medicoId.set(ev.medicoId);
+    this.cargarDisponibilidad();
+    this.reservar(ev.slot);
   }
 }
