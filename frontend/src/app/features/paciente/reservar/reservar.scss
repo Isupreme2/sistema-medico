@@ -115,12 +115,13 @@ h1 {
 .controls {
   display: flex;
   flex-wrap: wrap;
-  align-items: flex-end;
+  align-items: flex-start;
   gap: 1.25rem;
   margin-bottom: 1.5rem;
 
   .realtime {
     margin-left: auto;
+    align-self: center;
     font-size: 0.78rem;
     color: var(--ok-text);
     font-weight: 600;
