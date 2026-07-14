@@ -2,6 +2,7 @@ import {
   Component,
   ChangeDetectionStrategy,
   DestroyRef,
+  computed,
   inject,
   signal,
 } from '@angular/core';
@@ -21,11 +22,21 @@ import { MedicosAlternativos } from '../../../shared/medicos-alternativos/medico
 /** Tarifa de consulta para la demo de pago (S/). */
 const TARIFA_CONSULTA = 80;
 
+/** Nombres cortos de día (0=domingo … 6=sábado). */
+const DIA_CORTO = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
+/** Orden de presentación de los días de atención (semana laboral primero). */
+const ORDEN_DIAS = [1, 2, 3, 4, 5, 6, 0];
+
 /** Fecha de hoy en formato YYYY-MM-DD según la zona horaria LOCAL (no UTC). */
 function hoyLocal(): string {
   const d = new Date();
   d.setMinutes(d.getMinutes() - d.getTimezoneOffset());
   return d.toISOString().slice(0, 10);
+}
+
+/** Convierte una fecha YYYY-MM-DD en su día de semana local (0=domingo). */
+function diaSemanaDe(fecha: string): number {
+  return new Date(`${fecha}T00:00:00`).getDay();
 }
 
 @Component({
@@ -46,10 +57,62 @@ export class Reservar {
   readonly medicos = signal<MedicoProfile[]>([]);
   readonly tipos = signal<AppointmentType[]>([]);
   readonly tipoCitaId = signal<string>('');
+  /** Especialidad elegida: filtra el desplegable de médicos. */
+  readonly especialidad = signal<string>('');
   readonly medicoId = signal<string>('');
   /** Fecha mínima seleccionable: hoy (no se permiten fechas pasadas). */
   readonly minFecha = hoyLocal();
   readonly fecha = signal<string>(hoyLocal());
+
+  /** Especialidades con al menos un médico activo (para el paso 1). */
+  readonly especialidades = computed(() =>
+    [...new Set(this.medicos().map((m) => m.especialidad))].sort((a, b) => a.localeCompare(b, 'es')),
+  );
+  /** Médicos de la especialidad elegida, ordenados por nombre (paso 2). */
+  readonly medicosFiltrados = computed(() => {
+    const esp = this.especialidad();
+    const list = esp ? this.medicos().filter((m) => m.especialidad === esp) : this.medicos();
+    return [...list].sort((a, b) =>
+      `${a.usuarioId.nombre} ${a.usuarioId.apellido}`.localeCompare(
+        `${b.usuarioId.nombre} ${b.usuarioId.apellido}`,
+        'es',
+      ),
+    );
+  });
+  /** Perfil del médico seleccionado (para mostrar sus días de atención). */
+  readonly medicoSel = computed(
+    () => this.medicos().find((m) => m.usuarioId._id === this.medicoId()) ?? null,
+  );
+  /** Días de atención del médico seleccionado, p. ej. "Lun, Mié, Vie". */
+  readonly diasAtencion = computed(() => {
+    const m = this.medicoSel();
+    if (!m) return '';
+    const set = new Set(m.horarios.map((h) => h.diaSemana));
+    return ORDEN_DIAS.filter((d) => set.has(d)).map((d) => DIA_CORTO[d]).join(', ');
+  });
+  /** ¿El médico atiende en la fecha elegida actualmente? */
+  readonly fechaEsAtendida = computed(() => {
+    const m = this.medicoSel();
+    if (!m) return true;
+    const d = diaSemanaDe(this.fecha());
+    return m.horarios.some((h) => h.diaSemana === d);
+  });
+  /** Próxima fecha (>= hoy) en que el médico seleccionado atiende. */
+  readonly proximaFechaDisponible = computed(() => {
+    const m = this.medicoSel();
+    if (!m || !m.horarios.length) return null;
+    const dias = new Set(m.horarios.map((h) => h.diaSemana));
+    const base = new Date(`${this.minFecha}T00:00:00`);
+    for (let i = 0; i < 60; i++) {
+      const d = new Date(base.getTime() + i * 86_400_000);
+      if (dias.has(d.getDay())) {
+        const fecha = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+        const label = `${DIA_CORTO[d.getDay()]} ${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}`;
+        return { fecha, label };
+      }
+    }
+    return null;
+  });
   readonly modalidad = signal<AppointmentModality>('presencial');
   /** Motivo de consulta: obligatorio para confirmar la reserva. */
   readonly motivo = signal<string>('');
@@ -80,8 +143,9 @@ export class Reservar {
         if (reprogramando) this.reprogramandoId.set(reprogramando);
         if (m.length && !this.medicoId()) {
           const preseleccion = this.route.snapshot.queryParamMap.get('medico');
-          const existe = preseleccion && m.some((x) => x.usuarioId._id === preseleccion);
-          this.onMedicoChange(existe ? preseleccion! : m[0].usuarioId._id);
+          const elegido = m.find((x) => x.usuarioId._id === preseleccion) ?? m[0];
+          this.especialidad.set(elegido.especialidad);
+          this.onMedicoChange(elegido.usuarioId._id);
         }
       });
 
@@ -95,6 +159,13 @@ export class Reservar {
     this.medicoId.set(id);
     this.cargarDisponibilidad();
     this.suscribirTiempoReal(id);
+  }
+
+  /** Paso 1 del selector: al cambiar la especialidad, elige su primer médico. */
+  onEspecialidadChange(esp: string): void {
+    this.especialidad.set(esp);
+    const primero = this.medicosFiltrados()[0];
+    if (primero) this.onMedicoChange(primero.usuarioId._id);
   }
 
   onFechaChange(fecha: string): void {
@@ -190,7 +261,17 @@ export class Reservar {
 
   readonly hayDisponibles = () => this.slots().some((s) => s.disponible);
 
+  /**
+   * El paciente eligió un horario de un médico alternativo: cambiamos al médico
+   * y lanzamos la reserva de ese mismo slot (si falta el motivo, `reservar`
+   * avisa y la grilla ya queda mostrando la disponibilidad del alternativo).
+   */
   onSeleccionarAlternativo(ev: { medicoId: string; slot: Slot }): void {
-    this.onMedicoChange(ev.medicoId);
+    const alt = this.medicos().find((m) => m.usuarioId._id === ev.medicoId);
+    if (alt) this.especialidad.set(alt.especialidad);
+    this.medicoId.set(ev.medicoId);
+    this.suscribirTiempoReal(ev.medicoId);
+    this.cargarDisponibilidad();
+    this.reservar(ev.slot);
   }
 }

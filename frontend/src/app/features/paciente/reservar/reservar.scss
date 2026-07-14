@@ -153,6 +153,30 @@ h1 {
       box-shadow: 0 0 0 3px var(--shadow);
     }
   }
+
+  .dias-hint {
+    margin-top: 0.35rem;
+    font-size: 0.78rem;
+    color: var(--slate-500);
+  }
+
+  .prox-btn {
+    margin-top: 0.4rem;
+    align-self: flex-start;
+    background: var(--info-bg);
+    color: var(--info-text);
+    border: 1px solid var(--info-border);
+    border-radius: 8px;
+    padding: 0.3rem 0.6rem;
+    font-size: 0.78rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: filter 0.15s ease;
+
+    &:hover {
+      filter: brightness(1.05);
+    }
+  }
 }
 
 .alert {

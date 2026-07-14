@@ -12,11 +12,19 @@
 
 <div class="controls card">
   <label class="field">
+    <span>Especialidad</span>
+    <select [value]="especialidad()" (change)="onEspecialidadChange($any($event.target).value)">
+      @for (esp of especialidades(); track esp) {
+        <option [value]="esp">{{ esp }}</option>
+      }
+    </select>
+  </label>
+  <label class="field">
     <span>Médico</span>
     <select [value]="medicoId()" (change)="onMedicoChange($any($event.target).value)">
-      @for (m of medicos(); track m._id) {
+      @for (m of medicosFiltrados(); track m._id) {
         <option [value]="m.usuarioId._id">
-          {{ m.usuarioId.nombre }} {{ m.usuarioId.apellido }} — {{ m.especialidad }}
+          {{ m.usuarioId.nombre }} {{ m.usuarioId.apellido }}
         </option>
       }
     </select>
@@ -24,6 +32,14 @@
   <label class="field">
     <span>Fecha</span>
     <input type="date" [min]="minFecha" [value]="fecha()" (change)="onFechaChange($any($event.target).value)" />
+    @if (diasAtencion()) {
+      <small class="dias-hint">Atiende: {{ diasAtencion() }}</small>
+    }
+    @if (!fechaEsAtendida() && proximaFechaDisponible(); as prox) {
+      <button type="button" class="prox-btn" (click)="onFechaChange(prox.fecha)">
+        Próxima disponible: {{ prox.label }}
+      </button>
+    }
   </label>
   <label class="field">
     <span>Modalidad</span>
