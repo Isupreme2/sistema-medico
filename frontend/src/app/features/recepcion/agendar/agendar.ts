@@ -80,7 +80,7 @@ function hoyLocal(): string {
           </label>
           <label>
             Fecha
-            <input class="input" type="date" [ngModel]="fecha()" (ngModelChange)="onFechaChange($event)" />
+            <input class="input" type="date" [min]="minFecha" [ngModel]="fecha()" (ngModelChange)="onFechaChange($event)" />
           </label>
           <label>
             Modalidad
@@ -224,6 +224,8 @@ export class RecepcionAgendar {
   readonly tipos = signal<AppointmentType[]>([]);
   readonly medicoId = signal('');
   readonly fecha = signal(hoyLocal());
+  /** Fecha mínima seleccionable: hoy (no se permiten fechas pasadas). */
+  readonly minFecha = hoyLocal();
   modalidadSel: AppointmentModality = 'presencial';
   tipoCitaSel = '';
   motivoSel = '';
@@ -283,6 +285,12 @@ export class RecepcionAgendar {
   }
 
   onFechaChange(fecha: string): void {
+    // No se permiten fechas anteriores a hoy: se ajusta al día actual.
+    if (fecha && fecha < this.minFecha) {
+      this.fecha.set(this.minFecha);
+      this.cargarDisponibilidad();
+      return;
+    }
     this.fecha.set(fecha);
     this.cargarDisponibilidad();
   }

@@ -23,7 +23,7 @@
   </label>
   <label class="field">
     <span>Fecha</span>
-    <input type="date" [value]="fecha()" (change)="onFechaChange($any($event.target).value)" />
+    <input type="date" [min]="minFecha" [value]="fecha()" (change)="onFechaChange($any($event.target).value)" />
   </label>
   <label class="field">
     <span>Modalidad</span>

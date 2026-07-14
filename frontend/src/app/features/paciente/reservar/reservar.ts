@@ -47,6 +47,8 @@ export class Reservar {
   readonly tipos = signal<AppointmentType[]>([]);
   readonly tipoCitaId = signal<string>('');
   readonly medicoId = signal<string>('');
+  /** Fecha mínima seleccionable: hoy (no se permiten fechas pasadas). */
+  readonly minFecha = hoyLocal();
   readonly fecha = signal<string>(hoyLocal());
   readonly modalidad = signal<AppointmentModality>('presencial');
   /** Motivo de consulta: obligatorio para confirmar la reserva. */
@@ -96,6 +98,14 @@ export class Reservar {
   }
 
   onFechaChange(fecha: string): void {
+    // No se permiten fechas anteriores a hoy: se ajusta al día actual.
+    if (fecha && fecha < this.minFecha) {
+      this.error.set('No puedes reservar en una fecha anterior a hoy.');
+      this.fecha.set(this.minFecha);
+      this.cargarDisponibilidad();
+      return;
+    }
+    this.error.set(null);
     this.fecha.set(fecha);
     this.cargarDisponibilidad();
   }

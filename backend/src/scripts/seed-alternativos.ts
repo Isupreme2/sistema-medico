@@ -2,197 +2,138 @@ import { faker } from '@faker-js/faker';
 import bcrypt from 'bcryptjs';
 import { connectDatabase, disconnectDatabase } from '../config/db';
 import { UserRole } from '../constants/roles';
-import { MedicoProfile } from '../models/medicoProfile.model';
+import { MedicoProfile, IHorario } from '../models/medicoProfile.model';
 import { User } from '../models/user.model';
 import { Bloqueo } from '../models/bloqueo.model';
-import { buildDate } from '../utils/slots';
 import { logger } from '../utils/logger';
-import { buildWeeklySchedule } from './seed.generators';
 
 const BCRYPT_ROUNDS = 12;
+const ESPECIALIDAD = 'Cardiología';
+const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
 
-const DEMO_DOCTOR_EMAILS = [
-  'seed.demo+doctor.1@ehr.dev',
-  'seed.demo+doctor.2@ehr.dev',
-  'seed.demo+doctor.3@ehr.dev',
-];
+/** Cardiólogos demo que garantizamos que existan (además de los que ya tengas). */
+const CARDIO_DEMO_EMAILS = ['alt.demo+cardio.1@ehr.dev', 'alt.demo+cardio.2@ehr.dev'];
 
-function nextWeekday(dayOfWeek: number): Date {
-  const now = new Date();
-  const currentDay = now.getDay();
-  let diff = dayOfWeek - currentDay;
-  if (diff <= 0) diff += 7;
-  const result = new Date(now.getTime() + diff * 24 * 60 * 60 * 1000);
-  result.setHours(0, 0, 0, 0);
-  return result;
+/** Genera franjas para un conjunto de días con uno o dos tramos horarios. */
+function franjas(dias: number[], tramos: Array<[string, string]>): IHorario[] {
+  return dias.flatMap((diaSemana) =>
+    tramos.map(([horaInicio, horaFin]) => ({ diaSemana, horaInicio, horaFin })),
+  );
 }
 
-function formatDate(d: Date): string {
-  const y = d.getFullYear();
-  const m = String(d.getMonth() + 1).padStart(2, '0');
-  const day = String(d.getDate()).padStart(2, '0');
-  return `${y}-${m}-${day}`;
+/**
+ * Horarios COMPLEMENTARIOS por diseño:
+ * - El médico de referencia NO atiende Martes ni Jueves.
+ * - Todos los alternativos SÍ cubren Martes y Jueves.
+ * Así, al elegir al referente en un Martes/Jueves, se activan los alternativos.
+ */
+const HORARIO_REFERENCIA = franjas([1, 3, 5], [['08:00', '13:00']]); // Lun, Mié, Vie
+const HORARIOS_ALTERNATIVOS: IHorario[][] = [
+  franjas([2, 4, 5], [['09:00', '13:00'], ['15:00', '18:00']]), // Mar, Jue, Vie
+  franjas([1, 2, 4], [['08:00', '12:00']]),                     // Lun, Mar, Jue
+  franjas([1, 2, 3, 4, 5], [['08:00', '12:00'], ['15:00', '18:00']]), // Lun-Vie
+];
+
+/** Próximo jueves (diaSemana=4) a partir de hoy, como fecha YYYY-MM-DD. */
+function proximoJueves(): { fecha: string; label: string } {
+  const now = new Date();
+  let diff = 4 - now.getDay();
+  if (diff <= 0) diff += 7;
+  const d = new Date(now.getTime() + diff * 24 * 60 * 60 * 1000);
+  const fecha = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  return { fecha, label: `${DIAS[d.getDay()]} ${fecha}` };
+}
+
+async function crearCardiologoDemo(email: string, colegiatura: string): Promise<string> {
+  const existe = await User.findOne({ email });
+  if (existe) return existe._id.toString();
+
+  const nombre = faker.person.firstName();
+  const apellido = faker.person.lastName();
+  const claveHash = await bcrypt.hash('SeedDemo1234', BCRYPT_ROUNDS);
+  const [user] = await User.create([
+    { email, claveHash, rol: UserRole.MEDICO, nombre, apellido, telefono: `9${faker.string.numeric(8)}` },
+  ]);
+  await MedicoProfile.create([
+    {
+      usuarioId: user._id,
+      especialidad: ESPECIALIDAD,
+      numeroColegiatura: colegiatura,
+      duracionSlotMin: 30,
+      horarios: [],
+    },
+  ]);
+  logger.info(`+ Creado cardiólogo demo: ${nombre} ${apellido} <${email}>`);
+  return user._id.toString();
 }
 
 async function seedAlternativos(): Promise<void> {
   await connectDatabase();
-
   try {
-    logger.info('=== Seed: Escenario de médicos alternativos ===');
+    logger.info('=== Seed: escenario determinista de médicos alternativos (Cardiología) ===');
 
-    // 1. Verificar doctores existentes del seed principal
-    const seedUsers = await User.find({ email: { $in: DEMO_DOCTOR_EMAILS } }).select('_id email rol');
-    logger.info(`Doctores base encontrados: ${seedUsers.length}`);
+    // 1. Garantizar al menos 2 cardiólogos demo (por si la BD está fresca).
+    await crearCardiologoDemo(CARDIO_DEMO_EMAILS[0], 'ALT-CARD-0001');
+    await crearCardiologoDemo(CARDIO_DEMO_EMAILS[1], 'ALT-CARD-0002');
 
-    if (seedUsers.length < 3) {
-      logger.error('Ejecuta primero "npm run seed" para tener los datos base');
+    // 2. Cargar TODOS los cardiólogos activos con su usuario.
+    const perfiles = await MedicoProfile.find({ especialidad: ESPECIALIDAD, activo: true }).populate(
+      'usuarioId',
+      'nombre apellido email',
+    );
+    if (perfiles.length < 2) {
+      logger.error('Se necesitan al menos 2 cardiólogos activos para el escenario.');
       return;
     }
 
-    // 2. Identificar el cardiólogo y el médico de Medicina General
-    const doctors = await MedicoProfile.find({ usuarioId: { $in: seedUsers.map((u) => u._id) } })
-      .populate('usuarioId', 'nombre apellido email');
-
-    const cardiologo = doctors.find((d) => d.especialidad === 'Cardiología');
-    const medicoGeneral = doctors.find((d) => d.especialidad === 'Medicina General');
-
-    if (!cardiologo || !medicoGeneral) {
-      logger.error('No se encontraron los médicos necesarios. Especialidades disponibles:');
-      doctors.forEach((d) => logger.error(`  - ${d.especialidad}`));
-      return;
-    }
-
-    const cardioUserId = cardiologo.usuarioId._id.toString();
-    const mgUserId = medicoGeneral.usuarioId._id.toString();
-    const cardioName = `${(cardiologo.usuarioId as any).nombre} ${(cardiologo.usuarioId as any).apellido}`;
-    const mgName = `${(medicoGeneral.usuarioId as any).nombre} ${(medicoGeneral.usuarioId as any).apellido}`;
-
-    logger.info(`Cardiólogo: ${cardioName} (${cardioUserId})`);
-    logger.info(`Medicina General: ${mgName} (${mgUserId})`);
-
-    // 3. Crear 2 Cardiólogos adicionales (para que hayan alternativos de la misma especialidad)
-    const nuevosCardiologos: Array<{ email: string; userId: string }> = [];
-
-    for (let i = 1; i <= 2; i++) {
-      const email = `alt.demo+cardio.${i}@ehr.dev`;
-      const existe = await User.findOne({ email });
-      if (existe) {
-        logger.info(`Ya existe: ${email}`);
-        nuevosCardiologos.push({ email, userId: existe._id.toString() });
-        continue;
-      }
-
-      const nombre = faker.person.firstName();
-      const apellido = faker.person.lastName();
-      const claveHash = await bcrypt.hash('SeedDemo1234', BCRYPT_ROUNDS);
-
-      const [user] = await User.create([
-        { email, claveHash, rol: UserRole.MEDICO, nombre, apellido, telefono: `9${faker.string.numeric(8)}` },
-      ]);
-      await MedicoProfile.create([{
-        usuarioId: user._id,
-        especialidad: 'Cardiología',
-        numeroColegiatura: `ALT-CARD-${String(i).padStart(4, '0')}`,
-        duracionSlotMin: 30,
-        horarios: buildWeeklySchedule(30),
-      }]);
-
-      nuevosCardiologos.push({ email, userId: user._id.toString() });
-      logger.info(`+ Creado cardiólogo alternativo #${i}: ${nombre} ${apellido} (${email})`);
-    }
-
-    // 4. Crear 1 Medicina General adicional (para el fallback)
-    const emailMG = 'alt.demo+mg.1@ehr.dev';
-    const existeMG = await User.findOne({ email: emailMG });
-    if (!existeMG) {
-      const nombre = faker.person.firstName();
-      const apellido = faker.person.lastName();
-      const claveHash = await bcrypt.hash('SeedDemo1234', BCRYPT_ROUNDS);
-
-      const [user] = await User.create([
-        { email: emailMG, claveHash, rol: UserRole.MEDICO, nombre, apellido, telefono: `9${faker.string.numeric(8)}` },
-      ]);
-      await MedicoProfile.create([{
-        usuarioId: user._id,
-        especialidad: 'Medicina General',
-        numeroColegiatura: 'ALT-MG-0001',
-        duracionSlotMin: 30,
-        horarios: buildWeeklySchedule(30),
-      }]);
-      logger.info(`+ Creado Medicina General adicional: ${nombre} ${apellido} (${emailMG})`);
-    } else {
-      logger.info(`Ya existe: ${emailMG}`);
-    }
-
-    // 5. BLOQUEAR al cardiólogo original en un día específico
-    const targetDate = nextWeekday(4); // Jueves (diaSemana=4)
-    const fechaStr = formatDate(targetDate);
-    const desde = buildDate(fechaStr, '07:00');
-    const hasta = buildDate(fechaStr, '19:00');
-
-    // Limpiar bloqueos anteriores de prueba
-    await Bloqueo.deleteMany({ medicoId: cardioUserId, motivo: /^\[test-alternativos\]/ });
-
-    await Bloqueo.create({
-      medicoId: cardioUserId,
-      desde,
-      hasta,
-      motivo: '[test-alternativos] Bloqueo completo para probar médicos alternativos',
+    // 3. Elegir referente: preferimos un médico "real" (email sin seed/alt.demo).
+    const esDemo = (email: string) => /(?:seed\.demo|alt\.demo)/.test(email);
+    perfiles.sort((a, b) => {
+      const ea = (a.usuarioId as any).email as string;
+      const eb = (b.usuarioId as any).email as string;
+      return Number(esDemo(ea)) - Number(esDemo(eb));
     });
+    const [referente, ...alternativos] = perfiles;
+    const nombreDe = (p: typeof referente) =>
+      `${(p.usuarioId as any).nombre} ${(p.usuarioId as any).apellido}`;
 
-    logger.info(`\n========================================`);
-    logger.info(`   ESCENARIO DE PRUEBA CREADO`);
-    logger.info(`========================================`);
-    logger.info(` `);
-    logger.info(`Médico sin disponibilidad:`);
-    logger.info(`  Dr(a). ${cardioName} (Cardiología) — BLOQUEADO el ${fechaStr}`);
-    logger.info(` `);
-    logger.info(`Médicos alternativos (misma especialidad):`);
-    for (const c of nuevosCardiologos) {
-      logger.info(`  - ${c.email}`);
-    }
-    logger.info(` `);
-    logger.info(`Fallback a Medicina General:`);
-    logger.info(`  - Dr(a). ${mgName}`);
-    logger.info(`  - alt.demo+mg.1@ehr.dev`);
-    logger.info(` `);
-    logger.info(`========================================`);
-    logger.info(` `);
-    logger.info(`🔹 Para probar por API:`);
-    logger.info(`   GET /api/v1/appointments/alternativos`);
-    logger.info(`       ?medicoId=${cardioUserId}`);
-    logger.info(`       &fecha=${fechaStr}`);
-    logger.info(`       &hora=10:00`);
-    logger.info(` `);
-    logger.info(`🔹 Para probar desde el navegador (Recepción):`);
-    logger.info(`   1. Login como: recepcion@ehr.dev / Recepcion1234`);
-    logger.info(`   2. Ir a "Agendar cita"`);
-    logger.info(`   3. Seleccionar paciente (ej. seed.demo+patient.1@ehr.dev)`);
-    logger.info(`   4. Seleccionar Dr(a). ${cardioName}`);
-    logger.info(`   5. Poner fecha: ${fechaStr}`);
-    logger.info(`   6. El sistema mostrará "El médico no atiende ese día"`);
-    logger.info(`      seguido de "Médicos alternativos disponibles"`);
-    logger.info(` `);
-    logger.info(`🔹 Para probar desde el navegador (Paciente):`);
-    logger.info(`   1. Login como: seed.demo+patient.1@ehr.dev / SeedDemo1234`);
-    logger.info(`   2. Ir a "Reservar cita"`);
-    logger.info(`   3. Seleccionar Dr(a). ${cardioName}`);
-    logger.info(`   4. Poner fecha: ${fechaStr}`);
-    logger.info(`   5. Mismo comportamiento — verás alternativos`);
-    logger.info(` `);
-    logger.info(`🔹 Para probar reprogramación:`);
-    logger.info(`   (Requiere tener una cita existente con el cardiólogo)`);
-    logger.info(`   - Cancelar la cita desde "Mis citas"`);
-    logger.info(`   - Al reservar de nuevo, si el cardio está bloqueado,`);
-    logger.info(`     aparecerán los alternativos`);
-    logger.info(` `);
+    // 4. Asignar horarios complementarios.
+    referente.horarios = HORARIO_REFERENCIA;
+    await referente.save();
+    alternativos.forEach((p, i) => {
+      p.horarios = HORARIOS_ALTERNATIVOS[i % HORARIOS_ALTERNATIVOS.length];
+    });
+    await Promise.all(alternativos.map((p) => p.save()));
 
+    // 5. Limpiar bloqueos de prueba antiguos (evita datos huérfanos que confunden).
+    const del = await Bloqueo.deleteMany({ motivo: /^\[test-alternativos\]/ });
+    if (del.deletedCount) logger.info(`Bloqueos de prueba antiguos eliminados: ${del.deletedCount}`);
+
+    // 6. Reporte con instrucciones.
+    const { label } = proximoJueves();
+    logger.info('\n========================================');
+    logger.info('   ESCENARIO DE MÉDICOS ALTERNATIVOS LISTO');
+    logger.info('========================================');
+    logger.info(`Especialidad: ${ESPECIALIDAD}`);
+    logger.info(`Médico de referencia (NO atiende Martes/Jueves):`);
+    logger.info(`  → Dr(a). ${nombreDe(referente)} <${(referente.usuarioId as any).email}>`);
+    logger.info(`     Atiende: Lunes, Miércoles y Viernes 08:00–13:00`);
+    logger.info(`Cardiólogos alternativos (SÍ atienden Martes/Jueves):`);
+    alternativos.forEach((p) => {
+      const dias = [...new Set(p.horarios.map((h) => h.diaSemana))].sort().map((d) => DIAS[d]).join(', ');
+      logger.info(`  → Dr(a). ${nombreDe(p)} <${(p.usuarioId as any).email}> — ${dias}`);
+    });
+    logger.info('\nPara ver los alternativos en acción:');
+    logger.info(`  1. Entra como paciente y ve a "Reservar cita".`);
+    logger.info(`  2. Elige al Dr(a). ${nombreDe(referente)} (${ESPECIALIDAD}).`);
+    logger.info(`  3. Pon la fecha: ${label} (o cualquier Martes/Jueves).`);
+    logger.info(`  4. Como ese día no atiende, aparecerán los cardiólogos alternativos`);
+    logger.info(`     con sus horarios disponibles para esa misma fecha.`);
+    logger.info('========================================\n');
   } finally {
     await disconnectDatabase();
   }
 }
-
-
 
 seedAlternativos()
   .then(() => {
