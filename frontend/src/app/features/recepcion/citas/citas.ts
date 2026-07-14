@@ -23,6 +23,7 @@ import { Appointment } from '../../../core/models/appointment.model';
       } @else if (!citas().length) {
         <p class="muted">No hay citas registradas.</p>
       } @else {
+        <div class="tbl-scroll">
         <table class="tbl">
           <thead>
             <tr>
@@ -50,6 +51,7 @@ import { Appointment } from '../../../core/models/appointment.model';
             }
           </tbody>
         </table>
+        </div>
       }
     </section>
   `,
@@ -59,8 +61,10 @@ import { Appointment } from '../../../core/models/appointment.model';
       .page__head { margin-bottom: 1.5rem; }
       .page__head h1 { margin: 0; color: var(--slate-900); }
       .muted { color: var(--slate-500); font-size: .9rem; }
+      .tbl-scroll { overflow-x: auto; }
       .tbl {
         width: 100%;
+        min-width: 640px;
         border-collapse: collapse;
         background: var(--bg-surface);
         border: 1.5px solid var(--border);

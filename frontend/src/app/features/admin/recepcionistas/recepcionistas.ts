@@ -112,7 +112,8 @@ import { StaffService, Recepcionista } from '../../../core/services/staff.servic
       table { width: 100%; border-collapse: collapse; }
       th, td { text-align: left; padding: 0.6rem 0.7rem; border-bottom: 1px solid var(--slate-100); font-size: 0.9rem; }
       th { background: var(--slate-50); color: var(--slate-600); }
-      .table-wrap { padding: 0; overflow: hidden; }
+      .table-wrap { padding: 0; overflow-x: auto; }
+      table { min-width: 560px; }
       .muted { color: var(--slate-500); }
       .empty { color: var(--slate-500); text-align: center; }
       .badge { padding: 0.12rem 0.55rem; border-radius: 999px; font-size: 0.76rem; background: var(--ok-bg); color: var(--ok-text); }
