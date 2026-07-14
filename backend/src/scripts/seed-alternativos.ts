@@ -8,45 +8,68 @@ import { Bloqueo } from '../models/bloqueo.model';
 import { logger } from '../utils/logger';
 
 const BCRYPT_ROUNDS = 12;
-const ESPECIALIDAD = 'Cardiología';
 const DIAS = ['Domingo', 'Lunes', 'Martes', 'Miércoles', 'Jueves', 'Viernes', 'Sábado'];
+const TRAMOS_DEFAULT: Array<[string, string]> = [
+  ['08:00', '12:00'],
+  ['15:00', '18:00'],
+];
 
-/** Cardiólogos demo que garantizamos que existan (además de los que ya tengas). */
-const CARDIO_DEMO_EMAILS = ['alt.demo+cardio.1@ehr.dev', 'alt.demo+cardio.2@ehr.dev'];
-
-/** Genera franjas para un conjunto de días con uno o dos tramos horarios. */
-function franjas(dias: number[], tramos: Array<[string, string]>): IHorario[] {
+/** Genera franjas para un conjunto de días (1=Lun … 6=Sáb) con uno o dos tramos. */
+function franjas(dias: number[], tramos: Array<[string, string]> = TRAMOS_DEFAULT): IHorario[] {
   return dias.flatMap((diaSemana) =>
     tramos.map(([horaInicio, horaFin]) => ({ diaSemana, horaInicio, horaFin })),
   );
 }
 
 /**
- * Horarios COMPLEMENTARIOS por diseño:
- * - El médico de referencia NO atiende Martes ni Jueves.
- * - Todos los alternativos SÍ cubren Martes y Jueves.
- * Así, al elegir al referente en un Martes/Jueves, se activan los alternativos.
+ * Escenario por especialidad. Los horarios son COMPLEMENTARIOS por diseño:
+ * el referente NO atiende ciertos días y los alternativos SÍ los cubren,
+ * de modo que al elegir al referente esos días se activan los médicos alternativos.
+ * Cada especialidad deja el "hueco" en días distintos para poder demostrarlo
+ * a lo largo de toda la semana.
  */
-const HORARIO_REFERENCIA = franjas([1, 3, 5], [['08:00', '13:00']]); // Lun, Mié, Vie
-const HORARIOS_ALTERNATIVOS: IHorario[][] = [
-  franjas([2, 4, 5], [['09:00', '13:00'], ['15:00', '18:00']]), // Mar, Jue, Vie
-  franjas([1, 2, 4], [['08:00', '12:00']]),                     // Lun, Mar, Jue
-  franjas([1, 2, 3, 4, 5], [['08:00', '12:00'], ['15:00', '18:00']]), // Lun-Vie
-];
-
-/** Próximo jueves (diaSemana=4) a partir de hoy, como fecha YYYY-MM-DD. */
-function proximoJueves(): { fecha: string; label: string } {
-  const now = new Date();
-  let diff = 4 - now.getDay();
-  if (diff <= 0) diff += 7;
-  const d = new Date(now.getTime() + diff * 24 * 60 * 60 * 1000);
-  const fecha = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-  return { fecha, label: `${DIAS[d.getDay()]} ${fecha}` };
+interface EscenarioEsp {
+  especialidad: string;
+  slug: string;
+  refDias: number[]; // días que atiende el médico de referencia
+  altDias: number[][]; // días de cada médico alternativo (mínimo 2)
 }
 
-async function crearCardiologoDemo(email: string, colegiatura: string): Promise<string> {
-  const existe = await User.findOne({ email });
-  if (existe) return existe._id.toString();
+const ESCENARIOS: EscenarioEsp[] = [
+  // Referente off Mar/Jue
+  { especialidad: 'Cardiología', slug: 'cardio', refDias: [1, 3, 5], altDias: [[2, 4, 5], [1, 2, 4]] },
+  // Referente off Lun/Mié/Vie/Sáb (atiende solo Mar/Jue)
+  { especialidad: 'Pediatría', slug: 'pedia', refDias: [2, 4], altDias: [[1, 3, 5], [1, 3, 6]] },
+  // Referente off Jue/Vie/Sáb
+  { especialidad: 'Dermatología', slug: 'derma', refDias: [1, 2, 3], altDias: [[4, 5, 6], [3, 4, 5]] },
+  // Referente off Mar/Mié/Vie/Sáb
+  { especialidad: 'Medicina General', slug: 'mg', refDias: [1, 4], altDias: [[2, 3, 5], [2, 3, 6]] },
+  // Referente off Lun/Mar/Sáb
+  { especialidad: 'Neumología', slug: 'neumo', refDias: [3, 4, 5], altDias: [[1, 2, 6], [1, 2, 4]] },
+];
+
+function nombreDe(p: { usuarioId: unknown }): string {
+  const u = p.usuarioId as { nombre: string; apellido: string };
+  return `${u.nombre} ${u.apellido}`;
+}
+function emailDe(p: { usuarioId: unknown }): string {
+  return (p.usuarioId as { email: string }).email;
+}
+const esDemo = (email: string) => /(?:seed\.demo|alt\.demo)/.test(email);
+
+/** Próxima fecha (>= mañana) que caiga en el día de semana pedido, como YYYY-MM-DD. */
+function proximaFecha(diaSemana: number): string {
+  const now = new Date();
+  let diff = diaSemana - now.getDay();
+  if (diff <= 0) diff += 7;
+  const d = new Date(now.getTime() + diff * 24 * 60 * 60 * 1000);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+}
+
+/** Crea un médico demo para una especialidad si no existe. */
+async function crearMedicoDemo(slug: string, especialidad: string, n: number): Promise<void> {
+  const email = `alt.demo+${slug}.${n}@ehr.dev`;
+  if (await User.findOne({ email })) return;
 
   const nombre = faker.person.firstName();
   const apellido = faker.person.lastName();
@@ -57,79 +80,89 @@ async function crearCardiologoDemo(email: string, colegiatura: string): Promise<
   await MedicoProfile.create([
     {
       usuarioId: user._id,
-      especialidad: ESPECIALIDAD,
-      numeroColegiatura: colegiatura,
+      especialidad,
+      numeroColegiatura: `ALT-${slug.toUpperCase()}-${String(n).padStart(4, '0')}`,
       duracionSlotMin: 30,
       horarios: [],
     },
   ]);
-  logger.info(`+ Creado cardiólogo demo: ${nombre} ${apellido} <${email}>`);
-  return user._id.toString();
+  logger.info(`  + Creado médico demo de ${especialidad}: ${nombre} ${apellido} <${email}>`);
+}
+
+async function montarEscenario(esc: EscenarioEsp): Promise<string[]> {
+  const totalNecesario = 1 + esc.altDias.length; // referente + alternativos
+
+  // 1. Asegurar suficientes médicos activos en la especialidad.
+  let existentes = await MedicoProfile.countDocuments({ especialidad: esc.especialidad, activo: true });
+  let n = 1;
+  while (existentes < totalNecesario) {
+    await crearMedicoDemo(esc.slug, esc.especialidad, n);
+    n += 1;
+    existentes = await MedicoProfile.countDocuments({ especialidad: esc.especialidad, activo: true });
+    if (n > 20) break; // salvaguarda
+  }
+
+  // 2. Cargar perfiles y elegir referente (preferimos un médico "real", no demo).
+  const perfiles = await MedicoProfile.find({ especialidad: esc.especialidad, activo: true }).populate(
+    'usuarioId',
+    'nombre apellido email',
+  );
+  perfiles.sort((a, b) => Number(esDemo(emailDe(a))) - Number(esDemo(emailDe(b))));
+  const [referente, ...alternativos] = perfiles;
+
+  // 3. Asignar horarios: referente con su hueco; el resto cubriendo esos días.
+  referente.horarios = franjas(esc.refDias);
+  await referente.save();
+  await Promise.all(
+    alternativos.map((p, i) => {
+      p.horarios = franjas(esc.altDias[i % esc.altDias.length]);
+      return p.save();
+    }),
+  );
+
+  // 4. Días de demo = referente NO atiende pero ≥1 alternativo sí.
+  const refSet = new Set(esc.refDias);
+  const altUnion = new Set(alternativos.flatMap((p) => p.horarios.map((h) => h.diaSemana)));
+  const demoDias = [1, 2, 3, 4, 5, 6].filter((d) => !refSet.has(d) && altUnion.has(d));
+
+  const lineas: string[] = [];
+  lineas.push(`### ${esc.especialidad}`);
+  lineas.push(
+    `  Referente: Dr(a). ${nombreDe(referente)} <${emailDe(referente)}> — atiende ${esc.refDias.map((d) => DIAS[d]).join(', ')}`,
+  );
+  alternativos.forEach((p) => {
+    const dias = [...new Set(p.horarios.map((h) => h.diaSemana))].sort().map((d) => DIAS[d]).join(', ');
+    lineas.push(`  Alternativo: Dr(a). ${nombreDe(p)} <${emailDe(p)}> — ${dias}`);
+  });
+  const fechas = demoDias.map((d) => `${DIAS[d]} (${proximaFecha(d)})`).join('  ·  ');
+  lineas.push(`  ➜ Elige al referente en cualquiera de estas fechas para ver alternativos:`);
+  lineas.push(`     ${fechas}`);
+  return lineas;
 }
 
 async function seedAlternativos(): Promise<void> {
   await connectDatabase();
   try {
-    logger.info('=== Seed: escenario determinista de médicos alternativos (Cardiología) ===');
+    logger.info('=== Seed: escenarios de médicos alternativos (multi-especialidad) ===');
 
-    // 1. Garantizar al menos 2 cardiólogos demo (por si la BD está fresca).
-    await crearCardiologoDemo(CARDIO_DEMO_EMAILS[0], 'ALT-CARD-0001');
-    await crearCardiologoDemo(CARDIO_DEMO_EMAILS[1], 'ALT-CARD-0002');
-
-    // 2. Cargar TODOS los cardiólogos activos con su usuario.
-    const perfiles = await MedicoProfile.find({ especialidad: ESPECIALIDAD, activo: true }).populate(
-      'usuarioId',
-      'nombre apellido email',
-    );
-    if (perfiles.length < 2) {
-      logger.error('Se necesitan al menos 2 cardiólogos activos para el escenario.');
-      return;
-    }
-
-    // 3. Elegir referente: preferimos un médico "real" (email sin seed/alt.demo).
-    const esDemo = (email: string) => /(?:seed\.demo|alt\.demo)/.test(email);
-    perfiles.sort((a, b) => {
-      const ea = (a.usuarioId as any).email as string;
-      const eb = (b.usuarioId as any).email as string;
-      return Number(esDemo(ea)) - Number(esDemo(eb));
-    });
-    const [referente, ...alternativos] = perfiles;
-    const nombreDe = (p: typeof referente) =>
-      `${(p.usuarioId as any).nombre} ${(p.usuarioId as any).apellido}`;
-
-    // 4. Asignar horarios complementarios.
-    referente.horarios = HORARIO_REFERENCIA;
-    await referente.save();
-    alternativos.forEach((p, i) => {
-      p.horarios = HORARIOS_ALTERNATIVOS[i % HORARIOS_ALTERNATIVOS.length];
-    });
-    await Promise.all(alternativos.map((p) => p.save()));
-
-    // 5. Limpiar bloqueos de prueba antiguos (evita datos huérfanos que confunden).
+    // Limpiar bloqueos de prueba antiguos (datos huérfanos que confunden el demo).
     const del = await Bloqueo.deleteMany({ motivo: /^\[test-alternativos\]/ });
     if (del.deletedCount) logger.info(`Bloqueos de prueba antiguos eliminados: ${del.deletedCount}`);
 
-    // 6. Reporte con instrucciones.
-    const { label } = proximoJueves();
-    logger.info('\n========================================');
-    logger.info('   ESCENARIO DE MÉDICOS ALTERNATIVOS LISTO');
-    logger.info('========================================');
-    logger.info(`Especialidad: ${ESPECIALIDAD}`);
-    logger.info(`Médico de referencia (NO atiende Martes/Jueves):`);
-    logger.info(`  → Dr(a). ${nombreDe(referente)} <${(referente.usuarioId as any).email}>`);
-    logger.info(`     Atiende: Lunes, Miércoles y Viernes 08:00–13:00`);
-    logger.info(`Cardiólogos alternativos (SÍ atienden Martes/Jueves):`);
-    alternativos.forEach((p) => {
-      const dias = [...new Set(p.horarios.map((h) => h.diaSemana))].sort().map((d) => DIAS[d]).join(', ');
-      logger.info(`  → Dr(a). ${nombreDe(p)} <${(p.usuarioId as any).email}> — ${dias}`);
-    });
-    logger.info('\nPara ver los alternativos en acción:');
-    logger.info(`  1. Entra como paciente y ve a "Reservar cita".`);
-    logger.info(`  2. Elige al Dr(a). ${nombreDe(referente)} (${ESPECIALIDAD}).`);
-    logger.info(`  3. Pon la fecha: ${label} (o cualquier Martes/Jueves).`);
-    logger.info(`  4. Como ese día no atiende, aparecerán los cardiólogos alternativos`);
-    logger.info(`     con sus horarios disponibles para esa misma fecha.`);
-    logger.info('========================================\n');
+    const reporte: string[] = [];
+    for (const esc of ESCENARIOS) {
+      logger.info(`Montando escenario: ${esc.especialidad}…`);
+      reporte.push(...(await montarEscenario(esc)), '');
+    }
+
+    logger.info('\n=====================================================');
+    logger.info('   ESCENARIOS DE MÉDICOS ALTERNATIVOS LISTOS');
+    logger.info('=====================================================');
+    reporte.forEach((l) => logger.info(l));
+    logger.info('Cómo probarlo: entra como paciente → "Reservar cita" → elige al médico');
+    logger.info('referente y pon una de las fechas indicadas. Como ese día no atiende,');
+    logger.info('aparecerán los alternativos de la misma especialidad con sus horarios.');
+    logger.info('=====================================================\n');
   } finally {
     await disconnectDatabase();
   }
