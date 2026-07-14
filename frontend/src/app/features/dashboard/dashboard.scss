@@ -105,8 +105,8 @@
     color: var(--brand);
 
     &--soon {
-      background: #fef9c3;
-      color: #ca8a04;
+      background: var(--warn-bg);
+      color: var(--warn-text);
     }
   }
 }

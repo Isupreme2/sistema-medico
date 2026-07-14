@@ -100,16 +100,16 @@ h1 {
     color: var(--brand);
   }
   &[data-estado='atendida'] {
-    background: #dcfce7;
-    color: #16a34a;
+    background: var(--ok-bg);
+    color: var(--ok-text);
   }
   &[data-estado='cancelada'] {
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--danger-bg);
+    color: var(--danger-text);
   }
   &[data-estado='no_asistio'] {
-    background: #fef9c3;
-    color: #ca8a04;
+    background: var(--warn-bg);
+    color: var(--warn-text);
   }
   &[data-estado='vencida'] {
     background: var(--slate-100);
@@ -136,10 +136,10 @@ h1 {
   }
 
   &.danger {
-    color: #dc2626;
+    color: var(--danger-text);
 
     &:hover {
-      color: #b91c1c;
+      color: var(--danger-text);
     }
   }
 }
@@ -185,11 +185,11 @@ h1 {
   }
 
   &.danger {
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--danger-bg);
+    color: var(--danger-text);
 
     &:hover {
-      background: #fecaca;
+      background: var(--danger-border);
     }
   }
 }

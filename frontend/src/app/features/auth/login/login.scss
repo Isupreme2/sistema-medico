@@ -95,16 +95,16 @@
   .err {
     display: block;
     margin-top: 0.3rem;
-    color: #dc2626;
+    color: var(--danger-text);
     font-size: 0.72rem;
     font-weight: 500;
   }
 }
 
 .alert {
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
   padding: 0.65rem 0.85rem;
   border-radius: 0.75rem;
   font-size: 0.82rem;

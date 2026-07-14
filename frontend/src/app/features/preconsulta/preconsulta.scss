@@ -76,8 +76,8 @@
 }
 
 .alert.ok {
-  background: #dcfce7;
-  color: #166534;
+  background: var(--ok-bg);
+  color: var(--ok-text);
   border-radius: 8px;
   padding: 0.6rem 0.9rem;
   font-size: 0.88rem;

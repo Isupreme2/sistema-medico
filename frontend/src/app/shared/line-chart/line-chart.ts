@@ -3,10 +3,12 @@ import {
   ChangeDetectionStrategy,
   ElementRef,
   effect,
+  inject,
   input,
   viewChild,
 } from '@angular/core';
 import { Chart, ChartDataset, registerables } from 'chart.js';
+import { ThemeService } from '../../core/services/theme.service';
 
 Chart.register(...registerables);
 
@@ -30,15 +32,16 @@ export interface SerieGrafica {
   styles: [
     `
       .chart-card {
-        background: #fff;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border);
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 8px var(--shadow);
         padding: 1rem 1.1rem;
       }
       h4 {
         margin: 0 0 0.75rem;
         font-size: 0.92rem;
-        color: #1e293b;
+        color: var(--text-primary);
       }
       .canvas-box {
         position: relative;
@@ -54,6 +57,7 @@ export class LineChart {
   readonly series = input<SerieGrafica[]>([]);
 
   private canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
+  private theme = inject(ThemeService);
   private chart?: Chart;
 
   constructor() {
@@ -61,9 +65,14 @@ export class LineChart {
       const canvas = this.canvasRef();
       const labels = this.labels();
       const series = this.series();
+      this.theme.current(); // re-renderiza al cambiar de tema
       if (!canvas) return;
 
       this.chart?.destroy();
+
+      const css = getComputedStyle(canvas.nativeElement);
+      const tickColor = css.getPropertyValue('--text-muted').trim() || '#64748b';
+      const gridColor = css.getPropertyValue('--border').trim() || '#e2e8f0';
 
       const datasets: ChartDataset<'line'>[] = series.map((s) => ({
         label: s.label,
@@ -81,8 +90,20 @@ export class LineChart {
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          plugins: { legend: { display: series.length > 1 } },
-          scales: { y: { beginAtZero: false } },
+          plugins: {
+            legend: { display: series.length > 1, labels: { color: tickColor } },
+          },
+          scales: {
+            y: {
+              beginAtZero: false,
+              ticks: { color: tickColor },
+              grid: { color: gridColor },
+            },
+            x: {
+              ticks: { color: tickColor },
+              grid: { color: gridColor },
+            },
+          },
         },
       });
     });

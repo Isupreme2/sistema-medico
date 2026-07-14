@@ -74,8 +74,8 @@ import { PatientLite } from '../../../core/models/user.model';
       .muted { color: var(--slate-500); font-size: .9rem; }
       .grid { display: grid; gap: 1.25rem; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
       .card {
-        background: #fff;
-        border: 1.5px solid #93c5fd;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border);
         border-radius: 16px;
         padding: 1.25rem 1.5rem;
       }
@@ -84,12 +84,12 @@ import { PatientLite } from '../../../core/models/user.model';
         width: 100%;
         padding: .6rem .75rem;
         margin: .35rem 0;
-        border: 1.5px solid #bfdbfe;
+        border: 1.5px solid var(--border);
         border-radius: 8px;
         box-sizing: border-box;
         transition: border-color 0.15s ease;
       }
-      .input:focus { outline: none; border-color: #3b82f6; }
+      .input:focus { outline: none; border-color: var(--brand); }
       .list { list-style: none; padding: 0; margin: .5rem 0 0; }
       .list li {
         display: flex;
@@ -97,13 +97,13 @@ import { PatientLite } from '../../../core/models/user.model';
         gap: .5rem;
         align-items: baseline;
         padding: .55rem 0;
-        border-bottom: 1px solid #e0e7ff;
+        border-bottom: 1px solid var(--border);
       }
       .btn {
         margin-top: .5rem;
         width: 100%;
         padding: .65rem;
-        background: #2563eb;
+        background: var(--brand);
         color: #fff;
         border: 0;
         border-radius: 8px;
@@ -111,10 +111,10 @@ import { PatientLite } from '../../../core/models/user.model';
         font-weight: 600;
         transition: all 0.15s ease;
       }
-      .btn:hover { background: #1d4ed8; transform: translateY(-1px); }
+      .btn:hover { background: var(--brand-dark); transform: translateY(-1px); }
       .btn:disabled { opacity: .6; cursor: default; transform: none; }
-      .ok { color: #047857; font-weight: 600; }
-      .err { color: #dc2626; font-weight: 600; }
+      .ok { color: var(--ok-text); font-weight: 600; }
+      .err { color: var(--danger-text); font-weight: 600; }
     `,
   ],
 })

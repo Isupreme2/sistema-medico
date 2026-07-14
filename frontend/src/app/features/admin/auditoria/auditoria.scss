@@ -100,8 +100,8 @@ table {
   color: var(--slate-600);
 
   &[data-m='POST'] {
-    background: #dcfce7;
-    color: #166534;
+    background: var(--ok-bg);
+    color: var(--ok-text);
   }
 
   &[data-m='PATCH'],
@@ -111,8 +111,8 @@ table {
   }
 
   &[data-m='DELETE'] {
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--danger-bg);
+    color: var(--danger-text);
   }
 }
 
@@ -120,11 +120,11 @@ table {
   font-weight: 700;
 
   &.ok {
-    color: #16a34a;
+    color: var(--ok-text);
   }
 
   &.err {
-    color: #dc2626;
+    color: var(--danger-text);
   }
 }
 

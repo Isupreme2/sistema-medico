@@ -4,20 +4,21 @@
 }
 
 .card {
-  background: #fff;
+  background: var(--bg-surface);
+  border: 1.5px solid var(--border);
   border-radius: 14px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 8px var(--shadow);
   padding: 1.1rem 1.25rem;
 }
 
 h3 {
   margin: 0 0 1rem;
   font-size: 1.05rem;
-  color: #0f172a;
+  color: var(--slate-900);
 }
 
 .btn-primary {
-  background: #2563eb;
+  background: var(--brand);
   color: #fff;
   border: none;
   border-radius: 10px;
@@ -33,8 +34,8 @@ h3 {
 
 .btn-secondary {
   background: transparent;
-  color: #2563eb;
-  border: 1.5px solid #2563eb;
+  color: var(--brand);
+  border: 1.5px solid var(--brand);
   border-radius: 10px;
   padding: 0.5rem 1.1rem;
   font-size: 0.85rem;
@@ -42,14 +43,14 @@ h3 {
 }
 
 .msg-insuficiente {
-  color: #64748b;
+  color: var(--slate-500);
   font-size: 0.88rem;
   margin: 0 0 0.75rem;
   line-height: 1.5;
 }
 
 .msg-error {
-  color: #dc2626;
+  color: var(--danger-text);
   font-size: 0.88rem;
   margin: 0 0 0.75rem;
 }
@@ -71,7 +72,7 @@ h3 {
   .cat-label {
     font-weight: 600;
     font-size: 0.88rem;
-    color: #1e293b;
+    color: var(--slate-800);
   }
 
   .cat-nivel {
@@ -82,7 +83,7 @@ h3 {
 
 .bar-track {
   height: 8px;
-  background: #e2e8f0;
+  background: var(--slate-200);
   border-radius: 999px;
   overflow: hidden;
 }
@@ -97,13 +98,13 @@ h3 {
   margin: 0.4rem 0 0;
   padding-left: 1.2rem;
   font-size: 0.8rem;
-  color: #475569;
+  color: var(--slate-600);
   line-height: 1.5;
 }
 
 .disclaimer {
   margin: 1rem 0 0;
   font-size: 0.75rem;
-  color: #94a3b8;
+  color: var(--slate-400);
   line-height: 1.4;
 }

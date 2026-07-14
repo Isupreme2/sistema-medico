@@ -114,20 +114,20 @@ h1 {
   font-weight: 600;
 
   &[data-estado='pendiente'] {
-    background: #fef9c3;
-    color: #ca8a04;
+    background: var(--warn-bg);
+    color: var(--warn-text);
   }
   &[data-estado='pagada'] {
-    background: #dcfce7;
-    color: #16a34a;
+    background: var(--ok-bg);
+    color: var(--ok-text);
   }
   &[data-estado='anulada'] {
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--danger-bg);
+    color: var(--danger-text);
   }
   &[data-estado='reembolsada'] {
-    background: #ede9fe;
-    color: #7c3aed;
+    background: var(--accent-bg);
+    color: var(--accent-text);
   }
 }
 
@@ -149,14 +149,14 @@ h1 {
     transform: translateY(-1px);
   }
   &.ok {
-    background: #dcfce7;
-    color: #166534;
-    &:hover { background: #bbf7d0; }
+    background: var(--ok-bg);
+    color: var(--ok-text);
+    &:hover { background: var(--ok-border); }
   }
   &.danger {
-    background: #fee2e2;
-    color: #dc2626;
-    &:hover { background: #fecaca; }
+    background: var(--danger-bg);
+    color: var(--danger-text);
+    &:hover { background: var(--danger-border); }
   }
   &.ghost {
     background: var(--slate-100);

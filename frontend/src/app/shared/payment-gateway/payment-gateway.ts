@@ -104,7 +104,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
       .pg-modal {
         width: 100%;
         max-width: 420px;
-        background: #fff;
+        background: var(--bg-surface);
         border-radius: 1.25rem;
         box-shadow: 0 30px 60px -15px rgba(0, 0, 0, 0.4);
         padding: 1.5rem;
@@ -226,7 +226,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
       .pg-err {
         margin: 0 0 0.5rem;
         font-size: 0.82rem;
-        color: #dc2626;
+        color: var(--danger-text);
         font-weight: 500;
       }
       .pg-ok {

@@ -25,12 +25,30 @@
   /* Tokens semánticos (tema claro) */
   --bg-page: var(--slate-100);
   --bg-surface: #ffffff;
+  --bg-subtle: var(--slate-50);
   --bg-emphasis: var(--slate-900);
   --text-primary: var(--slate-900);
   --text-muted: var(--slate-500);
   --text-emphasis: #ffffff;
   --border: var(--slate-200);
   --shadow: rgba(148, 163, 184, 0.5);
+
+  /* Estados semánticos (tema claro) */
+  --ok-bg: #dcfce7;
+  --ok-text: #166534;
+  --ok-border: #bbf7d0;
+  --danger-bg: #fee2e2;
+  --danger-text: #b91c1c;
+  --danger-border: #fecaca;
+  --warn-bg: #fef9c3;
+  --warn-text: #854d0e;
+  --warn-border: #fde68a;
+  --info-bg: #dbeafe;
+  --info-text: #1e40af;
+  --info-border: #bfdbfe;
+  --accent-bg: #e0e7ff;
+  --accent-text: #4338ca;
+  --accent-border: #c7d2fe;
 }
 
 [data-theme="dark"] {
@@ -52,12 +70,30 @@
 
   --bg-page: #0f172a;
   --bg-surface: #1e293b;
+  --bg-subtle: #172032;
   --bg-emphasis: #0a0f1a;
   --text-primary: #f1f5f9;
   --text-muted: #94a3b8;
   --text-emphasis: #f1f5f9;
   --border: #334155;
   --shadow: rgba(0, 0, 0, 0.3);
+
+  /* Estados semánticos (tema oscuro) — tintes translúcidos legibles sobre superficies oscuras */
+  --ok-bg: color-mix(in srgb, #22c55e 22%, transparent);
+  --ok-text: #4ade80;
+  --ok-border: color-mix(in srgb, #22c55e 45%, transparent);
+  --danger-bg: color-mix(in srgb, #ef4444 22%, transparent);
+  --danger-text: #f87171;
+  --danger-border: color-mix(in srgb, #ef4444 45%, transparent);
+  --warn-bg: color-mix(in srgb, #eab308 24%, transparent);
+  --warn-text: #fbbf24;
+  --warn-border: color-mix(in srgb, #eab308 45%, transparent);
+  --info-bg: color-mix(in srgb, #3b82f6 22%, transparent);
+  --info-text: #60a5fa;
+  --info-border: color-mix(in srgb, #3b82f6 45%, transparent);
+  --accent-bg: color-mix(in srgb, #6366f1 22%, transparent);
+  --accent-text: #a5b4fc;
+  --accent-border: color-mix(in srgb, #6366f1 45%, transparent);
 }
 
 * {

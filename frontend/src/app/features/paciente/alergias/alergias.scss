@@ -52,8 +52,8 @@ h1 {
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
-  background: #fee2e2;
-  color: #b91c1c;
+  background: var(--danger-bg);
+  color: var(--danger-text);
   padding: 0.35rem 0.75rem;
   border-radius: 999px;
   font-size: 0.85rem;
@@ -62,7 +62,7 @@ h1 {
   .x {
     border: none;
     background: none;
-    color: #b91c1c;
+    color: var(--danger-text);
     cursor: pointer;
     font-size: 1.1rem;
     line-height: 1;
@@ -70,7 +70,7 @@ h1 {
     transition: color 0.15s;
 
     &:hover {
-      color: #dc2626;
+      color: var(--danger-text);
     }
   }
 }
@@ -80,9 +80,9 @@ h1 {
 }
 
 .alert.ok {
-  background: #dcfce7;
-  color: #166534;
-  border: 1px solid #bbf7d0;
+  background: var(--ok-bg);
+  color: var(--ok-text);
+  border: 1px solid var(--ok-border);
   padding: 0.6rem 0.9rem;
   border-radius: 10px;
   font-size: 0.86rem;

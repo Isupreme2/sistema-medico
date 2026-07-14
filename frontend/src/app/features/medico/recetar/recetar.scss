@@ -48,8 +48,8 @@ h1 {
 
   .x {
     border: none;
-    background: #fee2e2;
-    color: #dc2626;
+    background: var(--danger-bg);
+    color: var(--danger-text);
     border-radius: 8px;
     cursor: pointer;
     font-size: 1.1rem;
@@ -57,7 +57,7 @@ h1 {
     transition: background 0.15s;
 
     &:hover {
-      background: #fecaca;
+      background: var(--danger-border);
     }
 
     &:disabled {
@@ -164,9 +164,9 @@ h1 {
 }
 
 .alert.err {
-  background: #fef2f2;
-  color: #b91c1c;
-  border: 1px solid #fecaca;
+  background: var(--danger-bg);
+  color: var(--danger-text);
+  border: 1px solid var(--danger-border);
   padding: 0.6rem 0.9rem;
   border-radius: 8px;
   font-size: 0.86rem;
@@ -175,12 +175,12 @@ h1 {
 
 /* Alerta de seguridad */
 .alerta {
-  border: 1.5px solid #fca5a5;
-  background: #fff7f7;
+  border: 1.5px solid var(--danger-border);
+  background: var(--danger-bg);
 
   h3 {
     margin: 0 0 0.85rem;
-    color: #b91c1c;
+    color: var(--danger-text);
     font-size: 1.05rem;
   }
 
@@ -204,14 +204,14 @@ h1 {
 /* Receta emitida */
 .exito {
   text-align: center;
-  border-color: #86efac;
+  border-color: var(--ok-border);
 
   .check {
     width: 56px;
     height: 56px;
     border-radius: 50%;
-    background: #dcfce7;
-    color: #16a34a;
+    background: var(--ok-bg);
+    color: var(--ok-text);
     font-size: 1.8rem;
     display: grid;
     place-items: center;

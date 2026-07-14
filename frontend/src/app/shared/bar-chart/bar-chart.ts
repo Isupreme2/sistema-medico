@@ -3,10 +3,12 @@ import {
   ChangeDetectionStrategy,
   ElementRef,
   effect,
+  inject,
   input,
   viewChild,
 } from '@angular/core';
 import { Chart, registerables } from 'chart.js';
+import { ThemeService } from '../../core/services/theme.service';
 
 Chart.register(...registerables);
 
@@ -24,15 +26,16 @@ Chart.register(...registerables);
   styles: [
     `
       .chart-card {
-        background: #fff;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border);
         border-radius: 12px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+        box-shadow: 0 2px 8px var(--shadow);
         padding: 1rem 1.1rem;
       }
       h4 {
         margin: 0 0 0.75rem;
         font-size: 0.92rem;
-        color: #1e293b;
+        color: var(--text-primary);
       }
       .canvas-box {
         position: relative;
@@ -49,6 +52,7 @@ export class BarChart {
   readonly colors = input<string[]>([]);
 
   private canvasRef = viewChild<ElementRef<HTMLCanvasElement>>('canvas');
+  private theme = inject(ThemeService);
   private chart?: Chart;
 
   constructor() {
@@ -57,7 +61,12 @@ export class BarChart {
       const labels = this.labels();
       const data = this.data();
       const colors = this.colors();
+      this.theme.current(); // re-renderiza al cambiar de tema
       if (!canvas) return;
+
+      const css = getComputedStyle(canvas.nativeElement);
+      const tickColor = css.getPropertyValue('--text-muted').trim() || '#64748b';
+      const gridColor = css.getPropertyValue('--border').trim() || '#e2e8f0';
 
       this.chart?.destroy();
       this.chart = new Chart(canvas.nativeElement, {
@@ -76,7 +85,17 @@ export class BarChart {
           responsive: true,
           maintainAspectRatio: false,
           plugins: { legend: { display: false } },
-          scales: { y: { beginAtZero: true, ticks: { precision: 0 } } },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { precision: 0, color: tickColor },
+              grid: { color: gridColor },
+            },
+            x: {
+              ticks: { color: tickColor },
+              grid: { color: gridColor },
+            },
+          },
         },
       });
     });

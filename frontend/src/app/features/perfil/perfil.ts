@@ -76,11 +76,11 @@ import { AuthService } from '../../core/services/auth.service';
       .grid { display: grid; gap: 1.25rem; grid-template-columns: 1fr; max-width: 760px; }
       @media (min-width: 760px) { .grid { grid-template-columns: 1fr 1fr; } }
       .card {
-        background: #fff;
-        border: 1.5px solid #93c5fd;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border);
         border-radius: 16px;
         padding: 1.5rem;
-        box-shadow: 0 2px 8px rgba(59, 130, 246, 0.06);
+        box-shadow: 0 2px 8px var(--shadow);
         transition: box-shadow 0.15s;
       }
       .card:hover {
@@ -92,7 +92,7 @@ import { AuthService } from '../../core/services/auth.service';
         justify-content: space-between;
         gap: 1rem;
         padding: 0.5rem 0;
-        border-bottom: 1px solid #e0e7ff;
+        border-bottom: 1px solid var(--border);
         font-size: 0.9rem;
       }
       .ro span { color: var(--slate-500); }
@@ -109,7 +109,7 @@ import { AuthService } from '../../core/services/auth.service';
         width: 100%;
         box-sizing: border-box;
         padding: 0.6rem 0.8rem;
-        border: 1.5px solid #bfdbfe;
+        border: 1.5px solid var(--border);
         border-radius: 8px;
         font: inherit;
         transition: border-color 0.15s, box-shadow 0.15s;
@@ -122,12 +122,12 @@ import { AuthService } from '../../core/services/auth.service';
       }
       .field input:focus, .totp:focus {
         outline: none;
-        border-color: #3b82f6;
-        box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px color-mix(in srgb, var(--brand) 25%, transparent);
       }
       .btn {
         border: none;
-        background: #2563eb;
+        background: var(--brand);
         color: #fff;
         font-weight: 700;
         padding: 0.65rem 1.2rem;
@@ -136,20 +136,20 @@ import { AuthService } from '../../core/services/auth.service';
         transition: all 0.15s ease;
       }
       .btn:hover:not(:disabled) {
-        background: #1d4ed8;
+        background: var(--brand-dark);
         transform: translateY(-1px);
       }
       .btn:disabled { opacity: 0.6; cursor: default; }
       .muted { color: var(--slate-500); font-size: 0.9rem; }
-      .ok { color: #047857; font-size: 0.85rem; font-weight: 500; }
-      .err { color: #dc2626; font-size: 0.85rem; }
-      .estado.on { color: #047857; font-weight: 600; }
+      .ok { color: var(--ok-text); font-size: 0.85rem; font-weight: 500; }
+      .err { color: var(--danger-text); font-size: 0.85rem; }
+      .estado.on { color: var(--ok-text); font-weight: 600; }
       .qr {
         width: 160px;
         height: 160px;
         display: block;
         margin: 0.5rem 0 1rem;
-        border: 1.5px solid #93c5fd;
+        border: 1.5px solid var(--border);
         border-radius: 10px;
       }
     `,

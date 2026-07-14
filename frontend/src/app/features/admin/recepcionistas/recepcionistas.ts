@@ -100,7 +100,7 @@ import { StaffService, Recepcionista } from '../../../core/services/staff.servic
       .page-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; margin-bottom: 1.5rem; }
       .page-head h1 { margin: 0; color: var(--slate-900); }
       .lead { margin: 0.3rem 0 0; color: var(--slate-500); }
-      .card { background: #fff; border-radius: 14px; box-shadow: 0 2px 8px rgba(0,0,0,.06); padding: 1.25rem; margin-bottom: 1rem; }
+      .card { background: var(--bg-surface); border: 1.5px solid var(--border); border-radius: 14px; box-shadow: 0 2px 8px var(--shadow); padding: 1.25rem; margin-bottom: 1rem; }
       .form .grid { display: grid; gap: 0.75rem; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); }
       .field { display: flex; flex-direction: column; gap: 0.3rem; font-size: 0.85rem; color: var(--slate-700); }
       .field input { padding: 0.6rem 0.75rem; border: 1px solid var(--slate-200); border-radius: 8px; font: inherit; }
@@ -115,11 +115,11 @@ import { StaffService, Recepcionista } from '../../../core/services/staff.servic
       .table-wrap { padding: 0; overflow: hidden; }
       .muted { color: var(--slate-500); }
       .empty { color: var(--slate-500); text-align: center; }
-      .badge { padding: 0.12rem 0.55rem; border-radius: 999px; font-size: 0.76rem; background: #dcfce7; color: #166534; }
-      .badge-off { background: #fee2e2; color: #991b1b; }
+      .badge { padding: 0.12rem 0.55rem; border-radius: 999px; font-size: 0.76rem; background: var(--ok-bg); color: var(--ok-text); }
+      .badge-off { background: var(--danger-bg); color: var(--danger-text); }
       .alert { padding: 0.6rem 0.85rem; border-radius: 8px; font-size: 0.88rem; margin-bottom: 1rem; }
-      .alert.ok { background: #dcfce7; color: #166534; }
-      .alert.err { background: #fef2f2; color: #b91c1c; }
+      .alert.ok { background: var(--ok-bg); color: var(--ok-text); }
+      .alert.err { background: var(--danger-bg); color: var(--danger-text); }
     `,
   ],
 })

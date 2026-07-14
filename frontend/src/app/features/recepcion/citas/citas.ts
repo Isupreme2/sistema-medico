@@ -62,27 +62,27 @@ import { Appointment } from '../../../core/models/appointment.model';
       .tbl {
         width: 100%;
         border-collapse: collapse;
-        background: #fff;
-        border: 1.5px solid #93c5fd;
+        background: var(--bg-surface);
+        border: 1.5px solid var(--border);
         border-radius: 16px;
         overflow: hidden;
       }
       .tbl th, .tbl td {
         text-align: left;
         padding: .7rem .8rem;
-        border-bottom: 1px solid #e0e7ff;
+        border-bottom: 1px solid var(--border);
         font-size: .9rem;
       }
       .tbl th {
-        background: #dbeafe;
+        background: var(--info-bg);
         color: var(--slate-700);
         font-weight: 600;
       }
-      .tbl tr:hover { background: #f0f7ff; }
+      .tbl tr:hover { background: color-mix(in srgb, var(--brand) 10%, transparent); }
       .actions { display: flex; gap: .4rem; }
       .btn-sm {
         padding: .35rem .7rem;
-        background: #2563eb;
+        background: var(--brand);
         color: #fff;
         border: 0;
         border-radius: 8px;
@@ -92,7 +92,7 @@ import { Appointment } from '../../../core/models/appointment.model';
         font-weight: 600;
         transition: all 0.15s ease;
       }
-      .btn-sm:hover { background: #1d4ed8; transform: translateY(-1px); }
+      .btn-sm:hover { background: var(--brand-dark); transform: translateY(-1px); }
       .btn-sm.danger { background: #dc2626; }
       .btn-sm.danger:hover { background: #b91c1c; }
       .badge {
@@ -100,15 +100,15 @@ import { Appointment } from '../../../core/models/appointment.model';
         border-radius: 999px;
         font-size: .78rem;
         font-weight: 600;
-        background: #e2e8f0;
+        background: var(--slate-200);
         color: var(--slate-600);
       }
-      .badge[data-estado='reservada'] { background: #dbeafe; color: #2563eb; }
-      .badge[data-estado='atendida'] { background: #dcfce7; color: #16a34a; }
-      .badge[data-estado='cancelada'] { background: #fee2e2; color: #dc2626; }
-      .badge[data-estado='no_asistio'] { background: #fef9c3; color: #ca8a04; }
-      .badge[data-estado='vencida'] { background: #e2e8f0; color: var(--slate-600); }
-      .err { color: #dc2626; font-weight: 600; }
+      .badge[data-estado='reservada'] { background: var(--info-bg); color: var(--brand); }
+      .badge[data-estado='atendida'] { background: var(--ok-bg); color: var(--ok-text); }
+      .badge[data-estado='cancelada'] { background: var(--danger-bg); color: var(--danger-text); }
+      .badge[data-estado='no_asistio'] { background: var(--warn-bg); color: var(--warn-text); }
+      .badge[data-estado='vencida'] { background: var(--slate-200); color: var(--slate-600); }
+      .err { color: var(--danger-text); font-weight: 600; }
     `,
   ],
 })
