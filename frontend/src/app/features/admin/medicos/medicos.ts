@@ -25,6 +25,40 @@ export class AdminMedicos {
   readonly error = signal<string | null>(null);
   readonly ok = signal<string | null>(null);
 
+  // --- Búsqueda y filtros de la tabla de médicos ---
+  readonly busqueda = signal('');
+  readonly filtroEsp = signal('');
+  readonly filtroEstado = signal<'todos' | 'activos' | 'inactivos'>('todos');
+
+  /** Especialidades presentes en la tabla, para el desplegable de filtro. */
+  readonly espDeLista = computed(() =>
+    [...new Set(this.medicos().map((m) => m.especialidad))].sort((a, b) =>
+      a.localeCompare(b),
+    ),
+  );
+
+  /** Médicos que pasan el texto de búsqueda y los filtros de especialidad/estado. */
+  readonly medicosFiltrados = computed(() => {
+    const q = this.busqueda().toLowerCase().trim();
+    const esp = this.filtroEsp();
+    const estado = this.filtroEstado();
+    return this.medicos().filter((m) => {
+      if (esp && m.especialidad !== esp) return false;
+      if (estado === 'activos' && !m.activo) return false;
+      if (estado === 'inactivos' && m.activo) return false;
+      if (!q) return true;
+      const texto = `${m.usuarioId.nombre} ${m.usuarioId.apellido} ${m.usuarioId.email} ${m.especialidad} ${m.numeroColegiatura}`.toLowerCase();
+      return texto.includes(q);
+    });
+  });
+
+  /** Limpia todos los filtros de la tabla. */
+  limpiarFiltros(): void {
+    this.busqueda.set('');
+    this.filtroEsp.set('');
+    this.filtroEstado.set('todos');
+  }
+
   // --- Selector de especialidad con buscador ---
   readonly especialidades = signal<string[]>([]);
   readonly espQuery = signal('');

@@ -81,6 +81,34 @@
 } @else if (medicos().length === 0) {
   <div class="card empty">Aún no hay médicos registrados.</div>
 } @else {
+  <div class="filtros">
+    <input
+      class="buscador"
+      type="search"
+      placeholder="Buscar por nombre, email, especialidad o colegiatura…"
+      [value]="busqueda()"
+      (input)="busqueda.set($any($event.target).value)"
+    />
+    <select [value]="filtroEsp()" (change)="filtroEsp.set($any($event.target).value)">
+      <option value="">Todas las especialidades</option>
+      @for (e of espDeLista(); track e) {
+        <option [value]="e">{{ e }}</option>
+      }
+    </select>
+    <select [value]="filtroEstado()" (change)="filtroEstado.set($any($event.target).value)">
+      <option value="todos">Todos los estados</option>
+      <option value="activos">Solo activos</option>
+      <option value="inactivos">Solo inactivos</option>
+    </select>
+    @if (busqueda() || filtroEsp() || filtroEstado() !== 'todos') {
+      <button class="link-btn" (click)="limpiarFiltros()">Limpiar filtros</button>
+    }
+    <span class="conteo">{{ medicosFiltrados().length }} de {{ medicos().length }}</span>
+  </div>
+
+  @if (medicosFiltrados().length === 0) {
+    <div class="card empty">Ningún médico coincide con los filtros.</div>
+  } @else {
   <div class="card table-wrap">
     <table>
       <thead>
@@ -94,7 +122,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (m of medicos(); track m._id) {
+        @for (m of medicosFiltrados(); track m._id) {
           <tr>
             <td>
               <strong>{{ m.usuarioId.nombre }} {{ m.usuarioId.apellido }}</strong>
@@ -122,4 +150,5 @@
       </tbody>
     </table>
   </div>
+  }
 }

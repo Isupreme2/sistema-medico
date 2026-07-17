@@ -152,6 +152,43 @@
   }
 }
 
+.filtros {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 1rem;
+
+  .buscador {
+    flex: 1 1 260px;
+    min-width: 0;
+  }
+
+  input,
+  select {
+    padding: 0.55rem 0.75rem;
+    border: 1.5px solid var(--border);
+    border-radius: 8px;
+    font-size: 0.9rem;
+    background: var(--bg-surface);
+    color: var(--slate-700);
+    transition: border-color 0.15s, box-shadow 0.15s;
+
+    &:focus {
+      outline: none;
+      border-color: var(--brand);
+      box-shadow: var(--shadow);
+    }
+  }
+
+  .conteo {
+    margin-left: auto;
+    font-size: 0.82rem;
+    color: var(--slate-500);
+    white-space: nowrap;
+  }
+}
+
 .muted {
   color: var(--slate-500);
 }
