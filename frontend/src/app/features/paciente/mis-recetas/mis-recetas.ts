@@ -3,6 +3,7 @@ import { DatePipe } from '@angular/common';
 import { AuthService } from '../../../core/services/auth.service';
 import { PrescriptionService } from '../../../core/services/prescription.service';
 import { Prescription } from '../../../core/models/prescription.model';
+import { momentoLabel } from '../../../core/models/medication-forms';
 
 @Component({
   selector: 'app-mis-recetas',
@@ -28,6 +29,8 @@ export class MisRecetas {
       error: () => this.loading.set(false),
     });
   }
+
+  readonly momentoLabel = momentoLabel;
 
   descargar(r: Prescription): void {
     this.service.descargarPdf(r);

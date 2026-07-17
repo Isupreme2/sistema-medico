@@ -8,9 +8,13 @@ export interface PatientRiskProfile {
 
 export interface SeedMedication {
   nombre: string;
-  dosis: string;
-  frecuencia: string;
-  duracion: string;
+  forma: string;
+  concentracion: string;
+  cantidad: string;
+  horas?: string[];
+  dias?: number;
+  segunNecesidad?: boolean;
+  momento?: 'indiferente' | 'ayunas' | 'con_alimentos' | 'despues_comer';
 }
 
 export interface SeedVitals {

@@ -17,7 +17,18 @@
           <span class="medico">Dr(a). {{ r.medicoId.nombre }} {{ r.medicoId.apellido }}</span>
           <ul class="meds">
             @for (m of r.medicamentos; track $index) {
-              <li>{{ m.nombre }} — {{ m.dosis }} ({{ m.frecuencia }}, {{ m.duracion }})</li>
+              <li>
+                <b>{{ m.nombre }}</b>
+                @if (m.concentracion) {
+                  {{ m.concentracion }} — {{ m.cantidad }} {{ m.unidad }}
+                } @else if (m.dosis) {
+                  — {{ m.dosis }}
+                }
+                @if (momentoLabel(m.momento)) {
+                  <span class="momento">· {{ momentoLabel(m.momento) }}</span>
+                }
+                <small class="pauta">{{ m.frecuencia }}@if (m.duracion) { · {{ m.duracion }} }</small>
+              </li>
             }
           </ul>
           @if (r.indicaciones) {

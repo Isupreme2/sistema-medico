@@ -83,7 +83,18 @@ h1 {
     font-size: 0.85rem;
 
     li {
-      margin-bottom: 0.15rem;
+      margin-bottom: 0.4rem;
+    }
+
+    .momento {
+      color: var(--slate-500);
+    }
+
+    .pauta {
+      display: block;
+      color: var(--slate-500);
+      font-size: 0.78rem;
+      margin-top: 0.1rem;
     }
   }
 

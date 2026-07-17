@@ -1,11 +1,12 @@
 import crypto from 'node:crypto';
-import { Prescription, IPrescription } from '../../models/prescription.model';
+import { Prescription, IPrescription, IMedicamento } from '../../models/prescription.model';
 import { User } from '../../models/user.model';
 import { UserRole } from '../../constants/roles';
 import { AppError } from '../../utils/AppError';
 import { AccessTokenPayload } from '../../utils/jwt';
 import { checkPrescription, tieneConflictos } from '../../utils/drugSafety';
-import { EmitirInput } from './prescription.validation';
+import { unidadDeForma } from '../../constants/medicationForms';
+import { EmitirInput, MedicamentoInput } from './prescription.validation';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
 
@@ -16,20 +17,65 @@ function generarCodigo(): string {
   return `RX-${year}-${rand}`;
 }
 
+/**
+ * Proyección canónica de un medicamento para el hash: solo los campos legacy
+ * (texto). Al derivarlos siempre a partir de la estructura, el hash es estable
+ * y `verificar` (que usa la misma proyección) valida recetas viejas y nuevas.
+ */
+function medsParaHash(
+  meds: Pick<IMedicamento, 'nombre' | 'dosis' | 'frecuencia' | 'duracion'>[],
+) {
+  return meds.map((m) => ({
+    nombre: m.nombre,
+    dosis: m.dosis,
+    frecuencia: m.frecuencia,
+    duracion: m.duracion,
+  }));
+}
+
 /** Hash SHA-256 del contenido relevante (integridad/verificación). */
 function calcularHash(data: {
   codigo: string;
   pacienteId: string;
-  medicamentos: unknown;
+  medicamentos: Pick<IMedicamento, 'nombre' | 'dosis' | 'frecuencia' | 'duracion'>[];
   emitidaEn: Date;
 }): string {
   const canonical = JSON.stringify({
     codigo: data.codigo,
     pacienteId: data.pacienteId,
-    medicamentos: data.medicamentos,
+    medicamentos: medsParaHash(data.medicamentos),
     emitidaEn: data.emitidaEn.toISOString(),
   });
   return crypto.createHash('sha256').update(canonical).digest('hex');
+}
+
+/**
+ * Convierte la entrada estructurada del médico en el documento a persistir:
+ * calcula la unidad según la forma y deriva los textos legacy (dosis,
+ * frecuencia, duración) que consumen el PDF, la verificación y las vistas.
+ */
+function construirMedicamento(m: MedicamentoInput): IMedicamento {
+  const unidad = unidadDeForma(m.forma);
+  const dosis = `${m.cantidad} ${unidad} · ${m.concentracion}`;
+  const frecuencia = m.segunNecesidad
+    ? 'Según necesidad'
+    : `${m.horas!.length} ${m.horas!.length === 1 ? 'vez' : 'veces'}/día (${m.horas!.join(', ')})`;
+  const duracion = m.segunNecesidad ? 'Según necesidad' : `${m.dias} día(s)`;
+
+  return {
+    nombre: m.nombre,
+    forma: m.forma,
+    concentracion: m.concentracion,
+    cantidad: m.cantidad,
+    unidad,
+    horas: m.segunNecesidad ? undefined : m.horas,
+    dias: m.segunNecesidad ? undefined : m.dias,
+    segunNecesidad: m.segunNecesidad ?? false,
+    momento: m.momento,
+    dosis,
+    frecuencia,
+    duracion,
+  };
 }
 
 /**
@@ -52,12 +98,14 @@ export async function emitir(medicoId: string, input: EmitirInput) {
     });
   }
 
+  const medicamentos = input.medicamentos.map(construirMedicamento);
   const emitidaEn = new Date();
+  const inicioTratamiento = input.inicio ? new Date(input.inicio) : emitidaEn;
   const codigo = generarCodigo();
   const hash = calcularHash({
     codigo,
     pacienteId: input.pacienteId,
-    medicamentos: input.medicamentos,
+    medicamentos,
     emitidaEn,
   });
 
@@ -66,8 +114,9 @@ export async function emitir(medicoId: string, input: EmitirInput) {
     medicoId,
     pacienteId: input.pacienteId,
     historialId: input.historialId,
-    medicamentos: input.medicamentos,
+    medicamentos,
     indicaciones: input.indicaciones,
+    inicioTratamiento,
     emitidaEn,
     hash,
   });

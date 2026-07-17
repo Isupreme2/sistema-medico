@@ -56,22 +56,108 @@
   <!-- ===== Formulario ===== -->
   <form class="card" [formGroup]="form" (ngSubmit)="emitir(false)" novalidate>
     <h2>Medicamentos</h2>
+
     <div formArrayName="medicamentos">
-      @for (med of medicamentos.controls; track $index) {
-        <div class="med-row" [formGroupName]="$index">
-          <input formControlName="nombre" placeholder="Medicamento" />
-          <input formControlName="dosis" placeholder="Dosis (500mg)" />
-          <input formControlName="frecuencia" placeholder="Frecuencia (c/8h)" />
-          <input formControlName="duracion" placeholder="Duración (7 días)" />
-          <button type="button" class="x" (click)="removeMed($index)" [disabled]="medicamentos.length === 1">×</button>
-        </div>
+      @for (med of medicamentos.controls; track $index; let mi = $index) {
+        <fieldset class="med" [formGroupName]="mi">
+          <div class="med-head">
+            <span class="med-num">Medicamento {{ mi + 1 }}</span>
+            <button type="button" class="x" (click)="removeMed(mi)" [disabled]="medicamentos.length === 1">Quitar</button>
+          </div>
+
+          <!-- Fila 1: forma, nombre, concentración -->
+          <div class="grid-3">
+            <label class="field">
+              <span>Forma</span>
+              <select formControlName="forma">
+                @for (f of formas; track f.forma) {
+                  <option [value]="f.forma">{{ f.forma }}</option>
+                }
+              </select>
+            </label>
+            <label class="field">
+              <span>Medicamento</span>
+              <input formControlName="nombre" placeholder="Ej. Amoxicilina" />
+            </label>
+            <label class="field">
+              <span>Concentración</span>
+              <input formControlName="concentracion" placeholder="Ej. 500 mg" />
+            </label>
+          </div>
+
+          <!-- Fila 2: cantidad, momento, PRN -->
+          <div class="grid-3 align-end">
+            <label class="field">
+              <span>Cantidad a tomar</span>
+              <div class="con-unidad">
+                <input formControlName="cantidad" placeholder="Ej. 1, 1/2, 10" />
+                <em class="unidad">{{ unidadDe(mi) }}</em>
+              </div>
+            </label>
+            <label class="field">
+              <span>Respecto a comidas</span>
+              <select formControlName="momento">
+                @for (m of momentos; track m.valor) {
+                  <option [value]="m.valor">{{ m.label }}</option>
+                }
+              </select>
+            </label>
+            <label class="check">
+              <input type="checkbox" formControlName="segunNecesidad" />
+              <span>Según necesidad (PRN)</span>
+            </label>
+          </div>
+
+          <!-- Fila 3: horarios + días (oculto si es PRN) -->
+          @if (!esPrn(mi)) {
+            <div class="pauta">
+              <div class="horarios" formArrayName="horas">
+                <span class="field-label">Horarios de toma</span>
+                <div class="chips">
+                  @for (h of horasDe(mi).controls; track $index; let hi = $index) {
+                    <span class="chip">
+                      <input type="time" [formControlName]="hi" />
+                      <button type="button" class="chip-x" (click)="removeHora(mi, hi)"
+                        [disabled]="horasDe(mi).length === 1">×</button>
+                    </span>
+                  }
+                  <button type="button" class="add-hora" (click)="addHora(mi)">+ hora</button>
+                </div>
+                <div class="presets">
+                  @for (p of presets; track p.label) {
+                    <button type="button" class="preset" (click)="aplicarPreset(mi, p.horas)">{{ p.label }}</button>
+                  }
+                </div>
+              </div>
+
+              <label class="field dias">
+                <span>Días de tratamiento</span>
+                <input type="number" formControlName="dias" min="1" max="365" />
+              </label>
+            </div>
+          } @else {
+            <p class="prn-nota">Sin horario fijo: el paciente lo toma solo cuando lo necesita.</p>
+          }
+
+          @if (resumen(mi); as r) {
+            <p class="resumen">📅 {{ r }}</p>
+          }
+        </fieldset>
       }
     </div>
-    <button type="button" class="btn-secondary" (click)="addMed()">+ Otro medicamento</button>
+
+    <button type="button" class="btn-secondary" (click)="addMed()">+ Añadir medicamento</button>
+
+    <div class="grid-2 top-gap">
+      <label class="field">
+        <span>Inicio del tratamiento</span>
+        <input type="datetime-local" formControlName="inicio" />
+      </label>
+    </div>
 
     <label class="field">
       <span>Indicaciones generales</span>
-      <textarea formControlName="indicaciones" rows="2" placeholder="Ej. Tomar con alimentos"></textarea>
+      <textarea formControlName="indicaciones" rows="2" placeholder="Ej. Reposo relativo, abundantes líquidos"></textarea>
     </label>
 
     @if (error()) {

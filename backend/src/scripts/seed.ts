@@ -114,13 +114,20 @@ function requesterFromUser(user: Pick<IUser, '_id' | 'email' | 'rol'>): AccessTo
 function hashPrescription(
   codigo: string,
   pacienteId: string,
-  medicamentos: Array<{ nombre: string; dosis: string; frecuencia: string; duracion: string }>,
+  medicamentos: Array<{ nombre: string; dosis?: string; frecuencia?: string; duracion?: string }>,
   emitidaEn: Date,
 ): string {
+  // Misma proyección canónica (campos legacy) que usa el servicio y `verificar`,
+  // para que las recetas del seed pasen la verificación de integridad.
   const canonical = JSON.stringify({
     codigo,
     pacienteId,
-    medicamentos,
+    medicamentos: medicamentos.map((m) => ({
+      nombre: m.nombre,
+      dosis: m.dosis,
+      frecuencia: m.frecuencia,
+      duracion: m.duracion,
+    })),
     emitidaEn: emitidaEn.toISOString(),
   });
 
@@ -541,7 +548,7 @@ async function seedClinicalHistory(
         medicamentos: buildSafeMedicationPlan({
           specialty: doctor.specialty,
           alergias: patient.alergias,
-        }),
+        }).map((m) => ({ ...m, segunNecesidad: m.segunNecesidad ?? false })),
         indicaciones: narrative.indicaciones,
       });
       counters.prescriptions += 1;
