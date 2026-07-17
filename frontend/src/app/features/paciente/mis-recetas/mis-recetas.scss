@@ -86,6 +86,16 @@ h1 {
       margin-bottom: 0.15rem;
     }
   }
+
+  .indicaciones {
+    margin: 0.5rem 0 0;
+    color: var(--slate-600);
+    font-size: 0.85rem;
+
+    b {
+      color: var(--slate-700);
+    }
+  }
 }
 
 .btn-pdf {

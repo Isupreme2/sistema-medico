@@ -20,6 +20,9 @@
               <li>{{ m.nombre }} — {{ m.dosis }} ({{ m.frecuencia }}, {{ m.duracion }})</li>
             }
           </ul>
+          @if (r.indicaciones) {
+            <p class="indicaciones"><b>Indicaciones:</b> {{ r.indicaciones }}</p>
+          }
         </div>
         <button class="btn-pdf" (click)="descargar(r)">⬇ PDF</button>
       </div>
