@@ -16,6 +16,10 @@ export class Alergias {
   readonly saving = signal(false);
   readonly msg = signal<string | null>(null);
 
+  // Canal de recordatorios por WhatsApp (opt-in del paciente).
+  readonly telefono = signal<string>(this.auth.user()?.telefono ?? '');
+  readonly notificarWhatsapp = signal<boolean>(this.auth.user()?.notificarWhatsapp ?? true);
+
   agregar(valor: string): void {
     const v = valor.trim();
     if (v && !this.alergias().some((a) => a.toLowerCase() === v.toLowerCase())) {
@@ -31,12 +35,18 @@ export class Alergias {
   guardar(): void {
     this.saving.set(true);
     this.msg.set(null);
-    this.auth.updateMe({ alergias: this.alergias() }).subscribe({
-      next: () => {
-        this.saving.set(false);
-        this.msg.set('Alergias actualizadas ✓');
-      },
-      error: () => this.saving.set(false),
-    });
+    this.auth
+      .updateMe({
+        alergias: this.alergias(),
+        telefono: this.telefono().trim() || undefined,
+        notificarWhatsapp: this.notificarWhatsapp(),
+      })
+      .subscribe({
+        next: () => {
+          this.saving.set(false);
+          this.msg.set('Cambios guardados ✓');
+        },
+        error: () => this.saving.set(false),
+      });
   }
 }

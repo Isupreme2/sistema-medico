@@ -162,10 +162,10 @@ export async function getMe(userId: string): Promise<IUser> {
   return user;
 }
 
-/** Actualiza datos propios del usuario (teléfono y alergias). */
+/** Actualiza datos propios del usuario (teléfono, alergias y canal WhatsApp). */
 export async function updateMe(
   userId: string,
-  input: { telefono?: string; alergias?: string[] },
+  input: { telefono?: string; alergias?: string[]; notificarWhatsapp?: boolean },
 ): Promise<IUser> {
   const user = await User.findById(userId);
   if (!user) throw AppError.notFound('Usuario no encontrado');
@@ -174,6 +174,7 @@ export async function updateMe(
   if (input.alergias !== undefined) {
     user.alergias = input.alergias.map((a) => a.trim()).filter(Boolean);
   }
+  if (input.notificarWhatsapp !== undefined) user.notificarWhatsapp = input.notificarWhatsapp;
   await user.save();
   return user;
 }

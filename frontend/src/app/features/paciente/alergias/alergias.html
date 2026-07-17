@@ -36,3 +36,36 @@
     </button>
   </div>
 </div>
+
+<div class="card wa-card">
+  <h2>💬 Recordatorios por WhatsApp</h2>
+  <p class="muted">
+    Te avisaremos por WhatsApp unos minutos antes de cada toma de tu medicamento,
+    con un enlace para ver tu receta completa.
+  </p>
+
+  <label class="field">
+    <span>Número de WhatsApp</span>
+    <input
+      type="tel"
+      placeholder="Ej. 987654321"
+      [value]="telefono()"
+      (input)="telefono.set($any($event.target).value)"
+    />
+  </label>
+
+  <label class="switch">
+    <input
+      type="checkbox"
+      [checked]="notificarWhatsapp()"
+      (change)="notificarWhatsapp.set($any($event.target).checked)"
+    />
+    <span>Quiero recibir recordatorios de toma por WhatsApp</span>
+  </label>
+
+  <div class="actions">
+    <button class="btn-primary" [disabled]="saving()" (click)="guardar()">
+      {{ saving() ? 'Guardando…' : 'Guardar' }}
+    </button>
+  </div>
+</div>

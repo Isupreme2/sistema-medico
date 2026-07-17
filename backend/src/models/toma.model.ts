@@ -26,6 +26,8 @@ export interface IToma extends Document {
   cantidad?: string;
   unidad?: string;
   momento?: string;
+  /** Indicaciones generales de la receta (snapshot, para el mensaje del chat). */
+  indicaciones?: string;
   programadaEn: Date;
   estado: TomaEstado;
   enviadaEn?: Date;
@@ -45,6 +47,7 @@ const tomaSchema = new Schema<IToma>(
     cantidad: { type: String },
     unidad: { type: String },
     momento: { type: String },
+    indicaciones: { type: String },
     programadaEn: { type: Date, required: true },
     estado: {
       type: String,

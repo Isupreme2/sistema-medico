@@ -66,8 +66,12 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateMe = asyncHandler(async (req: Request, res: Response) => {
-  const { telefono, alergias } = req.body as { telefono?: string; alergias?: string[] };
-  const user = await authService.updateMe(req.user!.sub, { telefono, alergias });
+  const { telefono, alergias, notificarWhatsapp } = req.body as {
+    telefono?: string;
+    alergias?: string[];
+    notificarWhatsapp?: boolean;
+  };
+  const user = await authService.updateMe(req.user!.sub, { telefono, alergias, notificarWhatsapp });
   res.json({ status: 'success', data: { user } });
 });
 

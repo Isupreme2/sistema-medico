@@ -26,6 +26,23 @@ router.get('/verify/:codigo', ctrl.verificar); // PÚBLICO
 
 /**
  * @openapi
+ * /prescriptions/link/{token}:
+ *   get:
+ *     tags: [Recetas]
+ *     summary: Vista pública (HTML) de la receta vía enlace firmado del chat
+ *     parameters:
+ *       - in: path
+ *         name: token
+ *         required: true
+ *         schema: { type: string }
+ *     responses:
+ *       200: { description: Página HTML de la receta }
+ *       404: { description: Enlace inválido o expirado }
+ */
+router.get('/link/:token', ctrl.verLink); // PÚBLICO (token firmado)
+
+/**
+ * @openapi
  * /prescriptions:
  *   post:
  *     tags: [Recetas]

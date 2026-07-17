@@ -79,6 +79,61 @@ h1 {
   color: var(--slate-500);
 }
 
+.wa-card {
+  margin-top: 1.25rem;
+
+  h2 {
+    margin: 0 0 0.4rem;
+    font-size: 1.05rem;
+    color: var(--slate-800);
+  }
+
+  .field {
+    display: block;
+    margin: 1rem 0;
+
+    span {
+      display: block;
+      font-size: 0.8rem;
+      font-weight: 600;
+      color: var(--slate-700);
+      margin-bottom: 0.3rem;
+    }
+
+    input {
+      width: 100%;
+      max-width: 260px;
+      box-sizing: border-box;
+      padding: 0.6rem 0.75rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      font-size: 0.92rem;
+
+      &:focus {
+        outline: none;
+        border-color: var(--brand);
+        box-shadow: 0 0 0 3px var(--shadow);
+      }
+    }
+  }
+
+  .switch {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 1rem;
+    font-size: 0.9rem;
+    color: var(--slate-700);
+    cursor: pointer;
+
+    input {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--brand);
+    }
+  }
+}
+
 .alert.ok {
   background: var(--ok-bg);
   color: var(--ok-text);

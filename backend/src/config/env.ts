@@ -83,6 +83,26 @@ const envSchema = z.object({
   TOMA_LEAD_MIN: z.coerce.number().default(5),
   /** Margen (min) tras la hora programada antes de dar una toma por omitida. */
   TOMA_GRACE_MIN: z.coerce.number().default(30),
+
+  /**
+   * WhatsApp Cloud API (Meta). Todo opcional: si falta el token o el phone id,
+   * el canal cae a modo "log" (imprime el mensaje) para funcionar sin
+   * credenciales reales, igual que el mailer.
+   */
+  WHATSAPP_ENABLED: z
+    .string()
+    .default('false')
+    .transform((v) => v === 'true'),
+  WHATSAPP_TOKEN: z.string().optional(),
+  WHATSAPP_PHONE_ID: z.string().optional(),
+  WHATSAPP_API_VERSION: z.string().default('v21.0'),
+  /** Plantilla pre-aprobada para el recordatorio de toma (mensajes fuera de 24 h). */
+  WHATSAPP_TEMPLATE_TOMA: z.string().optional(),
+  /** Código de país que se antepone a móviles locales sin prefijo (Perú = 51). */
+  WHATSAPP_DEFAULT_COUNTRY: z.string().default('51'),
+
+  /** Vigencia del enlace firmado para ver la receta desde el chat. */
+  RECETA_LINK_EXPIRES: z.string().default('7d'),
 });
 
 const parsed = envSchema.safeParse(process.env);

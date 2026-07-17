@@ -10,6 +10,7 @@ import { EmitirInput, MedicamentoInput } from './prescription.validation';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
 import { generarTomasDeReceta } from '../toma/toma.service';
+import { verificarLinkReceta } from '../../utils/recetaLink';
 
 /** Genera un código legible y único de receta: RX-AAAA-XXXXXX. */
 function generarCodigo(): string {
@@ -167,6 +168,19 @@ export async function getOwned(id: string, requester: AccessTokenPayload): Promi
     throw AppError.forbidden('No puedes ver esta receta');
   }
   return receta;
+}
+
+/**
+ * Resuelve una receta a partir de un enlace firmado (deep-link del chat).
+ * Acceso sin login, gobernado por el token de vida corta. Devuelve null si el
+ * token es inválido/expiró o la receta ya no existe.
+ */
+export async function verRecetaPorToken(token: string): Promise<IPrescription | null> {
+  const recetaId = verificarLinkReceta(token);
+  if (!recetaId) return null;
+  return Prescription.findById(recetaId)
+    .populate('medicoId', 'nombre apellido')
+    .populate('pacienteId', 'nombre apellido');
 }
 
 /**

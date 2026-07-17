@@ -23,6 +23,7 @@ export interface User {
   apellido: string;
   telefono?: string;
   alergias?: string[];
+  notificarWhatsapp?: boolean;
   activo: boolean;
   dosFactores: { habilitado: boolean };
   creadoEn: string;

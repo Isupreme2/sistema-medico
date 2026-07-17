@@ -15,6 +15,8 @@ export interface IUser extends Document {
   numeroDocumento?: string;
   /** Alergias del paciente (a fármacos). Base de la alerta al recetar. */
   alergias: string[];
+  /** Opt-in: recibir recordatorios de toma por WhatsApp (requiere teléfono). */
+  notificarWhatsapp: boolean;
   activo: boolean;
 
   /** Se incrementa para invalidar todos los refresh tokens del usuario. */
@@ -61,6 +63,7 @@ const userSchema = new Schema<IUser>(
     tipoDocumento: { type: String, enum: ['DNI', 'CE', 'PAS'], default: 'DNI' },
     numeroDocumento: { type: String, trim: true },
     alergias: { type: [String], default: [] },
+    notificarWhatsapp: { type: Boolean, default: true },
     activo: { type: Boolean, default: true },
 
     versionToken: { type: Number, default: 0 },

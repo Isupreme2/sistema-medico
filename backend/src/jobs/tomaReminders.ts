@@ -1,5 +1,6 @@
 import cron, { ScheduledTask } from 'node-cron';
 import { runTomaRemindersOnce } from '../modules/toma/toma.service';
+import { whatsappMode } from '../utils/whatsapp';
 import { env } from '../config/env';
 import { logger } from '../utils/logger';
 
@@ -28,7 +29,7 @@ export function startTomaReminderJob(): void {
   });
 
   logger.info(
-    `💊 Worker de tomas activo (cron="${env.TOMA_REMINDER_CRON}", aviso=${env.TOMA_LEAD_MIN} min antes)`,
+    `💊 Worker de tomas activo (cron="${env.TOMA_REMINDER_CRON}", aviso=${env.TOMA_LEAD_MIN} min antes, whatsapp=${whatsappMode()})`,
   );
 }
 

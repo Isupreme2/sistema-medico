@@ -65,7 +65,11 @@ export class AuthService {
       .pipe(tap((res) => this._user.set(res.data.user)));
   }
 
-  updateMe(payload: { telefono?: string; alergias?: string[] }): Observable<User> {
+  updateMe(payload: {
+    telefono?: string;
+    alergias?: string[];
+    notificarWhatsapp?: boolean;
+  }): Observable<User> {
     return this.http
       .patch<ApiResponse<{ user: User }>>(`${this.api}/me`, payload)
       .pipe(
