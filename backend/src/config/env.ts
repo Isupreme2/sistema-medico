@@ -76,6 +76,13 @@ const envSchema = z.object({
     .string()
     .default('true')
     .transform((v) => v === 'true'),
+
+  /** Cron del recordatorio de tomas de medicamentos (por defecto cada minuto). */
+  TOMA_REMINDER_CRON: z.string().default('* * * * *'),
+  /** Minutos de antelación con que se avisa cada toma (el "en 5 minutos"). */
+  TOMA_LEAD_MIN: z.coerce.number().default(5),
+  /** Margen (min) tras la hora programada antes de dar una toma por omitida. */
+  TOMA_GRACE_MIN: z.coerce.number().default(30),
 });
 
 const parsed = envSchema.safeParse(process.env);

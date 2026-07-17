@@ -3,6 +3,7 @@ import { createApp } from './app';
 import { connectDatabase, disconnectDatabase } from './config/db';
 import { initSocket } from './realtime/socket';
 import { startReminderJob, stopReminderJob } from './jobs/reminders';
+import { startTomaReminderJob, stopTomaReminderJob } from './jobs/tomaReminders';
 import { env } from './config/env';
 import { logger } from './utils/logger';
 import { predictionEngine } from './modules/prediction/prediction.engine';
@@ -26,6 +27,9 @@ async function bootstrap(): Promise<void> {
   // Recordatorios de citas (node-cron) — email + notificación in-app
   startReminderJob();
 
+  // Recordatorios de tomas de medicamentos (node-cron) — notificación in-app
+  startTomaReminderJob();
+
   server.listen(env.PORT, () => {
     logger.info(`🚀 API escuchando en http://localhost:${env.PORT}${env.API_PREFIX}`);
     logger.info(`📚 Swagger en       http://localhost:${env.PORT}/docs`);
@@ -35,6 +39,7 @@ async function bootstrap(): Promise<void> {
   const shutdown = async (signal: string) => {
     logger.warn(`${signal} recibido, cerrando...`);
     stopReminderJob();
+    stopTomaReminderJob();
     server.close(async () => {
       await disconnectDatabase();
       process.exit(0);

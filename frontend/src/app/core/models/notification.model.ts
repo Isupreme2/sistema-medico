@@ -2,6 +2,7 @@ export type NotificationType =
   | 'cita_reservada'
   | 'cita_cancelada'
   | 'recordatorio'
+  | 'recordatorio_toma'
   | 'consulta_registrada'
   | 'receta_emitida'
   | 'sistema';
@@ -23,6 +24,7 @@ export const NOTIFICATION_ICON: Record<NotificationType, string> = {
   cita_reservada: '📅',
   cita_cancelada: '❌',
   recordatorio: '⏰',
+  recordatorio_toma: '💊',
   consulta_registrada: '🩺',
   receta_emitida: '💊',
   sistema: '🔔',

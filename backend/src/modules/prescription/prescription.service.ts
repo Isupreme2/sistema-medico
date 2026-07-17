@@ -9,6 +9,7 @@ import { unidadDeForma } from '../../constants/medicationForms';
 import { EmitirInput, MedicamentoInput } from './prescription.validation';
 import { notify } from '../notification/notification.service';
 import { NotificationType } from '../../models/notification.model';
+import { generarTomasDeReceta } from '../toma/toma.service';
 
 /** Genera un código legible y único de receta: RX-AAAA-XXXXXX. */
 function generarCodigo(): string {
@@ -120,6 +121,9 @@ export async function emitir(medicoId: string, input: EmitirInput) {
     emitidaEn,
     hash,
   });
+
+  // Materializa las tomas para el motor de recordatorios (best-effort, no bloquea).
+  await generarTomasDeReceta(receta);
 
   const populated = await receta.populate([
     { path: 'medicoId', select: 'nombre apellido' },

@@ -25,6 +25,93 @@ h1 {
   }
 }
 
+.tomas {
+  margin-bottom: 1.5rem;
+  border-color: var(--info-border);
+
+  .tomas-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 0.75rem;
+
+    h2 {
+      margin: 0;
+      font-size: 1.02rem;
+      color: var(--slate-800);
+    }
+
+    .hint {
+      font-size: 0.8rem;
+      color: var(--slate-500);
+    }
+  }
+
+  .toma-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .toma {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    flex-wrap: wrap;
+    padding: 0.6rem 0.8rem;
+    border: 1.5px solid var(--border);
+    border-radius: 10px;
+    background: var(--bg-surface);
+
+    &.enviada {
+      border-color: var(--info-border);
+      background: var(--info-bg);
+    }
+
+    .hora {
+      font-size: 0.82rem;
+      font-weight: 700;
+      color: var(--brand);
+      white-space: nowrap;
+      text-transform: capitalize;
+    }
+
+    .detalle {
+      flex: 1;
+      min-width: 160px;
+      font-size: 0.88rem;
+      color: var(--slate-700);
+
+      em {
+        color: var(--slate-500);
+        font-style: normal;
+      }
+    }
+
+    .ok-btn {
+      border: 1px solid var(--ok-border);
+      background: var(--ok-bg);
+      color: var(--ok-text);
+      border-radius: 8px;
+      padding: 0.35rem 0.7rem;
+      font-size: 0.8rem;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: filter 0.15s ease;
+
+      &:hover {
+        filter: brightness(1.05);
+      }
+    }
+  }
+}
+
 .muted {
   color: var(--slate-500);
 }

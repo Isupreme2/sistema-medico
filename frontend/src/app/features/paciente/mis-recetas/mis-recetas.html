@@ -1,6 +1,29 @@
 <h1>Mis recetas</h1>
 <p class="lead">Tus recetas digitales. Descárgalas en PDF con su código de verificación.</p>
 
+@if (proximasTomas().length) {
+  <section class="card tomas">
+    <div class="tomas-head">
+      <h2>💊 Próximas tomas</h2>
+      <span class="hint">Te avisaremos unos minutos antes de cada una.</span>
+    </div>
+    <ul class="toma-list">
+      @for (t of proximasTomas(); track t._id) {
+        <li class="toma" [class.enviada]="t.estado === 'enviada'">
+          <span class="hora">{{ t.programadaEn | date: 'EEE dd/MM · HH:mm' : '-0500' }}</span>
+          <span class="detalle">
+            <strong>{{ t.medicamento }}</strong>
+            @if (t.concentracion) { {{ t.concentracion }} }
+            @if (t.cantidad) { · {{ t.cantidad }} {{ t.unidad }} }
+            @if (momentoLabel(t.momento)) { <em>· {{ momentoLabel(t.momento) }}</em> }
+          </span>
+          <button class="ok-btn" (click)="confirmarToma(t)">Ya la tomé</button>
+        </li>
+      }
+    </ul>
+  </section>
+}
+
 @if (loading()) {
   <p class="muted">Cargando…</p>
 } @else if (recetas().length === 0) {

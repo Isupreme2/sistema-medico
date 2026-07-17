@@ -4,6 +4,7 @@ export enum NotificationType {
   CITA_RESERVADA = 'cita_reservada',
   CITA_CANCELADA = 'cita_cancelada',
   RECORDATORIO = 'recordatorio',
+  RECORDATORIO_TOMA = 'recordatorio_toma',
   CONSULTA_REGISTRADA = 'consulta_registrada',
   RECETA_EMITIDA = 'receta_emitida',
   SISTEMA = 'sistema',
