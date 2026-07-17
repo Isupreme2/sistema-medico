@@ -1,0 +1,80 @@
+<div class="card">
+  <div class="head">
+    <h3>🤖 Análisis con IA</h3>
+    @if (resultado(); as r) {
+      @if (r.modo === 'demo') {
+        <span class="badge demo">Modo demostración</span>
+      } @else {
+        <span class="badge ia">{{ r.modelo }}</span>
+      }
+    }
+  </div>
+  <p class="lead">Apoyo a tu evaluación: evalúa toda la historia (motivos, diagnósticos, recetas y signos). No es un diagnóstico.</p>
+
+  @if (!loading() && !resultado() && !error()) {
+    <button class="btn-primary" (click)="analizar()">Analizar con IA</button>
+  }
+
+  @if (loading()) {
+    <button class="btn-primary" disabled>Analizando…</button>
+  }
+
+  @if (resultado(); as res) {
+    @if (res.estado === 'datos_insuficientes') {
+      <p class="msg">Historial insuficiente para un análisis. Se requiere al menos una consulta registrada.</p>
+      <button class="btn-secondary" (click)="analizar()">Reintentar</button>
+    } @else if (res.estado === 'error') {
+      <p class="msg err">{{ res.resumen || 'No se pudo completar el análisis.' }}</p>
+      <button class="btn-secondary" (click)="analizar()">Reintentar</button>
+    } @else {
+      @if (res.resumen) {
+        <p class="resumen">{{ res.resumen }}</p>
+      }
+
+      <div class="categorias">
+        @for (cat of res.categorias; track cat.nombre) {
+          <div class="categoria">
+            <div class="cat-header">
+              <span class="cat-label">{{ cat.nombre }}</span>
+              <span class="cat-nivel" [style.color]="nivelColor(cat.nivel)">
+                {{ cat.probabilidad }}% · {{ cat.nivel }}
+              </span>
+            </div>
+            <div class="bar-track">
+              <div class="bar-fill" [style.width.%]="barWidth(cat.probabilidad)" [style.background]="nivelColor(cat.nivel)"></div>
+            </div>
+            @if (cat.justificacion) {
+              <p class="justif">{{ cat.justificacion }}</p>
+            }
+          </div>
+        }
+      </div>
+
+      @if (res.senalesAlarma.length) {
+        <div class="bloque alarma">
+          <strong>⚠️ Señales de alarma</strong>
+          <ul>
+            @for (s of res.senalesAlarma; track s) { <li>{{ s }}</li> }
+          </ul>
+        </div>
+      }
+
+      @if (res.recomendaciones.length) {
+        <div class="bloque">
+          <strong>Recomendaciones para el médico</strong>
+          <ul>
+            @for (rec of res.recomendaciones; track rec) { <li>{{ rec }}</li> }
+          </ul>
+        </div>
+      }
+
+      <p class="disclaimer">{{ res.disclaimer }}</p>
+      <button class="btn-secondary" (click)="analizar()">Volver a analizar</button>
+    }
+  }
+
+  @if (error(); as errMsg) {
+    <p class="msg err">{{ errMsg }}</p>
+    <button class="btn-secondary" (click)="analizar()">Reintentar</button>
+  }
+</div>

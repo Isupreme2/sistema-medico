@@ -103,6 +103,16 @@ const envSchema = z.object({
 
   /** Vigencia del enlace firmado para ver la receta desde el chat. */
   RECETA_LINK_EXPIRES: z.string().default('7d'),
+
+  /**
+   * Análisis clínico asistido por IA (Claude / Anthropic). Opcional: si falta
+   * ANTHROPIC_API_KEY, el módulo cae a modo "demo" (devuelve un análisis
+   * simulado) para funcionar sin credenciales ni costo, igual que el mailer.
+   * NO es un diagnóstico: es apoyo a la evaluación del médico.
+   */
+  ANTHROPIC_API_KEY: z.string().optional(),
+  /** Modelo a usar (el más capaz por defecto). */
+  ANTHROPIC_MODEL: z.string().default('claude-opus-4-8'),
 });
 
 const parsed = envSchema.safeParse(process.env);

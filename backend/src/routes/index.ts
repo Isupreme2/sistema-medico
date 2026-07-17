@@ -14,6 +14,7 @@ import invoiceRoutes from '../modules/invoice/invoice.routes';
 import analyticsRoutes from '../modules/analytics/analytics.routes';
 import auditRoutes from '../modules/audit/audit.routes';
 import predictionRoutes from '../modules/prediction/prediction.routes';
+import aiAnalysisRoutes from '../modules/aiAnalysis/aiAnalysis.routes';
 
 const router = Router();
 
@@ -49,5 +50,6 @@ router.use('/invoices', invoiceRoutes);
 router.use('/analytics', analyticsRoutes);
 router.use('/audit', auditRoutes);
 router.use('/predictions', predictionRoutes);
+router.use('/ai-analysis', aiAnalysisRoutes);
 
 export default router;

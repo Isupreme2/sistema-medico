@@ -9,6 +9,7 @@ import { Prescription } from '../../core/models/prescription.model';
 import { UserRole } from '../../core/models/user.model';
 import { LineChart, SerieGrafica } from '../../shared/line-chart/line-chart';
 import { RiskPredictionCard } from '../../shared/risk-prediction-card/risk-prediction-card';
+import { AiAnalysisCard } from '../../shared/ai-analysis-card/ai-analysis-card';
 
 interface ChartConfig {
   titulo: string;
@@ -18,7 +19,7 @@ interface ChartConfig {
 
 @Component({
   selector: 'app-historial',
-  imports: [DatePipe, RouterLink, LineChart, RiskPredictionCard],
+  imports: [DatePipe, RouterLink, LineChart, RiskPredictionCard, AiAnalysisCard],
   templateUrl: './historial.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './historial.scss',
