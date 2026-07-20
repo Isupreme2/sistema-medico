@@ -9,6 +9,25 @@ const fmtFecha = new Intl.DateTimeFormat('es-PE', {
   timeZone: 'America/Lima',
 });
 
+/** Edad en años cumplidos a partir de la fecha de nacimiento. */
+export function edadDe(fecha?: Date | null): number | null {
+  if (!fecha) return null;
+  const nac = new Date(fecha);
+  if (Number.isNaN(nac.getTime())) return null;
+  const hoy = new Date();
+  let edad = hoy.getFullYear() - nac.getFullYear();
+  const m = hoy.getMonth() - nac.getMonth();
+  if (m < 0 || (m === 0 && hoy.getDate() < nac.getDate())) edad -= 1;
+  return edad >= 0 && edad < 130 ? edad : null;
+}
+
+function sexoLabel(s?: string): string {
+  if (s === 'M') return 'masculino';
+  if (s === 'F') return 'femenino';
+  if (s === 'O') return 'otro';
+  return 'no registrado';
+}
+
 export interface ContextoPaciente {
   /** Texto estructurado listo para enviar al modelo. */
   texto: string;
@@ -37,6 +56,8 @@ export async function construirContexto(pacienteId: string): Promise<ContextoPac
   const lineas: string[] = [];
 
   lineas.push(`Paciente: ${nombre}`);
+  lineas.push(`Edad: ${edadDe(paciente.fechaNacimiento) ?? 'no registrada'}`);
+  lineas.push(`Sexo: ${sexoLabel(paciente.sexo)}`);
   lineas.push(
     `Alergias registradas: ${paciente.alergias.length ? paciente.alergias.join(', ') : 'ninguna'}`,
   );

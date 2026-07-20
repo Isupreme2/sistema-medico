@@ -61,6 +61,8 @@ export async function register(input: RegisterInput): Promise<IUser> {
     telefono: input.telefono,
     tipoDocumento: input.tipoDocumento,
     numeroDocumento: input.numeroDocumento,
+    fechaNacimiento: input.fechaNacimiento ? new Date(input.fechaNacimiento) : undefined,
+    sexo: input.sexo,
   });
 
   return user;
@@ -162,14 +164,24 @@ export async function getMe(userId: string): Promise<IUser> {
   return user;
 }
 
-/** Actualiza datos propios del usuario (teléfono, alergias y canal WhatsApp). */
+/** Actualiza datos propios del usuario (teléfono, alergias, WhatsApp y demográficos). */
 export async function updateMe(
   userId: string,
-  input: { telefono?: string; alergias?: string[]; notificarWhatsapp?: boolean },
+  input: {
+    telefono?: string;
+    alergias?: string[];
+    notificarWhatsapp?: boolean;
+    fechaNacimiento?: string;
+    sexo?: 'M' | 'F' | 'O';
+  },
 ): Promise<IUser> {
   const user = await User.findById(userId);
   if (!user) throw AppError.notFound('Usuario no encontrado');
 
+  if (input.fechaNacimiento !== undefined) {
+    user.fechaNacimiento = input.fechaNacimiento ? new Date(input.fechaNacimiento) : undefined;
+  }
+  if (input.sexo !== undefined) user.sexo = input.sexo;
   if (input.telefono !== undefined) user.telefono = input.telefono;
   if (input.alergias !== undefined) {
     user.alergias = input.alergias.map((a) => a.trim()).filter(Boolean);

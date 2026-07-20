@@ -6,6 +6,7 @@ import { AccessTokenPayload } from '../../utils/jwt';
 import { logger } from '../../utils/logger';
 import { env } from '../../config/env';
 import { construirContexto } from './aiAnalysis.context';
+import { getPrediction } from '../prediction/prediction.service';
 
 export type NivelRiesgo = 'bajo' | 'medio' | 'alto';
 export type AnalysisEstado = 'ok' | 'datos_insuficientes' | 'error';
@@ -15,6 +16,12 @@ export interface CategoriaRiesgo {
   probabilidad: number; // 0-100
   nivel: NivelRiesgo;
   justificacion: string;
+}
+
+/** Resultado del modelo ML (XGBoost) que la IA recibe para contrastar. */
+export interface MlResumen {
+  estado: string;
+  categorias: { categoria: string; probabilidad: number; nivel: string }[];
 }
 
 export interface AiAnalysisResult {
@@ -27,6 +34,10 @@ export interface AiAnalysisResult {
   resumen: string;
   recomendaciones: string[];
   senalesAlarma: string[];
+  /** Lectura de la IA sobre si coincide o discrepa con el modelo ML y por qué. */
+  concordanciaML: string;
+  /** Números crudos del ML, para mostrarlos lado a lado. */
+  ml: MlResumen | null;
   disclaimer: string;
 }
 
@@ -48,7 +59,13 @@ Devuelve porcentajes (0-100) por cada categoría de riesgo relevante que identif
 (por ejemplo cardiovascular, metabólico, respiratorio, u otras que la evidencia sugiera), \
 con una justificación breve basada en los datos del paciente. \
 Incluye un resumen ejecutivo, recomendaciones accionables para el médico y señales de alarma a vigilar. \
-Si los datos son escasos, dilo explícitamente y sé conservador en los porcentajes.`;
+Si los datos son escasos, dilo explícitamente y sé conservador en los porcentajes.
+
+Además recibirás la salida de un modelo estadístico (XGBoost) entrenado sobre datos sintéticos, \
+que solo observa signos vitales y conteos de palabras clave. En el campo "concordanciaML" explica \
+en 2-3 frases si tu lectura coincide o discrepa con la de ese modelo y por qué, señalando qué \
+información contextual (motivos de consulta, tratamientos, recetas, edad o sexo) el modelo no pudo \
+considerar. Trátalo como una segunda opinión limitada, no como verdad de referencia.`;
 
 /** Esquema de salida estructurada (JSON Schema soportado por structured outputs). */
 const OUTPUT_SCHEMA = {
@@ -71,8 +88,12 @@ const OUTPUT_SCHEMA = {
     resumen: { type: 'string' },
     recomendaciones: { type: 'array', items: { type: 'string' } },
     senalesAlarma: { type: 'array', items: { type: 'string' } },
+    concordanciaML: {
+      type: 'string',
+      description: 'Comparación entre tu lectura y la del modelo estadístico',
+    },
   },
-  required: ['categorias', 'resumen', 'recomendaciones', 'senalesAlarma'],
+  required: ['categorias', 'resumen', 'recomendaciones', 'senalesAlarma', 'concordanciaML'],
   additionalProperties: false,
 } as const;
 
@@ -104,9 +125,28 @@ export async function analizarPaciente(
   }
 
   const contexto = await construirContexto(pacienteId);
+
+  // Segunda opinión del modelo ML. Best-effort: si falla (ONNX no cargado,
+  // datos insuficientes), el análisis por IA continúa igual.
+  let ml: MlResumen | null = null;
+  try {
+    const pred = await getPrediction(pacienteId, requester);
+    ml = {
+      estado: pred.estado,
+      categorias: pred.categorias.map((c) => ({
+        categoria: c.categoria,
+        probabilidad: Math.round(c.probabilidad * 100),
+        nivel: c.nivel,
+      })),
+    };
+  } catch (err) {
+    logger.warn('No se pudo obtener la predicción ML para contrastar:', err);
+  }
+
   const base = {
     pacienteId,
     generadoEn: new Date().toISOString(),
+    ml,
     disclaimer: DISCLAIMER,
   };
 
@@ -120,6 +160,7 @@ export async function analizarPaciente(
       resumen: 'No hay consultas registradas suficientes para un análisis.',
       recomendaciones: [],
       senalesAlarma: [],
+      concordanciaML: '',
     };
   }
 
@@ -145,6 +186,9 @@ export async function analizarPaciente(
         'refleja un análisis real del paciente.',
       recomendaciones: ['Configurar la clave de API de Claude para habilitar el análisis real.'],
       senalesAlarma: [],
+      concordanciaML: ml
+        ? 'En modo real, aquí la IA contrastaría su lectura con la del modelo estadístico.'
+        : '',
     };
   }
 
@@ -164,14 +208,31 @@ export async function analizarPaciente(
           role: 'user',
           content:
             'Analiza la siguiente historia clínica y responde en el formato JSON indicado.\n\n' +
-            contexto.texto,
+            contexto.texto +
+            (ml
+              ? '\n\n--- Segunda opinión del modelo estadístico (XGBoost, solo signos vitales y ' +
+                `palabras clave; entrenado con datos sintéticos) ---\nEstado: ${ml.estado}\n` +
+                ml.categorias
+                  .map((c) => `- ${c.categoria}: ${c.probabilidad}% (${c.nivel})`)
+                  .join('\n')
+              : '\n\n(El modelo estadístico no devolvió resultados para este paciente.)'),
         },
       ],
     });
 
     if (msg.stop_reason === 'refusal') {
       logger.warn('El modelo rehusó el análisis clínico');
-      return { ...base, modo: 'ia', modelo: env.ANTHROPIC_MODEL, estado: 'error', categorias: [], resumen: 'El modelo no pudo procesar esta solicitud.', recomendaciones: [], senalesAlarma: [] };
+      return {
+        ...base,
+        modo: 'ia',
+        modelo: env.ANTHROPIC_MODEL,
+        estado: 'error',
+        categorias: [],
+        resumen: 'El modelo no pudo procesar esta solicitud.',
+        recomendaciones: [],
+        senalesAlarma: [],
+        concordanciaML: '',
+      };
     }
 
     const texto = msg.content.find((b) => b.type === 'text');
@@ -180,6 +241,7 @@ export async function analizarPaciente(
       resumen: string;
       recomendaciones: string[];
       senalesAlarma: string[];
+      concordanciaML: string;
     };
 
     return {
@@ -196,6 +258,7 @@ export async function analizarPaciente(
       resumen: parsed.resumen ?? '',
       recomendaciones: parsed.recomendaciones ?? [],
       senalesAlarma: parsed.senalesAlarma ?? [],
+      concordanciaML: parsed.concordanciaML ?? '',
     };
   } catch (err) {
     logger.error('Fallo el análisis con IA:', err);
@@ -208,6 +271,7 @@ export async function analizarPaciente(
       resumen: 'No se pudo completar el análisis con IA en este momento.',
       recomendaciones: [],
       senalesAlarma: [],
+      concordanciaML: '',
     };
   }
 }

@@ -69,6 +69,8 @@ export class AuthService {
     telefono?: string;
     alergias?: string[];
     notificarWhatsapp?: boolean;
+    fechaNacimiento?: string;
+    sexo?: 'M' | 'F' | 'O';
   }): Observable<User> {
     return this.http
       .patch<ApiResponse<{ user: User }>>(`${this.api}/me`, payload)

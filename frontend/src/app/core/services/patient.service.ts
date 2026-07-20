@@ -10,6 +10,12 @@ export interface CreatePatientPayload {
   email: string;
   password: string;
   telefono?: string;
+  /** El backend los exige al registrar (registerSchema). */
+  tipoDocumento: 'DNI' | 'CE' | 'PAS';
+  numeroDocumento: string;
+  /** Demográficos clave para la evaluación de riesgo. */
+  fechaNacimiento?: string;
+  sexo?: 'M' | 'F' | 'O';
 }
 
 /** Operaciones sobre pacientes que usa Recepción (buscar y registrar). */

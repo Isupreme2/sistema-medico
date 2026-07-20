@@ -24,6 +24,8 @@ export interface User {
   telefono?: string;
   alergias?: string[];
   notificarWhatsapp?: boolean;
+  fechaNacimiento?: string;
+  sexo?: 'M' | 'F' | 'O';
   activo: boolean;
   dosFactores: { habilitado: boolean };
   creadoEn: string;
@@ -44,6 +46,9 @@ export interface RegisterRequest {
   telefono?: string;
   tipoDocumento: 'DNI' | 'CE' | 'PAS';
   numeroDocumento: string;
+  /** Demográficos clave para el riesgo clínico (YYYY-MM-DD). */
+  fechaNacimiento?: string;
+  sexo?: 'M' | 'F' | 'O';
 }
 
 /** Envoltura estándar de respuestas del backend. */

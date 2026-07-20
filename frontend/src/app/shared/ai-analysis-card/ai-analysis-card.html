@@ -50,6 +50,20 @@
         }
       </div>
 
+      @if (res.ml && res.ml.categorias.length) {
+        <div class="bloque ml">
+          <strong>🔬 Contraste con el modelo estadístico (ML)</strong>
+          <ul class="ml-list">
+            @for (c of res.ml.categorias; track c.categoria) {
+              <li><span class="ml-cat">{{ c.categoria }}</span> <span class="ml-val">{{ c.probabilidad }}% · {{ c.nivel }}</span></li>
+            }
+          </ul>
+          @if (res.concordanciaML) {
+            <p class="concordancia">{{ res.concordanciaML }}</p>
+          }
+        </div>
+      }
+
       @if (res.senalesAlarma.length) {
         <div class="bloque alarma">
           <strong>⚠️ Señales de alarma</strong>

@@ -56,6 +56,24 @@ import { PatientLite } from '../../../core/models/user.model';
             <input class="input" type="email" placeholder="Email" [(ngModel)]="form.email" name="email" required />
             <input class="input" type="password" placeholder="Contraseña (mín. 8, mayús/minús/número)" [(ngModel)]="form.password" name="password" required />
             <input class="input" placeholder="Teléfono (opcional)" [(ngModel)]="form.telefono" name="telefono" />
+            <div class="row-2">
+              <select class="input" [(ngModel)]="form.tipoDocumento" name="tipoDocumento" required>
+                <option value="DNI">DNI</option>
+                <option value="CE">C. Extranjería</option>
+                <option value="PAS">Pasaporte</option>
+              </select>
+              <input class="input" placeholder="N° de documento" [(ngModel)]="form.numeroDocumento" name="numeroDocumento" required />
+            </div>
+            <div class="row-2">
+              <input class="input" type="date" [(ngModel)]="form.fechaNacimiento" name="fechaNacimiento" title="Fecha de nacimiento" />
+              <select class="input" [(ngModel)]="form.sexo" name="sexo">
+                <option value="">Sexo (opcional)</option>
+                <option value="M">Masculino</option>
+                <option value="F">Femenino</option>
+                <option value="O">Otro</option>
+              </select>
+            </div>
+            <small class="hint">La fecha de nacimiento y el sexo mejoran la evaluación de riesgo clínico.</small>
             <button class="btn" type="submit" [disabled]="saving()">
               {{ saving() ? 'Registrando…' : 'Registrar paciente' }}
             </button>
@@ -90,6 +108,9 @@ import { PatientLite } from '../../../core/models/user.model';
         transition: border-color 0.15s ease;
       }
       .input:focus { outline: none; border-color: var(--brand); }
+      .row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+      @media (max-width: 480px) { .row-2 { grid-template-columns: 1fr; } }
+      .hint { display: block; margin: -.25rem 0 .6rem; font-size: .76rem; color: var(--slate-500); }
       .list { list-style: none; padding: 0; margin: .5rem 0 0; }
       .list li {
         display: flex;
@@ -128,7 +149,11 @@ export class RecepcionPacientes {
   readonly msg = signal<string | null>(null);
   readonly error = signal<string | null>(null);
 
-  form: CreatePatientPayload = { nombre: '', apellido: '', email: '', password: '', telefono: '' };
+  /** Estado del formulario: `sexo` admite '' mientras no se elige. */
+  form: Omit<CreatePatientPayload, 'sexo'> & { sexo: '' | 'M' | 'F' | 'O' } = {
+    nombre: '', apellido: '', email: '', password: '', telefono: '',
+    tipoDocumento: 'DNI', numeroDocumento: '', fechaNacimiento: '', sexo: '',
+  };
 
   // La búsqueda se hace con debounce (250 ms) y switchMap, que cancela la
   // petición anterior: ni una llamada por tecla ni resultados fuera de orden.
@@ -158,10 +183,21 @@ export class RecepcionPacientes {
     this.msg.set(null);
     this.error.set(null);
     this.saving.set(true);
-    this.patients.create(this.form).subscribe({
+    const f = this.form;
+    this.patients
+      .create({
+        ...f,
+        telefono: f.telefono || undefined,
+        fechaNacimiento: f.fechaNacimiento || undefined,
+        sexo: f.sexo || undefined,
+      })
+      .subscribe({
       next: (p) => {
         this.msg.set(`Paciente ${p.nombre} ${p.apellido} registrado correctamente.`);
-        this.form = { nombre: '', apellido: '', email: '', password: '', telefono: '' };
+        this.form = {
+          nombre: '', apellido: '', email: '', password: '', telefono: '',
+          tipoDocumento: 'DNI', numeroDocumento: '', fechaNacimiento: '', sexo: '',
+        };
         this.saving.set(false);
         this.search$.next(this.q());
       },

@@ -66,12 +66,20 @@ export const me = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const updateMe = asyncHandler(async (req: Request, res: Response) => {
-  const { telefono, alergias, notificarWhatsapp } = req.body as {
+  const { telefono, alergias, notificarWhatsapp, fechaNacimiento, sexo } = req.body as {
     telefono?: string;
     alergias?: string[];
     notificarWhatsapp?: boolean;
+    fechaNacimiento?: string;
+    sexo?: 'M' | 'F' | 'O';
   };
-  const user = await authService.updateMe(req.user!.sub, { telefono, alergias, notificarWhatsapp });
+  const user = await authService.updateMe(req.user!.sub, {
+    telefono,
+    alergias,
+    notificarWhatsapp,
+    fechaNacimiento,
+    sexo,
+  });
   res.json({ status: 'success', data: { user } });
 });
 

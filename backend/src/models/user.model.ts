@@ -13,6 +13,13 @@ export interface IUser extends Document {
   /** Documento de identidad (obligatorio en el registro de pacientes). */
   tipoDocumento?: 'DNI' | 'CE' | 'PAS';
   numeroDocumento?: string;
+  /**
+   * Datos demográficos clave: edad y sexo son los predictores más fuertes en
+   * los scores de riesgo clínico (Framingham, FINDRISC…). Alimentan tanto el
+   * análisis por IA como cualquier modelo futuro.
+   */
+  fechaNacimiento?: Date;
+  sexo?: 'M' | 'F' | 'O';
   /** Alergias del paciente (a fármacos). Base de la alerta al recetar. */
   alergias: string[];
   /** Opt-in: recibir recordatorios de toma por WhatsApp (requiere teléfono). */
@@ -62,6 +69,8 @@ const userSchema = new Schema<IUser>(
     telefono: { type: String, trim: true },
     tipoDocumento: { type: String, enum: ['DNI', 'CE', 'PAS'], default: 'DNI' },
     numeroDocumento: { type: String, trim: true },
+    fechaNacimiento: { type: Date },
+    sexo: { type: String, enum: ['M', 'F', 'O'] },
     alergias: { type: [String], default: [] },
     notificarWhatsapp: { type: Boolean, default: true },
     activo: { type: Boolean, default: true },

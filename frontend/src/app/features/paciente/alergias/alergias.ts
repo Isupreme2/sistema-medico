@@ -20,6 +20,12 @@ export class Alergias {
   readonly telefono = signal<string>(this.auth.user()?.telefono ?? '');
   readonly notificarWhatsapp = signal<boolean>(this.auth.user()?.notificarWhatsapp ?? true);
 
+  // Demográficos: mejoran la evaluación de riesgo que hace el médico.
+  readonly fechaNacimiento = signal<string>(
+    (this.auth.user()?.fechaNacimiento ?? '').slice(0, 10),
+  );
+  readonly sexo = signal<'' | 'M' | 'F' | 'O'>(this.auth.user()?.sexo ?? '');
+
   agregar(valor: string): void {
     const v = valor.trim();
     if (v && !this.alergias().some((a) => a.toLowerCase() === v.toLowerCase())) {
@@ -40,6 +46,8 @@ export class Alergias {
         alergias: this.alergias(),
         telefono: this.telefono().trim() || undefined,
         notificarWhatsapp: this.notificarWhatsapp(),
+        fechaNacimiento: this.fechaNacimiento() || undefined,
+        sexo: this.sexo() || undefined,
       })
       .subscribe({
         next: () => {

@@ -7,6 +7,12 @@ export interface CategoriaRiesgo {
   justificacion: string;
 }
 
+/** Salida del modelo ML (XGBoost) que la IA contrasta. */
+export interface MlResumen {
+  estado: string;
+  categorias: { categoria: string; probabilidad: number; nivel: string }[];
+}
+
 export interface AiAnalysis {
   pacienteId: string;
   generadoEn: string;
@@ -17,5 +23,8 @@ export interface AiAnalysis {
   resumen: string;
   recomendaciones: string[];
   senalesAlarma: string[];
+  /** Lectura de la IA sobre coincidencias/discrepancias con el ML. */
+  concordanciaML: string;
+  ml: MlResumen | null;
   disclaimer: string;
 }

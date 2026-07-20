@@ -161,6 +161,49 @@
     margin-bottom: 0.2rem;
   }
 
+  &.ml {
+    background: var(--info-bg);
+    border: 1px solid var(--info-border);
+    border-radius: 10px;
+    padding: 0.7rem 0.9rem;
+
+    strong {
+      color: var(--info-text);
+    }
+
+    .ml-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .ml-list li {
+      display: flex;
+      justify-content: space-between;
+      gap: 0.75rem;
+      font-size: 0.83rem;
+      color: var(--info-text);
+    }
+
+    .ml-cat {
+      text-transform: capitalize;
+    }
+
+    .ml-val {
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .concordancia {
+      margin: 0.55rem 0 0;
+      padding-top: 0.5rem;
+      border-top: 1px solid var(--info-border);
+      font-size: 0.83rem;
+      line-height: 1.45;
+      color: var(--slate-700);
+    }
+  }
+
   &.alarma {
     background: var(--danger-bg);
     border: 1px solid var(--danger-border);

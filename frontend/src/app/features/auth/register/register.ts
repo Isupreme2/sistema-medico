@@ -26,6 +26,8 @@ export class Register {
     telefono: [''],
     tipoDocumento: ['DNI' as 'DNI' | 'CE' | 'PAS', [Validators.required]],
     numeroDocumento: ['', [Validators.required, Validators.minLength(6), Validators.maxLength(20)]],
+    fechaNacimiento: [''],
+    sexo: ['' as '' | 'M' | 'F' | 'O'],
     password: [
       '',
       [
@@ -44,17 +46,18 @@ export class Register {
     this.loading.set(true);
     this.error.set(null);
 
-    const { nombre, apellido, email, telefono, tipoDocumento, numeroDocumento, password } =
-      this.form.getRawValue();
+    const v = this.form.getRawValue();
     this.auth
       .register({
-        nombre,
-        apellido,
-        email,
-        telefono: telefono || undefined,
-        tipoDocumento,
-        numeroDocumento,
-        password,
+        nombre: v.nombre,
+        apellido: v.apellido,
+        email: v.email,
+        telefono: v.telefono || undefined,
+        tipoDocumento: v.tipoDocumento,
+        numeroDocumento: v.numeroDocumento,
+        fechaNacimiento: v.fechaNacimiento || undefined,
+        sexo: v.sexo || undefined,
+        password: v.password,
       })
       .subscribe({
         next: () => {

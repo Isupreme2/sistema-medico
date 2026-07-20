@@ -78,6 +78,23 @@
         </label>
       </div>
 
+      <div class="field-row doc">
+        <label class="field doc-num">
+          <span>Fecha de nacimiento (opcional)</span>
+          <input type="date" formControlName="fechaNacimiento" />
+        </label>
+        <label class="field doc-tipo">
+          <span>Sexo (opcional)</span>
+          <select formControlName="sexo">
+            <option value="">—</option>
+            <option value="M">Masculino</option>
+            <option value="F">Femenino</option>
+            <option value="O">Otro</option>
+          </select>
+        </label>
+      </div>
+      <small class="hint-demo">Ayudan al médico a evaluar mejor tu riesgo clínico.</small>
+
       <label class="field">
         <span>Contraseña</span>
         <div class="input-wrap">

@@ -22,6 +22,12 @@ export const registerSchema = z.object({
         .trim()
         .min(6, 'Número de documento inválido')
         .max(20, 'Número de documento inválido'),
+      /** Fecha de nacimiento (YYYY-MM-DD). Base para la edad clínica. */
+      fechaNacimiento: z
+        .string()
+        .regex(/^\d{4}-\d{2}-\d{2}$/, 'Fecha de nacimiento inválida (YYYY-MM-DD)')
+        .optional(),
+      sexo: z.enum(['M', 'F', 'O']).optional(),
     })
     .refine((b) => b.tipoDocumento !== 'DNI' || /^\d{8}$/.test(b.numeroDocumento), {
       message: 'El DNI debe tener exactamente 8 dígitos',
